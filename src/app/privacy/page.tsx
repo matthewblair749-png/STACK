@@ -1,0 +1,57 @@
+import type { Metadata } from "next";
+import { ContactLine, LegalPage } from "@/components/legal/legal-page";
+
+export const metadata: Metadata = { title: "Privacy Policy - STACK" };
+
+export default function PrivacyPage() {
+  return (
+    <LegalPage title="Privacy Policy" updated="September 25, 2026">
+      <p>STACK helps you understand, prioritize and act on your work by connecting the apps you already use. This policy explains what STACK collects, why, who it is shared with, and the control you have. We only access an app after you sign in to it and approve access yourself.</p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li><strong>Account details:</strong> your name, email address and sign-in method.</li>
+        <li><strong>Data from apps you connect:</strong> only what you authorize. For example, from Google: email subject lines, senders and short previews, calendar event details, and Drive file names and links. From other apps: notifications, tasks, issues, meetings, deals or files, as described on each app&apos;s connection screen. STACK does not import passwords, and requests read-only access by default.</li>
+        <li><strong>Content you create in STACK:</strong> tasks, projects, conversations with STACK AI, and the actions you approve.</li>
+        <li><strong>Security records:</strong> when an app is connected or disconnected and when a sync fails. These never contain your tokens or message content.</li>
+      </ul>
+
+      <h2>How we use it</h2>
+      <p>We use this data only to provide STACK&apos;s features to you: showing what needs your attention, answering your questions, preparing actions for your approval, and keeping your connected apps in sync. We do not sell your data. We do not use it for advertising, and we do not use it to build profiles for third parties.</p>
+
+      <h2>Google user data</h2>
+      <p>STACK&apos;s use and transfer to any other app of information received from Google APIs will adhere to the <a className="font-medium text-blue underline" href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+      <ul>
+        <li>We use Google data only to provide and improve the user-facing features described above.</li>
+        <li>We do not transfer Google data to others except to provide those features, to comply with the law, or as part of a merger or sale with notice to you.</li>
+        <li>We do not use Google data for advertising, and we do not allow humans to read it unless you ask us to, it is needed for security or abuse investigation, or the law requires it.</li>
+        <li>We do not use Google data to develop, improve or train generalized AI or machine-learning models.</li>
+      </ul>
+
+      <h2>AI processing</h2>
+      <p>When you ask STACK AI a question, the relevant parts of your synced work (for example a few message previews or task titles) are sent to an AI model provider to produce the answer. The providers we use are Anthropic and, as a fallback, an OpenAI-compatible provider we configure. This data is sent only to answer your request, and we do not permit these providers to train their models on it.</p>
+
+      <h2>How we protect it</h2>
+      <ul>
+        <li>Access tokens for your connected apps are encrypted at rest and are never sent to your browser.</li>
+        <li>Connections use each app&apos;s official sign-in (OAuth). STACK never sees your password for those apps.</li>
+        <li>Anything that would send, change or delete something in another app needs your explicit approval first.</li>
+        <li>You only see information you are already allowed to see in the underlying app.</li>
+      </ul>
+
+      <h2>Your choices</h2>
+      <ul>
+        <li><strong>Disconnect an app</strong> at any time from Integrations. STACK then revokes its access where the app allows it, deletes the stored credentials, and deletes the content it imported from that app.</li>
+        <li><strong>Revoke access yourself</strong> in the app&apos;s own settings, for example your Google Account&apos;s third-party access page.</li>
+        <li><strong>Delete your account and data</strong> by contacting us. We will delete your STACK data within a reasonable period.</li>
+      </ul>
+
+      <h2>Sharing</h2>
+      <p>We share data only with service providers that run STACK for us (hosting, database, email delivery, AI processing and payments), under terms that limit them to providing those services, or when the law requires it.</p>
+
+      <h2>Changes and contact</h2>
+      <p>If we change this policy in a meaningful way, we will update the date above and, where appropriate, tell you in the product.</p>
+      <ContactLine />
+    </LegalPage>
+  );
+}

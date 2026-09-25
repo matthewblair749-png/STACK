@@ -1,0 +1,650 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Auth.js (NextAuth v5) required models ----------
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  /// Set during onboarding; drives which integrations are suggested. Never used to fabricate data.
+  profession     String?
+  /// Set during onboarding ("How did you hear about us?"), for real marketing attribution.
+  referralSource String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  ownedWorkspaces Workspace[]       @relation("WorkspaceOwner")
+  memberships     WorkspaceMember[]
+  createdTasks    Task[]            @relation("TaskCreator")
+  assignedTasks   Task[]            @relation("TaskAssignee")
+  integrations    Integration[]
+  openTabs        OpenTab[]
+  automations     Automation[]
+  onboardingProgress OnboardingProgress?
+  syncedMessages  SyncedMessage[]
+  syncedEvents    SyncedEvent[]
+  syncedFiles     SyncedFile[]
+  insights        Insight[]
+  pendingActions  PendingAction[]
+  memoryItems     MemoryItem[]
+  conversations   Conversation[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------- Workspace multi-tenancy ----------
+
+enum WorkspaceRole {
+  Owner
+  Admin
+  Member
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner        User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members      WorkspaceMember[]
+  tasks        Task[]
+  projects     Project[]
+  integrations Integration[]
+  openTabs     OpenTab[]
+  automations  Automation[]
+  subscription Subscription?
+  syncedMessages SyncedMessage[]
+  syncedEvents   SyncedEvent[]
+  syncedFiles    SyncedFile[]
+  insights       Insight[]
+  pendingActions PendingAction[]
+  memoryItems    MemoryItem[]
+  conversations  Conversation[]
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(Member)
+  createdAt   DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+// ---------- Core work data ----------
+
+enum TaskStatus {
+  Todo
+  InProgress
+  Blocked
+  Done
+}
+
+enum TaskPriority {
+  Low
+  Medium
+  High
+  Urgent
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  workspaceId String
+  creatorId   String
+  assigneeId  String?
+  projectId   String?
+  title       String
+  description String?
+  status      TaskStatus   @default(Todo)
+  priority    TaskPriority @default(Medium)
+  labels      String[]     @default([])
+  dueDate     DateTime?
+  /// Why this task can't move (set when status is Blocked). Never inferred by the AI.
+  blockedReason String?
+  /// User id of the person this task is waiting on, if any.
+  waitingOnId String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee  User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  subtasks  Subtask[]
+
+  @@index([workspaceId])
+  @@index([projectId])
+  @@index([assigneeId])
+}
+
+model Subtask {
+  id        String   @id @default(cuid())
+  taskId    String
+  title     String
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+enum ProjectStatus {
+  OnTrack
+  AtRisk
+  Behind
+  Completed
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  workspaceId String
+  name        String
+  description String?
+  status      ProjectStatus @default(OnTrack)
+  progress    Int           @default(0)
+  deadline    DateTime?
+  /// Cached AI-written overview, regenerated on demand when stale.
+  summary     String?       @db.Text
+  summaryUpdatedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([workspaceId])
+}
+
+// ---------- Integrations ----------
+
+model Integration {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  userId       String
+  provider     String
+  accessToken  String?   @db.Text
+  refreshToken String?   @db.Text
+  expiresAt    DateTime?
+  scopes       String[]
+  metadata     Json?
+  /// Last time syncWorkspaceIntegrations() successfully pulled data for this connection.
+  lastSyncAt   DateTime?
+  /// Set only on a PERMANENT auth failure (refresh returned 400/401 — revoked/expired
+  /// grant). Never set for a transient network error. Null means healthy. Drives the
+  /// "error" ConnectionStatus so the UI can tell the user to reconnect.
+  syncError    String?   @db.Text
+  /// What went wrong on the most recent sync attempt (e.g. an API switched off in the provider's
+  /// console). Unlike syncError this is not a dead grant - reconnecting won't fix it. Null after a clean sync.
+  lastSyncError String?  @db.Text
+  /// When the last sync was attempted, successful or not.
+  lastSyncAttemptAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId, provider])
+  @@index([workspaceId])
+}
+
+// ---------- AI brain: real synced content, context graph, insights, actions ----------
+
+/// A normalized inbox message pulled from a connected provider (Gmail, Outlook,
+/// Slack). One row per real external message — never fabricated.
+model SyncedMessage {
+  id               String    @id @default(cuid())
+  workspaceId      String
+  userId           String
+  provider         String
+  externalId       String
+  threadExternalId String?
+  subject          String?
+  fromName         String?
+  fromAddress      String?
+  snippet          String    @db.Text
+  receivedAt       DateTime
+  isUnread         Boolean   @default(false)
+  permalink        String?
+  metadata         Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider, externalId])
+  @@index([workspaceId, receivedAt])
+}
+
+/// A normalized calendar event pulled from a connected provider (Google Calendar,
+/// Outlook Calendar).
+model SyncedEvent {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  provider    String
+  externalId  String
+  title       String
+  description String?   @db.Text
+  startAt     DateTime
+  endAt       DateTime
+  location    String?
+  organizer   String?
+  attendees   String[]  @default([])
+  permalink   String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider, externalId])
+  @@index([workspaceId, startAt])
+}
+
+/// A normalized file reference pulled from a connected provider (Drive, OneDrive).
+model SyncedFile {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  provider    String
+  externalId  String
+  name        String
+  mimeType    String?
+  webUrl      String?
+  ownerName   String?
+  modifiedAt  DateTime
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider, externalId])
+  @@index([workspaceId, modifiedAt])
+}
+
+/// The kinds of entities the context graph and insight engine can point at.
+/// Deliberately a flat enum (not a polymorphic Prisma relation) since it spans
+/// unrelated models.
+enum EntityKind {
+  Task
+  Project
+  Person
+  SyncedMessage
+  SyncedEvent
+  SyncedFile
+}
+
+/// One edge in STACK's context graph, e.g. "this email mentions Project Alpha."
+/// No DB-level foreign key across model types is possible here — a deleted
+/// Task/Project/Synced* row just leaves a harmless dangling link; readers must
+/// handle a missing target defensively rather than assuming referential integrity.
+model EntityLink {
+  id          String     @id @default(cuid())
+  workspaceId String
+  fromType    EntityKind
+  fromId      String
+  toType      EntityKind
+  toId        String
+  /// Controlled vocabulary: "mentions_project" | "mentions_task" | "from_person".
+  relation    String
+  confidence  Float      @default(1.0)
+  createdAt   DateTime   @default(now())
+
+  @@unique([workspaceId, fromType, fromId, toType, toId, relation])
+  @@index([workspaceId, fromType, fromId])
+  @@index([workspaceId, toType, toId])
+}
+
+enum InsightLevel {
+  Urgent
+  Important
+  Info
+}
+
+enum InsightStatus {
+  Open
+  Dismissed
+}
+
+/// A "what matters" signal STACK surfaces to a user, computed from real Task/
+/// Project/Synced* data — never invented. `dedupeKey` makes recomputation
+/// idempotent (upsert, not duplicate) and lets a user's dismissal stick.
+model Insight {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  level       InsightLevel
+  category    String
+  title       String
+  body        String?       @db.Text
+  subjectType EntityKind?
+  subjectId   String?
+  dedupeKey   String
+  status      InsightStatus @default(Open)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId, dedupeKey])
+  @@index([workspaceId, userId, status])
+}
+
+enum PendingActionKind {
+  CreateTask
+  SendEmail
+  SendSlackMessage
+  UpdateProjectStatus
+  UpdateTask
+  CreateCalendarEvent
+}
+
+enum PendingActionStatus {
+  Pending
+  Approved
+  Rejected
+  Executed
+  Failed
+}
+
+/// A write action STACK (or the AI) wants to take, awaiting explicit user
+/// approval. Nothing in this app auto-executes a write action — every row
+/// here must be approved via POST /api/actions/:id/approve before anything
+/// happens.
+model PendingAction {
+  id             String               @id @default(cuid())
+  workspaceId    String
+  userId         String
+  kind           PendingActionKind
+  payload        Json
+  status         PendingActionStatus  @default(Pending)
+  resultMetadata Json?
+  errorMessage   String?              @db.Text
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, userId, status])
+}
+
+/// A saved AI conversation (the history pane in the AI workspace).
+model Conversation {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  title       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ConversationMessage[]
+
+  @@index([workspaceId, userId, updatedAt])
+}
+
+model ConversationMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  /// "user" | "ai"
+  role           String
+  text           String   @db.Text
+  /// For AI messages: structured answer, the sources STACK used, and ids of proposed actions.
+  data           Json?
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+/// Personal work memory (schema only this phase — no management UI yet).
+model MemoryItem {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  key         String
+  value       Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId, key])
+}
+
+// ---------- Open Tabs ----------
+
+model OpenTab {
+  id          String   @id @default(cuid())
+  userId      String
+  workspaceId String
+  provider    String
+  url         String
+  title       String
+  pinned      Boolean  @default(false)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, workspaceId])
+}
+
+// ---------- Automations ----------
+
+model Automation {
+  id          String   @id @default(cuid())
+  workspaceId String
+  creatorId   String
+  name        String
+  trigger     Json
+  actions     Json
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [creatorId], references: [id])
+
+  @@index([workspaceId])
+}
+
+// ---------- Billing ----------
+
+enum SubscriptionPlan {
+  Free
+  Solo
+  Team
+  Business
+  Enterprise
+}
+
+enum SubscriptionStatus {
+  Active
+  PastDue
+  Canceled
+  Incomplete
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  workspaceId          String             @unique
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  plan                 SubscriptionPlan   @default(Free)
+  status               SubscriptionStatus @default(Active)
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Onboarding config (data-driven, not hardcoded in the UI) ----------
+
+/// How STACK can realistically connect to this app. Drives what the UI is
+/// allowed to claim: only OAuth2 apps with a real, configured IntegrationProvider
+/// ever show a working "Connect" button.
+enum AppAuthType {
+  /// Real OAuth2 flow through the IntegrationProvider registry.
+  OAuth2
+  /// Desktop/local software with no cloud account to authorize (Photoshop, Blender, MATLAB...).
+  DesktopApp
+  /// A real product, but STACK has no OAuth/API integration built (or access to one) yet.
+  ExternalTool
+  /// No public self-serve API exists (MLS, Zillow, Bloomberg Terminal...) — never fabricate one.
+  Unavailable
+}
+
+/// A connectable (or not-yet-connectable) work app shown during onboarding and in
+/// the Integrations directory. `oauthProviderId` matches an id in the real
+/// IntegrationProvider registry when a Connect action actually works; when it's
+/// null, the app is real (a real thing people use) but STACK has no connector for
+/// it yet, so the UI must show its real `authType` state rather than a
+/// working-looking Connect button.
+model App {
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  name            String
+  description     String
+  category        String
+  officialWebsite String?
+  brandColor      String?
+  authType        AppAuthType @default(ExternalTool)
+  hasRealLogo     Boolean     @default(false)
+  /// Local static asset path (e.g. "/integrations/primerx.svg") once a real
+  /// logo file has been downloaded and verified. Null until then.
+  logoPath        String?
+  /// Where the logo file/data came from — the official site URL, a brand/media
+  /// kit page, or (last resort) a named reputable logo repository. Kept for
+  /// audit purposes; never a search-engine result page.
+  logoSource      String?
+  /// True only once a human/agent has confirmed the asset at `logoPath`
+  /// actually belongs to this exact product (not a parent company, not a
+  /// same-named different product). Drives whether the UI is allowed to show
+  /// it instead of the neutral fallback.
+  logoVerified    Boolean     @default(false)
+  oauthProviderId String?
+  isUniversal     Boolean     @default(false)
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([category])
+}
+
+/// A profession users pick during onboarding. `recommendedAppSlugs` references
+/// App.slug values — kept as a plain string array rather than a join table since
+/// the list is small and ordered; still fully data-driven (editable without
+/// touching UI code).
+model Profession {
+  id                  String   @id @default(cuid())
+  slug                String   @unique
+  name                String
+  category            String
+  description         String?
+  recommendedAppSlugs String[] @default([])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([category])
+}
+
+/// Tracks where a signed-in user is in the onboarding wizard so a page refresh
+/// (or coming back later) resumes instead of restarting.
+model OnboardingProgress {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  currentStep      Int       @default(0)
+  professionSlug   String?
+  selectedAppSlugs String[]  @default([])
+  referralSource   String?
+  selectedPlan     String?
+  billingInterval  String?
+  completed        Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Audit trail ----------
+
+/// Security-relevant events (an app connected/disconnected, a sync failing, a permission approved).
+/// Deliberately never stores tokens, secrets or message content - only what happened, to what, by whom.
+model AuditEvent {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String?
+  action      String
+  target      String?
+  detail      Json?
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+}
