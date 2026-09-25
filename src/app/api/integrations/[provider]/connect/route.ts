@@ -35,12 +35,16 @@ export async function GET(
       fields[f.name] = value;
     }
 
+    // Where to land after authorizing (e.g. back in onboarding). Same-site paths only, so this can't be used to redirect elsewhere.
+    const wanted = req.nextUrl.searchParams.get("returnTo") ?? "";
+    const returnTo = /^\/[a-z0-9\-_/]*$/i.test(wanted) && !wanted.startsWith("//") ? wanted : "";
+
     const state = randomBytes(16).toString("hex");
     const redirectUri = new URL(`/api/integrations/${provider.id}/callback`, redirectBase(provider.id, req.nextUrl.origin)).toString();
     const authUrl = provider.getAuthUrl(state, redirectUri, { write: req.nextUrl.searchParams.get("write") === "1", fields });
 
     const res = NextResponse.redirect(authUrl);
-    res.cookies.set(`stack_oauth_state_${provider.id}`, `${state}:${workspaceId}:${Buffer.from(JSON.stringify(fields)).toString("base64url")}`, {
+    res.cookies.set(`stack_oauth_state_${provider.id}`, `${state}:${workspaceId}:${Buffer.from(JSON.stringify(fields)).toString("base64url")}:${Buffer.from(returnTo).toString("base64url")}`, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

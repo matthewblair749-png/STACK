@@ -7,7 +7,7 @@ import { useToast } from "@/components/app/toast";
 import { providerLabel } from "@/lib/providers-meta";
 import { cn } from "@/lib/utils";
 import { AppDrawer, AppTile, primaryAction, QueuePanel } from "./parts";
-import { DisconnectDialog, FieldsDialog, Modal, PermissionSheet, SetupDialog } from "./dialogs";
+import { DisconnectDialog, FieldsDialog, Modal, PermissionSheet, SetupDialog, TokenDialog } from "./dialogs";
 import { RevealDialog } from "./reveal";
 import { QUEUE_KEY, type CatalogApp, type CatalogResponse, type QueueItem, type SyncOutcome } from "./types";
 
@@ -47,6 +47,9 @@ export function ConnectionCenter() {
   const [setupApp, setSetupApp] = useState<CatalogApp | null>(null);
   const [setupBusy, setSetupBusy] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
+  const [tokenApp, setTokenApp] = useState<CatalogApp | null>(null);
+  const [tokenBusy, setTokenBusy] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
   const [disconnectApp, setDisconnectApp] = useState<CatalogApp | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
   const [batchConfirm, setBatchConfirm] = useState(false);
@@ -57,6 +60,7 @@ export function ConnectionCenter() {
   const [reveal, setReveal] = useState(false);
   const requestId = useRef(0);
   const handledReturn = useRef(false);
+  const handledDeepLink = useRef(false);
 
   const fetchCatalog = useCallback(async (query: string): Promise<CatalogResponse | null> => {
     const id = ++requestId.current;
@@ -120,6 +124,11 @@ export function ConnectionCenter() {
   const beginConnect = useCallback(
     (app: CatalogApp) => {
       if (!app.supported || !app.oauthProviderId) return;
+      if (!app.configured && app.tokenConnect) {
+        setTokenError(null);
+        setTokenApp(app);
+        return;
+      }
       if (!app.configured) {
         if (app.setup) {
           setSetupError(null);
@@ -219,6 +228,21 @@ export function ConnectionCenter() {
     })();
   }, [params, router, toast, runSync, reload, goAuthorize, finishQueue]);
 
+  // Deep link from Home or the AI: /integrations?connect=<app> goes straight to that app's connect flow.
+  useEffect(() => {
+    const wanted = params.get("connect");
+    if (!wanted || handledDeepLink.current || params.get("connected") || params.get("error")) return;
+    const app = apps.find((a) => a.slug === wanted);
+    if (!app) return;
+    handledDeepLink.current = true;
+    router.replace("/integrations");
+    // Opened on the next tick: the flow shows dialogs, which is React state, not something to set during the effect itself.
+    queueMicrotask(() => {
+      if (!app.connected) beginConnect(app);
+      else setOpenSlug(app.slug);
+    });
+  }, [apps, params, router, beginConnect]);
+
   const connectAll = () => {
     const seen = new Set<string>();
     const targets = apps.filter((a) => a.recommended && a.supported && a.configured && !a.connected && !a.connectFields?.length && a.oauthProviderId && !seen.has(a.oauthProviderId) && (seen.add(a.oauthProviderId), true));
@@ -255,6 +279,31 @@ export function ConnectionCenter() {
       if (fresh?.configured) beginConnect(fresh);
     } finally {
       setSetupBusy(false);
+    }
+  };
+
+  /** Saves a token the user pasted (after it is checked against the app), then syncs for real and reports the result. */
+  const connectWithToken = async (app: CatalogApp, token: string, fields: Record<string, string>) => {
+    const provider = app.oauthProviderId!;
+    setTokenBusy(true);
+    setTokenError(null);
+    try {
+      const res = await fetch(`/api/integrations/${provider}/token`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, fields }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setTokenError(body.error ?? "Couldn't connect. Try again.");
+        return;
+      }
+      setTokenApp(null);
+      toast({ title: `${app.name} connected`, description: body.account ? `Connected as ${body.account}. Syncing...` : "Syncing..." });
+      const outcome = (await runSync([provider])).find((o) => o.provider === provider);
+      if (outcome?.error) toast({ title: `${app.name} couldn't sync`, description: outcome.error, tone: "error" });
+      else toast({ title: `${app.name} synced`, description: describe(outcome ?? { provider }) });
+      await reload();
+    } catch (e) {
+      setTokenError(e instanceof Error ? e.message : "Couldn't connect. Try again.");
+    } finally {
+      setTokenBusy(false);
     }
   };
 
@@ -464,6 +513,7 @@ export function ConnectionCenter() {
         />
       )}
       {setupApp?.setup && <SetupDialog app={setupApp} busy={setupBusy} error={setupError} onCancel={() => setSetupApp(null)} onSave={(values) => saveSetup(setupApp, values)} />}
+      {tokenApp?.tokenConnect && <TokenDialog app={tokenApp} busy={tokenBusy} error={tokenError} onCancel={() => setTokenApp(null)} onSubmit={(t, f) => connectWithToken(tokenApp, t, f)} />}
       {disconnectApp && <DisconnectDialog app={disconnectApp} busy={disconnecting} onCancel={() => setDisconnectApp(null)} onConfirm={() => disconnect(disconnectApp)} />}
 
       {batchConfirm && (

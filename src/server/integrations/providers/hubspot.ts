@@ -20,6 +20,20 @@ export const hubspotProvider: IntegrationProvider = {
   capabilities: ["messages", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "HubSpot private app token",
+    placeholder: "pat-na1-...",
+    helpUrl: "https://app.hubspot.com/l/private-apps",
+    steps: [
+      "Open the link below and click Create a private app. Name it STACK.",
+      "On the Scopes tab, add crm.objects.deals.read and crm.objects.contacts.read only.",
+      "Click Create app, then copy the access token (starts with pat-) and paste it here.",
+    ],
+    async validate(token) {
+      await getJson("HubSpot token check", "https://api.hubapi.com/crm/v3/objects/deals?limit=1", { headers: { Authorization: `Bearer ${token}` } });
+      return { account: "HubSpot" };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("HubSpot");
@@ -44,7 +58,8 @@ export const hubspotProvider: IntegrationProvider = {
   async getMessages(tokens): Promise<MailMessage[]> {
     const headers = { Authorization: `Bearer ${tokens.accessToken}`, "Content-Type": "application/json" };
     const [info, deals] = await Promise.all([
-      getJson("HubSpot account", `https://api.hubapi.com/oauth/v1/access-tokens/${encodeURIComponent(tokens.accessToken)}`, { headers }),
+      // OAuth tokens can be looked up for their portal id; a private app token can't, so links fall back to HubSpot's home.
+      getJson("HubSpot account", `https://api.hubapi.com/oauth/v1/access-tokens/${encodeURIComponent(tokens.accessToken)}`, { headers }).catch(() => ({ hub_id: undefined as number | undefined })),
       getJson("HubSpot deals", "https://api.hubapi.com/crm/v3/objects/deals/search", {
         method: "POST",
         headers,
@@ -64,7 +79,7 @@ export const hubspotProvider: IntegrationProvider = {
         snippet: [p.dealstage, p.amount ? `$${Number(p.amount).toLocaleString("en-US")}` : null, p.closedate ? `closes ${String(p.closedate).slice(0, 10)}` : null].filter(Boolean).join(" - "),
         receivedAt: p.hs_lastmodifieddate ?? d.updatedAt,
         isUnread: false,
-        permalink: `https://app.hubspot.com/contacts/${info.hub_id}/record/0-3/${d.id}`,
+        permalink: info.hub_id ? `https://app.hubspot.com/contacts/${info.hub_id}/record/0-3/${d.id}` : "https://app.hubspot.com/",
       };
     });
   },

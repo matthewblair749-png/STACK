@@ -20,6 +20,9 @@ function teamIdFrom(input: string): string {
   return id;
 }
 
+/** Personal access tokens (figd_...) use their own header; OAuth tokens use Bearer. */
+const figmaHeaders = (token: string): Record<string, string> => (token.startsWith("figd_") ? { "X-Figma-Token": token } : { Authorization: `Bearer ${token}` });
+
 export const figmaProvider: IntegrationProvider = {
   id: "figma",
   label: "Figma",
@@ -27,6 +30,22 @@ export const figmaProvider: IntegrationProvider = {
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
   connectFields: [{ name: "team", label: "Team URL or id", placeholder: "https://www.figma.com/files/team/1234567890/My-team", help: "Open your team in Figma and copy the address." }],
+  tokenConnect: {
+    label: "Figma personal access token",
+    placeholder: "figd_...",
+    helpUrl: "https://www.figma.com/settings",
+    steps: [
+      "Open Figma > Settings > Security > Personal access tokens and click Generate new token.",
+      "Name it STACK and give it read access to File content and Projects. Copy the token (starts with figd_, shown once).",
+      "Open your team in Figma, copy its address from the browser, and paste both below.",
+    ],
+    fields: [{ name: "team", label: "Team URL or id", placeholder: "https://www.figma.com/files/team/1234567890/My-team", help: "Open your team in Figma and copy the address." }],
+    async validate(token, fields) {
+      const teamId = teamIdFrom(fields.team ?? "");
+      const data = await getJson("Figma token check", `https://api.figma.com/v1/teams/${teamId}/projects`, { headers: figmaHeaders(token) });
+      return { account: data.name ?? `Team ${teamId}`, metadata: { teamId } };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("Figma");
@@ -54,7 +73,7 @@ export const figmaProvider: IntegrationProvider = {
   async getFiles(tokens): Promise<ProviderFile[]> {
     const teamId = tokens.metadata?.teamId;
     if (typeof teamId !== "string") throw new Error("Figma failed: 401 team not recorded. Reconnect Figma.");
-    const headers = { Authorization: `Bearer ${tokens.accessToken}` };
+    const headers = figmaHeaders(tokens.accessToken);
     const projects = await getJson("Figma projects", `https://api.figma.com/v1/teams/${teamId}/projects`, { headers });
     const perProject = await Promise.all(
       ((projects.projects ?? []) as Record<string, any>[]).slice(0, 12).map(async (p) => {

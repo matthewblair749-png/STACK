@@ -158,6 +158,75 @@ export function SetupDialog({ app, busy, error, onCancel, onSave }: { app: Catal
   );
 }
 
+/** Connect with an access token the user creates in the app - no developer app of ours needed. */
+export function TokenDialog({ app, busy, error, onCancel, onSubmit }: { app: CatalogApp; busy: boolean; error: string | null; onCancel: () => void; onSubmit: (token: string, fields: Record<string, string>) => void }) {
+  const t = app.tokenConnect!;
+  const [token, setToken] = useState("");
+  const [extra, setExtra] = useState<Record<string, string>>({});
+  return (
+    <Modal label={`Connect ${app.name}`} onClose={onCancel}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit(token.trim(), extra);
+        }}
+      >
+        <p className="text-base font-semibold text-ink">Connect {app.name}</p>
+        <p className="mt-1 text-sm text-neutral-500">Create a token in {app.name} and paste it here. STACK only reads what it lets you access, and you can revoke the token in {app.name} at any time.</p>
+        <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-neutral-700">
+          {t.steps.map((s) => <li key={s}>{s}</li>)}
+        </ol>
+        <a href={t.helpUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-medium text-blue underline">Open {app.name} to create the token</a>
+        {(t.fields ?? []).map((f) => (
+          <label key={f.name} className="mt-4 block text-sm">
+            <span className="font-medium text-ink">{f.label}</span>
+            <input required value={extra[f.name] ?? ""} onChange={(e) => setExtra((x) => ({ ...x, [f.name]: e.target.value }))} placeholder={f.placeholder} className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-ink" />
+            {f.help && <span className="mt-1 block text-xs text-neutral-500">{f.help}</span>}
+          </label>
+        ))}
+        <label className="mt-4 block text-sm">
+          <span className="font-medium text-ink">{t.label}</span>
+          <div className="mt-1 flex gap-2">
+            <input
+              required
+              autoFocus
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              onPaste={(e) => {
+                // Nothing else to fill in? Pasting the token is the last step, so connect right away.
+                const pasted = e.clipboardData.getData("text").trim();
+                if (!t.fields?.length && pasted.length >= 20 && !/\s/.test(pasted) && !busy) {
+                  e.preventDefault();
+                  setToken(pasted);
+                  onSubmit(pasted, {});
+                }
+              }}
+              placeholder={t.placeholder}
+              className="min-w-0 flex-1 rounded-lg border border-neutral-200 px-3 py-2 font-mono text-sm outline-none focus:border-ink"
+            />
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border border-neutral-200 px-3 py-2 text-xs font-semibold text-ink hover:border-ink"
+              onClick={() => navigator.clipboard?.readText().then((v) => setToken(v.trim())).catch(() => {})}
+            >
+              Paste
+            </button>
+          </div>
+        </label>
+        {error && <p className="mt-3 text-sm text-red">{error}</p>}
+        <p className="mt-3 text-xs text-neutral-500">Stored encrypted and never shown again. Disconnecting deletes it.</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" className={ghost} onClick={onCancel}>Cancel</button>
+          <button type="submit" disabled={busy || token.length < 20} className={primary}>{busy ? "Checking..." : "Connect"}</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export function DisconnectDialog({ app, busy, onCancel, onConfirm }: { app: CatalogApp; busy: boolean; onCancel: () => void; onConfirm: () => void }) {
   const provider = app.oauthProviderId ? providerLabel(app.oauthProviderId) : app.name;
   return (

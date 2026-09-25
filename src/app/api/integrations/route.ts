@@ -120,11 +120,11 @@ export async function GET(req: NextRequest) {
         missingSetup: configured ? [] : provider.missingSetup(),
         connectFields: provider.connectFields,
         setup:
-          !configured && SETUP_GUIDES[provider.id]
+          process.env.NODE_ENV !== "production" && !configured && SETUP_GUIDES[provider.id]
             ? {
                 ...SETUP_GUIDES[provider.id],
                 redirectUrl: `${origin}/api/integrations/${provider.id}/callback`,
-                canSave: process.env.NODE_ENV !== "production",
+                canSave: true,
               }
             : undefined,
         status,

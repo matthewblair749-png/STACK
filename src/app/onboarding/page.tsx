@@ -39,6 +39,7 @@ interface AppEntry {
   connected: boolean;
   missingSetup: string[];
   oauthProviderId: string | null;
+  connectFields?: { name: string }[];
   status: ConnectionStatus;
   hasRealLogo: boolean;
   logoPath?: string | null;
@@ -233,7 +234,13 @@ export default function OnboardingPage() {
   function connectApp(app: AppEntry) {
     if (!app.oauthProviderId) return;
     setConnectPending(app.slug);
-    window.open(`/api/integrations/${app.oauthProviderId}/connect`, "_blank", "noopener,noreferrer");
+    // Apps that need extra details first (a store address, a team) are finished on the Integrations page.
+    if (app.connectFields?.length) {
+      window.location.assign(new URL("/integrations", window.location.origin).toString());
+      return;
+    }
+    // Same tab, and back to onboarding afterwards: no new tab and no manual refresh.
+    window.location.assign(new URL(`/api/integrations/${app.oauthProviderId}/connect?returnTo=/onboarding`, window.location.origin).toString());
   }
 
   async function refreshApps() {
@@ -517,7 +524,7 @@ const STATUS_META: Record<ConnectionStatus, { label: string; icon?: typeof Clock
   connected: { label: "Connected" },
   error: { label: "Connection error", icon: AlertTriangle },
   available: { label: "Connect" },
-  needs_setup: { label: "Needs setup" },
+  needs_setup: { label: "Not available yet" },
   desktop_app: { label: "Desktop app", icon: Monitor },
   external_tool: { label: "Coming soon", icon: Clock },
   unavailable: { label: "Unavailable", icon: Ban },

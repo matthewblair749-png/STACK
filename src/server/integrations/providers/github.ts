@@ -18,6 +18,20 @@ export const githubProvider: IntegrationProvider = {
   capabilities: ["issues", "messages", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "GitHub personal access token",
+    placeholder: "ghp_... or github_pat_...",
+    helpUrl: "https://github.com/settings/tokens/new?scopes=notifications,read:user,repo&description=STACK",
+    steps: [
+      "Open the link below. GitHub pre-selects the read permissions STACK needs (notifications, read:user, repo).",
+      "Set an expiration you're comfortable with and click Generate token.",
+      "Copy the token (it's only shown once) and paste it here.",
+    ],
+    async validate(token) {
+      const me = await getJson("GitHub token check", "https://api.github.com/user", { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" } });
+      return { account: me.login };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("GitHub");

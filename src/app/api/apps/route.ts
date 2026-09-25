@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     const { session, workspaceId } = await requireSessionAndWorkspace();
     const userId = session.user.id;
     const origin = req.nextUrl.origin;
+    const isProd = process.env.NODE_ENV === "production";
 
     const query = req.nextUrl.searchParams.get("q")?.trim().toLowerCase() ?? "";
     const user = await db.user.findUnique({ where: { id: userId }, select: { profession: true } });
@@ -55,13 +56,15 @@ export async function GET(req: NextRequest) {
       const row = app.oauthProviderId ? connByProvider.get(app.oauthProviderId) : undefined;
       const connected = !!row;
       const meta = appMeta(app.oauthProviderId);
-      const status = computeConnectionStatus({ authType: app.authType, hasOauthProvider: !!provider, configured, connected, hasError: !!row?.syncError });
+      // An app that can be connected with the user's own token is connectable even before OAuth is set up.
+      const status = computeConnectionStatus({ authType: app.authType, hasOauthProvider: !!provider, configured: configured || !!provider?.tokenConnect, connected, hasError: !!row?.syncError });
 
       let health: Health | null = null;
       if (row) health = row.syncError ? "expired" : row.lastSyncError ? "needs_attention" : row.lastSyncAt ? "connected" : "pending";
 
-      const setup = provider && !configured && SETUP_GUIDES[provider.id]
-        ? { ...SETUP_GUIDES[provider.id], redirectUrl: `${origin}/api/integrations/${provider.id}/callback`, canSave: process.env.NODE_ENV !== "production" }
+      // Developer-side setup steps are for whoever runs STACK, never for end users on the live site.
+      const setup = !isProd && provider && !configured && SETUP_GUIDES[provider.id]
+        ? { ...SETUP_GUIDES[provider.id], redirectUrl: `${origin}/api/integrations/${provider.id}/callback`, canSave: true }
         : undefined;
 
       const account = row?.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata) ? ((row.metadata as Record<string, unknown>).account as string | undefined) : undefined;
@@ -85,6 +88,7 @@ export async function GET(req: NextRequest) {
         connected,
         missingSetup: provider && !configured ? provider.missingSetup() : [],
         connectFields: provider?.connectFields,
+        tokenConnect: provider?.tokenConnect ? { label: provider.tokenConnect.label, placeholder: provider.tokenConnect.placeholder, helpUrl: provider.tokenConnect.helpUrl, steps: provider.tokenConnect.steps, fields: provider.tokenConnect.fields } : undefined,
         setup,
         health,
         lastSyncAt: row?.lastSyncAt?.toISOString() ?? null,

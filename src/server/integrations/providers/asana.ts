@@ -19,6 +19,20 @@ export const asanaProvider: IntegrationProvider = {
   capabilities: ["issues", "messages", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "Asana personal access token",
+    placeholder: "1/1234567890:abcdef...",
+    helpUrl: "https://app.asana.com/0/my-apps",
+    steps: [
+      "Open the link below and, under Personal access tokens, click Create new token.",
+      "Name it STACK, accept the terms, and click Create token.",
+      "Copy the token (only shown once) and paste it here.",
+    ],
+    async validate(token) {
+      const me = await getJson("Asana token check", "https://app.asana.com/api/1.0/users/me", { headers: { Authorization: `Bearer ${token}` } });
+      return { account: me.data?.email ?? me.data?.name };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("Asana");

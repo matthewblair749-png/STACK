@@ -18,6 +18,21 @@ export const notionProvider: IntegrationProvider = {
   capabilities: ["files", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "Notion integration token",
+    placeholder: "ntn_...",
+    helpUrl: "https://www.notion.so/profile/integrations",
+    steps: [
+      "Open notion.so/profile/integrations and click New integration, then choose Internal.",
+      "Name it STACK, pick your workspace, and save. Only Read content access is needed.",
+      "Copy the token it shows (it starts with ntn_ or secret_).",
+      "In Notion, open the pages you want STACK to see, click the ... menu > Connections, and add STACK. Notion only shares pages you connect this way.",
+    ],
+    async validate(token) {
+      const me = await getJson("Notion token check", "https://api.notion.com/v1/users/me", { headers: { Authorization: `Bearer ${token}`, "Notion-Version": VERSION } });
+      return { account: me.bot?.workspace_name ?? me.name ?? "Notion workspace" };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("Notion");

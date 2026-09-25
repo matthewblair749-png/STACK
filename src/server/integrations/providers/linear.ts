@@ -12,6 +12,9 @@ const tokenCall = (params: Record<string, string>, refreshToken?: string) =>
     { refreshToken, scopes: ["read"] },
   );
 
+/** Personal API keys (lin_api_...) go in the header as-is; OAuth tokens use Bearer. */
+const authHeader = (token: string) => (token.startsWith("lin_api_") ? token : `Bearer ${token}`);
+
 const QUERY = `{ viewer { assignedIssues(first: 30, orderBy: updatedAt, filter: { state: { type: { nin: ["completed", "canceled"] } } }) {
   nodes { id identifier title url updatedAt priorityLabel state { name } team { name } } } } }`;
 
@@ -22,6 +25,25 @@ export const linearProvider: IntegrationProvider = {
   capabilities: ["issues", "messages", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "Linear personal API key",
+    placeholder: "lin_api_...",
+    helpUrl: "https://linear.app/settings/account/security",
+    steps: [
+      "Open the link below and, under Personal API keys, click New API key.",
+      "Name it STACK and choose Read permission only.",
+      "Copy the key (it starts with lin_api_, shown once) and paste it here.",
+    ],
+    async validate(token) {
+      const data = await getJson("Linear key check", "https://api.linear.app/graphql", {
+        method: "POST",
+        headers: { Authorization: authHeader(token), "Content-Type": "application/json" },
+        body: JSON.stringify({ query: "{ viewer { name email } }" }),
+      });
+      if (data.errors?.length || !data.data?.viewer) throw new Error("Linear key check failed: 401");
+      return { account: data.data.viewer.email ?? data.data.viewer.name };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("Linear");
@@ -47,7 +69,7 @@ export const linearProvider: IntegrationProvider = {
   async getMessages(tokens): Promise<MailMessage[]> {
     const data = await getJson("Linear issues", "https://api.linear.app/graphql", {
       method: "POST",
-      headers: { Authorization: `Bearer ${tokens.accessToken}`, "Content-Type": "application/json" },
+      headers: { Authorization: authHeader(tokens.accessToken), "Content-Type": "application/json" },
       body: JSON.stringify({ query: QUERY }),
     });
     if (data.errors?.length) throw new Error(`Linear issues failed: 400 ${data.errors[0].message}`);

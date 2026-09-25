@@ -20,6 +20,20 @@ export const gitlabProvider: IntegrationProvider = {
   capabilities: ["issues", "messages", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "GitLab personal access token",
+    placeholder: "glpat-...",
+    helpUrl: "https://gitlab.com/-/user_settings/personal_access_tokens?name=STACK&scopes=read_api",
+    steps: [
+      "Open the link below. GitLab pre-fills the name and the read_api permission.",
+      "Set an expiry date and click Create personal access token.",
+      "Copy the token (only shown once) and paste it here.",
+    ],
+    async validate(token) {
+      const me = await getJson("GitLab token check", "https://gitlab.com/api/v4/user", { headers: { Authorization: `Bearer ${token}` } });
+      return { account: me.username };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("GitLab");

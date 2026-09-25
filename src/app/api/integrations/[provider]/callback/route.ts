@@ -16,7 +16,7 @@ export async function GET(
   const relay = relayTarget(providerId, req.headers);
   if (relay) return NextResponse.redirect(`${relay}${req.nextUrl.pathname}${req.nextUrl.search}`);
 
-  const integrationsUrl = new URL("/integrations", req.nextUrl.origin);
+  let integrationsUrl = new URL("/integrations", req.nextUrl.origin);
 
   const provider = getProvider(providerId);
   if (!provider) {
@@ -42,7 +42,14 @@ export async function GET(
     return fail(`${provider.label} sign-in response was invalid. Try connecting again.`);
   }
 
-  const [expectedState, workspaceId, encodedFields] = cookieValue.split(":");
+  const [expectedState, workspaceId, encodedFields, encodedReturn] = cookieValue.split(":");
+  try {
+    const back = encodedReturn ? Buffer.from(encodedReturn, "base64url").toString() : "";
+    // Re-validated here: the cookie is ours, but a landing path must never be an outside address.
+    if (/^\/[a-z0-9\-_/]*$/i.test(back) && !back.startsWith("//")) integrationsUrl = new URL(back, req.nextUrl.origin);
+  } catch {
+    // Keep the default landing page.
+  }
   let fields: Record<string, string> = {};
   try {
     if (encodedFields) fields = JSON.parse(Buffer.from(encodedFields, "base64url").toString());

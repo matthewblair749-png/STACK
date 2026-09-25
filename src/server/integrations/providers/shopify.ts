@@ -33,6 +33,22 @@ export const shopifyProvider: IntegrationProvider = {
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
   connectFields: [{ name: "shop", label: "Store address", placeholder: "my-store.myshopify.com", help: "Your Shopify admin address." }],
+  tokenConnect: {
+    label: "Admin API access token",
+    placeholder: "shpat_...",
+    helpUrl: "https://admin.shopify.com/settings/apps/development",
+    steps: [
+      "In your Shopify admin open Settings > Apps and sales channels > Develop apps, and click Create an app named STACK.",
+      "Click Configure Admin API scopes and tick read_orders, read_customers and read_products only. Save.",
+      "Click Install app, then Reveal token once. Copy the token (starts with shpat_) and paste it below with your store address.",
+    ],
+    fields: [{ name: "shop", label: "Store address", placeholder: "my-store.myshopify.com", help: "Your .myshopify.com address." }],
+    async validate(token, fields) {
+      const shop = normalizeShop(fields.shop ?? "");
+      const data = await getJson("Shopify token check", `https://${shop}/admin/api/${API_VERSION}/shop.json`, { headers: { "X-Shopify-Access-Token": token } });
+      return { account: data.shop?.name ?? shop, metadata: { shop } };
+    },
+  },
 
   getAuthUrl(state, redirectUri, opts) {
     env.require("Shopify");

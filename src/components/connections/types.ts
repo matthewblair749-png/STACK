@@ -29,6 +29,8 @@ export interface CatalogApp {
     redirectUrl: string;
     canSave: boolean;
   };
+  /** Present when the app can be connected with a token the user creates themselves. */
+  tokenConnect?: { label: string; placeholder: string; helpUrl: string; steps: string[]; fields?: { name: string; label: string; placeholder: string; help?: string }[] };
   health: Health | null;
   lastSyncAt: string | null;
   lastSyncError: string | null;

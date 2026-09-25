@@ -24,6 +24,20 @@ export const stripeProvider: IntegrationProvider = {
   capabilities: ["messages", "search"],
   isConfigured,
   missingSetup: missing,
+  tokenConnect: {
+    label: "Stripe restricted API key",
+    placeholder: "rk_live_...",
+    helpUrl: "https://dashboard.stripe.com/apikeys",
+    steps: [
+      "Open the link below and click Create restricted key.",
+      "Name it STACK and set Charges to Read. Leave everything else set to None.",
+      "Click Create key, copy it (starts with rk_, shown once), and paste it here.",
+    ],
+    async validate(token) {
+      await getJson("Stripe key check", "https://api.stripe.com/v1/charges?limit=1", { headers: { Authorization: `Bearer ${token}` } });
+      return { account: token.startsWith("rk_test") || token.startsWith("sk_test") ? "Stripe (test mode)" : "Stripe" };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     if (!isConfigured()) throw new Error(`Stripe: ${missing().join("; ")}.`);

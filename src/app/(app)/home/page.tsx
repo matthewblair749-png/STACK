@@ -21,7 +21,7 @@ import type { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface ConnectedApp { id: string; name: string; logoPath?: string | null; connected: boolean; status?: string }
-interface SuggestedApp { slug: string; name: string; logoPath?: string | null; oauthProviderId: string | null; status: string; supported: boolean }
+interface SuggestedApp { slug: string; name: string; logoPath?: string | null; oauthProviderId: string | null; status: string; supported: boolean; configured?: boolean; tokenConnect?: unknown }
 interface Me { user: { name: string | null; profession: string | null } | null; profession: { slug: string; name: string } | null }
 
 /** Suggested commands adapt to what the person does. */
@@ -86,7 +86,7 @@ export default function HomePage() {
           const r = await fetch(`/api/apps?profession=${encodeURIComponent(body.profession.slug)}`);
           if (r.ok && !cancelled) {
             const list: SuggestedApp[] = (await r.json()).apps ?? [];
-            setSuggested(list.filter((x) => x.supported && x.status !== "connected").slice(0, 6));
+            setSuggested(list.filter((x) => x.supported && x.status !== "connected" && (x.configured || x.tokenConnect)).slice(0, 6));
           }
         }
       }
@@ -197,7 +197,7 @@ export default function HomePage() {
               <ul className="mt-3 flex flex-wrap gap-2">
                 {suggested.map((a) => (
                   <li key={a.slug}>
-                    <Link href="/integrations" className="flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm text-ink hover:border-ink">
+                    <Link href={`/integrations?connect=${a.slug}`} className="flex items-center gap-2 rounded-xl border border-neutral-200 px-3 py-2 text-sm text-ink hover:border-ink">
                       <IntegrationLogo app={a.oauthProviderId ?? a.slug} name={a.name} size="md" logoPath={a.logoPath} /> {a.name}
                     </Link>
                   </li>

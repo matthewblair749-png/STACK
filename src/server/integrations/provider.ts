@@ -66,6 +66,22 @@ export interface ConnectContext {
   fields: Record<string, string>;
 }
 
+/**
+ * A way to connect with an access token the person creates in the app themselves (no developer app of ours
+ * needed). Simpler for STACK to offer, a few more steps for the user, and the token never leaves their account
+ * settings unless they paste it here.
+ */
+export interface TokenConnect {
+  label: string;
+  placeholder: string;
+  helpUrl: string;
+  steps: string[];
+  /** Extra details needed alongside the token (a store address, a team). */
+  fields?: ConnectField[];
+  /** Checks the token really works and says whose account it is. Throws a readable Error if not. `metadata` is saved with the connection. */
+  validate(token: string, fields: Record<string, string>): Promise<{ account?: string; metadata?: Record<string, unknown> }>;
+}
+
 export interface IntegrationProvider {
   id: string;
   label: string;
@@ -76,6 +92,9 @@ export interface IntegrationProvider {
 
   /** Human-readable env vars (and any other setup) still missing, for UI messaging. */
   missingSetup(): string[];
+
+  /** Optional: connect with an access token the user creates themselves, instead of (or before) OAuth is set up. */
+  tokenConnect?: TokenConnect;
 
   /** Details the user must give before sign-in can start (e.g. a Shopify store address). */
   connectFields?: ConnectField[];

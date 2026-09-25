@@ -28,14 +28,15 @@ export function StatusChip({ app, syncing }: { app: CatalogApp; syncing: boolean
 }
 
 /** What the tile's button does, honestly, for every state an app can really be in. */
-export function primaryAction(app: CatalogApp): { label: string; kind: "connect" | "setup" | "reconnect" | "manage" | "none"; reason?: string } {
+export function primaryAction(app: CatalogApp): { label: string; kind: "connect" | "token" | "setup" | "reconnect" | "manage" | "none"; reason?: string } {
   if (app.connected) return app.health === "expired" ? { label: "Reconnect", kind: "reconnect" } : { label: "Manage", kind: "manage" };
   if (!app.supported) {
     if (app.authType === "DesktopApp") return { label: "Desktop app", kind: "none", reason: "Local software - there's no cloud account for STACK to authorize." };
     if (app.authType === "Unavailable") return { label: "Unavailable", kind: "none", reason: "This product has no public API for STACK to connect to." };
     return { label: "Coming soon", kind: "none", reason: "STACK doesn't have a connector for this app yet." };
   }
-  if (!app.configured) return { label: "Set up", kind: "setup" };
+  if (!app.configured && app.tokenConnect) return { label: "Connect", kind: "token" };
+  if (!app.configured) return app.setup ? { label: "Set up", kind: "setup" } : { label: "Not available yet", kind: "none", reason: "This connection isn't available yet - we're still setting it up." };
   return { label: "Connect", kind: "connect" };
 }
 
@@ -61,7 +62,7 @@ export function AppTile({ app, syncing, reason, onOpen, onAction }: { app: Catal
           title={action.reason}
           className={cn(
             "shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-default",
-            action.kind === "connect" || action.kind === "setup" || action.kind === "reconnect" ? "bg-ink text-white hover:bg-neutral-800" : "border border-neutral-200 text-ink hover:border-ink",
+            action.kind === "connect" || action.kind === "token" || action.kind === "setup" || action.kind === "reconnect" ? "bg-ink text-white hover:bg-neutral-800" : "border border-neutral-200 text-ink hover:border-ink",
             action.kind === "none" && "border-transparent bg-neutral-50 text-neutral-400 hover:border-transparent",
           )}
         >
