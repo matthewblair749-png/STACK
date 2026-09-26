@@ -178,6 +178,18 @@ export const APP_META: Record<string, AppMeta> = {
   },
 };
 
+const TOKEN_WONT = ["Create, edit or delete anything in this app", "Act on your behalf without your approval"];
+Object.assign(APP_META, {
+  clickup: { understands: ["Open tasks assigned to you, with due dates"], read: ["Read your tasks and their lists"], act: [], wont: TOKEN_WONT, synonyms: ["tasks", "project management", "todo", "sprints", "tracker"], unlocks: ["See what's due", "Spot overdue tasks"] },
+  monday: { understands: ["Recently updated items on your boards"], read: ["Read your boards and items"], act: [], wont: TOKEN_WONT, synonyms: ["boards", "project management", "tasks", "work management", "tracker", "monday.com"], unlocks: ["See what changed on your boards", "Keep projects in view"] },
+  calendly: { understands: ["Meetings people have booked with you"], read: ["Read your scheduled meetings"], act: [], wont: TOKEN_WONT, synonyms: ["scheduling", "meetings", "bookings", "appointments", "calendar"], unlocks: ["Prepare for booked meetings", "See bookings on your calendar"] },
+  zendesk: { understands: ["Open support tickets assigned to you"], read: ["Read tickets assigned to you"], act: [], wont: TOKEN_WONT, synonyms: ["support", "tickets", "helpdesk", "customer service", "customers"], unlocks: ["Spot urgent tickets", "Know which customers are waiting"] },
+  canvas: { understands: ["Assignments on your to-do list"], read: ["Read your to-do list and courses"], act: [], wont: TOKEN_WONT, synonyms: ["school", "lms", "courses", "assignments", "education", "students", "teaching"], unlocks: ["See what's due", "Spot overdue assignments"] },
+  intercom: { understands: ["Your recent customer conversations"], read: ["Read conversations (read-only token)"], act: [], wont: TOKEN_WONT, synonyms: ["support", "customer chat", "messaging", "customers", "inbox"], unlocks: ["Surface unread customer conversations", "Know who needs a reply"] },
+  vercel: { understands: ["Your recent deployments, including failures"], read: ["Read deployments and projects"], act: [], wont: TOKEN_WONT, synonyms: ["hosting", "deployments", "deploy", "developer", "frontend", "web"], unlocks: ["Catch failed deployments", "Link deploys to your work"] },
+  netlify: { understands: ["The latest deploy of each of your sites"], read: ["Read your sites and deploys"], act: [], wont: TOKEN_WONT, synonyms: ["hosting", "deployments", "deploy", "developer", "web", "static sites"], unlocks: ["Catch failed deploys", "Link deploys to your work"] },
+});
+
 const DEFAULT_META: AppMeta = {
   understands: ["Information you authorize"],
   read: ["Read the data you authorize"],

@@ -43,6 +43,15 @@ const PROVIDER_MAP = {
   quickbooks: "quickbooks",
   shopify: "shopify",
   stripe: "stripe",
+  // Connect with a token the person creates in the app (no developer app of ours needed).
+  clickup: "clickup",
+  "monday-com": "monday",
+  calendly: "calendly",
+  zendesk: "zendesk",
+  canvas: "canvas",
+  intercom: "intercom",
+  vercel: "vercel",
+  netlify: "netlify",
 };
 
 // name -> [category, description]. Used for every app referenced below,
