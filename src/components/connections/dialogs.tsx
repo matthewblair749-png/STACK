@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { Check, X } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
+import { Check, ExternalLink, X } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { providerLabel } from "@/lib/providers-meta";
+import { cn } from "@/lib/utils";
 import type { CatalogApp } from "./types";
 
 export function Modal({ label, children, onClose }: { label: string; children: ReactNode; onClose: () => void }) {
@@ -158,71 +159,127 @@ export function SetupDialog({ app, busy, error, onCancel, onSave }: { app: Catal
   );
 }
 
-/** Connect with an access token the user creates in the app - no developer app of ours needed. */
+/**
+ * Step-by-step walkthrough for connecting with an access token the user creates in the app - no developer app of
+ * ours needed. One instruction per screen, a button that opens the right page, and the paste box last.
+ */
 export function TokenDialog({ app, busy, error, onCancel, onSubmit }: { app: CatalogApp; busy: boolean; error: string | null; onCancel: () => void; onSubmit: (token: string, fields: Record<string, string>) => void }) {
   const t = app.tokenConnect!;
+  const [step, setStep] = useState(0);
   const [token, setToken] = useState("");
   const [extra, setExtra] = useState<Record<string, string>>({});
+  const total = t.steps.length + 1; // the instructions, then the paste screen
+  const onPasteScreen = step === total - 1;
+  const opened = useRef(false);
+
+  const submit = () => onSubmit(token.trim(), extra);
+
   return (
     <Modal label={`Connect ${app.name}`} onClose={onCancel}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit(token.trim(), extra);
-        }}
-      >
-        <p className="text-base font-semibold text-ink">Connect {app.name}</p>
-        <p className="mt-1 text-sm text-neutral-500">Create a token in {app.name} and paste it here. STACK only reads what it lets you access, and you can revoke the token in {app.name} at any time.</p>
-        <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-neutral-700">
-          {t.steps.map((s) => <li key={s}>{s}</li>)}
-        </ol>
-        <a href={t.helpUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-medium text-blue underline">Open {app.name} to create the token</a>
-        {(t.fields ?? []).map((f) => (
-          <label key={f.name} className="mt-4 block text-sm">
-            <span className="font-medium text-ink">{f.label}</span>
-            <input required value={extra[f.name] ?? ""} onChange={(e) => setExtra((x) => ({ ...x, [f.name]: e.target.value }))} placeholder={f.placeholder} className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-ink" />
-            {f.help && <span className="mt-1 block text-xs text-neutral-500">{f.help}</span>}
-          </label>
-        ))}
-        <label className="mt-4 block text-sm">
-          <span className="font-medium text-ink">{t.label}</span>
-          <div className="mt-1 flex gap-2">
-            <input
-              required
-              autoFocus
-              type="password"
-              autoComplete="off"
-              spellCheck={false}
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              onPaste={(e) => {
-                // Nothing else to fill in? Pasting the token is the last step, so connect right away.
-                const pasted = e.clipboardData.getData("text").trim();
-                if (!t.fields?.length && pasted.length >= 20 && !/\s/.test(pasted) && !busy) {
-                  e.preventDefault();
-                  setToken(pasted);
-                  onSubmit(pasted, {});
-                }
-              }}
-              placeholder={t.placeholder}
-              className="min-w-0 flex-1 rounded-lg border border-neutral-200 px-3 py-2 font-mono text-sm outline-none focus:border-ink"
-            />
-            <button
-              type="button"
-              className="shrink-0 rounded-lg border border-neutral-200 px-3 py-2 text-xs font-semibold text-ink hover:border-ink"
-              onClick={() => navigator.clipboard?.readText().then((v) => setToken(v.trim())).catch(() => {})}
-            >
-              Paste
-            </button>
-          </div>
-        </label>
-        {error && <p className="mt-3 text-sm text-red">{error}</p>}
-        <p className="mt-3 text-xs text-neutral-500">Stored encrypted and never shown again. Disconnecting deletes it.</p>
-        <div className="mt-5 flex justify-end gap-2">
-          <button type="button" className={ghost} onClick={onCancel}>Cancel</button>
-          <button type="submit" disabled={busy || token.length < 20} className={primary}>{busy ? "Checking..." : "Connect"}</button>
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-50">
+          <IntegrationLogo app={app.oauthProviderId ?? app.slug} name={app.name} size="md" logoPath={app.logoPath} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold text-ink">Connect {app.name}</p>
+          <p className="text-xs text-neutral-500">Step {step + 1} of {total} - about a minute</p>
         </div>
-      </form>
+      </div>
+
+      <div className="mt-3 flex gap-1.5" aria-hidden>
+        {Array.from({ length: total }).map((_, i) => (
+          <span key={i} className={cn("h-1 flex-1 rounded-full", i <= step ? "bg-ink" : "bg-neutral-100")} />
+        ))}
+      </div>
+
+      {!onPasteScreen ? (
+        <div className="mt-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Step {step + 1}</p>
+          <p className="mt-1.5 text-lg font-medium leading-snug text-ink">{t.steps[step]}</p>
+          {step === 0 && (
+            <a
+              href={t.helpUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => {
+                opened.current = true;
+              }}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              Open {app.name} <ExternalLink size={14} />
+            </a>
+          )}
+          <p className="mt-5 text-xs text-neutral-500">STACK only reads what the token allows. You can delete the token in {app.name} at any time.</p>
+        </div>
+      ) : (
+        <form
+          className="mt-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+        >
+          <p className="text-lg font-medium leading-snug text-ink">Paste your token{t.fields?.length ? " and the details below" : ""}.</p>
+          {(t.fields ?? []).map((f, i) => (
+            <label key={f.name} className="mt-4 block text-sm">
+              <span className="font-medium text-ink">{f.label}</span>
+              <input required autoFocus={i === 0} value={extra[f.name] ?? ""} onChange={(e) => setExtra((x) => ({ ...x, [f.name]: e.target.value }))} placeholder={f.placeholder} className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-ink" />
+              {f.help && <span className="mt-1 block text-xs text-neutral-500">{f.help}</span>}
+            </label>
+          ))}
+          <label className="mt-4 block text-sm">
+            <span className="font-medium text-ink">{t.label}</span>
+            <div className="mt-1 flex gap-2">
+              <input
+                required
+                autoFocus={!t.fields?.length}
+                type="password"
+                autoComplete="off"
+                spellCheck={false}
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                onPaste={(e) => {
+                  // Nothing else to fill in? Pasting the token is the last step, so connect right away.
+                  const pasted = e.clipboardData.getData("text").trim();
+                  if (!t.fields?.length && pasted.length >= 20 && !/\s/.test(pasted) && !busy) {
+                    e.preventDefault();
+                    setToken(pasted);
+                    onSubmit(pasted, {});
+                  }
+                }}
+                placeholder={t.placeholder}
+                className="min-w-0 flex-1 rounded-lg border border-neutral-200 px-3 py-2 font-mono text-sm outline-none focus:border-ink"
+              />
+              <button type="button" className="shrink-0 rounded-lg border border-neutral-200 px-3 py-2 text-xs font-semibold text-ink hover:border-ink" onClick={() => navigator.clipboard?.readText().then((v) => setToken(v.trim())).catch(() => {})}>
+                Paste
+              </button>
+            </div>
+          </label>
+          {error && <p className="mt-3 text-sm text-red">{error}</p>}
+          <p className="mt-3 text-xs text-neutral-500">Stored encrypted and never shown again. Disconnecting deletes it.</p>
+          <button type="submit" hidden />
+        </form>
+      )}
+
+      <div className="mt-6 flex items-center justify-between gap-2">
+        {step > 0 ? (
+          <button type="button" className={ghost} onClick={() => setStep((s) => s - 1)}>Back</button>
+        ) : (
+          <button type="button" className={ghost} onClick={onCancel}>Cancel</button>
+        )}
+        <div className="flex items-center gap-2">
+          {!onPasteScreen && (
+            <button type="button" className="text-xs font-medium text-neutral-500 hover:text-ink" onClick={() => setStep(total - 1)}>
+              I already have my token
+            </button>
+          )}
+          {onPasteScreen ? (
+            <button type="button" disabled={busy || token.length < 20} className={primary} onClick={submit}>{busy ? "Checking..." : "Connect"}</button>
+          ) : (
+            <button type="button" className={primary} onClick={() => setStep((s) => s + 1)}>{step === total - 2 ? "I have my token" : "Next"}</button>
+          )}
+        </div>
+      </div>
     </Modal>
   );
 }
