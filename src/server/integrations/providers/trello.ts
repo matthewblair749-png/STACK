@@ -13,6 +13,23 @@ export const trelloProvider: IntegrationProvider = {
   id: "trello",
   label: "Trello",
   capabilities: ["issues", "messages", "search"],
+  tokenConnect: {
+    label: "Trello token",
+    placeholder: "Your Trello token",
+    helpUrl: "https://trello.com/app-key",
+    steps: [
+      "Open the link below. Your API key is shown at the top of the page - copy it.",
+      "On the same page click the Token link, click Allow, and copy the token it shows.",
+      "Paste the API key and the token below.",
+    ],
+    fields: [{ name: "apiKey", label: "Trello API key", placeholder: "32-character key from trello.com/app-key" }],
+    async validate(token, fields) {
+      const key = (fields.apiKey ?? "").trim();
+      if (!/^[a-f0-9]{32}$/i.test(key)) throw new Error("The API key is 32 letters and numbers, shown at the top of trello.com/app-key.");
+      const me = await getJson("Trello token check", `https://api.trello.com/1/members/me?fields=username&key=${key}&token=${encodeURIComponent(token)}`, {});
+      return { account: me.username, metadata: { apiKey: key } };
+    },
+  },
   isConfigured: () => !!apiKey(),
   missingSetup: () => (apiKey() ? [] : ["set TRELLO_API_KEY (from trello.com/power-ups/admin)"]),
 
@@ -36,9 +53,11 @@ export const trelloProvider: IntegrationProvider = {
   },
 
   async getMessages(tokens): Promise<MailMessage[]> {
+    // A connection made with the person's own key carries that key; the app-wide key is only for the OAuth-style flow.
+    const key = typeof tokens.metadata?.apiKey === "string" ? tokens.metadata.apiKey : apiKey();
     const data = await getJson(
       "Trello cards",
-      `https://api.trello.com/1/members/me/cards?filter=open&fields=name,due,dueComplete,dateLastActivity,url,idBoard&key=${apiKey()}&token=${encodeURIComponent(tokens.accessToken)}`,
+      `https://api.trello.com/1/members/me/cards?filter=open&fields=name,due,dueComplete,dateLastActivity,url,idBoard&key=${key}&token=${encodeURIComponent(tokens.accessToken)}`,
       {},
     );
     const now = Date.now();
