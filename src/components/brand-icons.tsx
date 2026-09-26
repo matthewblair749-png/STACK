@@ -221,7 +221,7 @@ export function IntegrationLogo({
   const label = `${name ?? app} logo`;
   const real = hasRealBrandIcon(app);
   return (
-    <span role="img" aria-label={label} className={className} style={{ display: "inline-flex", width: px, height: px }}>
+    <span role="img" aria-label={label} data-logo className={className} style={{ display: "inline-flex", width: px, height: px }}>
       {logoPath ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

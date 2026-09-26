@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { HomeView, type ConnectedApp } from "@/components/app/home-view";
+import { ThemePicker, ThemeToggle } from "@/components/app/theme-toggle";
 import { ToastProvider } from "@/components/app/toast";
 import { DemoProvider } from "@/lib/demo-context";
 import type { DailyBrief, ProjectCard, WorkState } from "@/lib/work-types";
@@ -85,6 +86,10 @@ export function HomePreview({ mode }: { mode: "full" | "empty" }) {
     <ToastProvider>
       <DemoProvider>
         <div className="min-h-screen bg-neutral-25">
+          <div className="flex items-center justify-end gap-3 border-b border-neutral-100 bg-white px-6 py-2">
+            <ThemeToggle />
+            <ThemePicker />
+          </div>
           <HomeView
             state={mode === "empty" ? null : state}
             brief={mode === "empty" ? { greeting: "Good morning, Matt.", counts: { priorities: 0, meetingsToPrepare: 0, projectsAtRisk: 0, peopleWaiting: 0, dueThisWeek: 0 }, plan: null, hasAnything: false } : brief}

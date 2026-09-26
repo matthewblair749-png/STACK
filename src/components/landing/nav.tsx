@@ -17,6 +17,14 @@ const links = [
 ];
 
 export function LandingNav() {
+  // Marketing pages keep the light brand design; the surface flag tells the theme to stay light while this nav is on screen.
+  useEffect(() => {
+    document.documentElement.dataset.surface = "marketing";
+    return () => {
+      delete document.documentElement.dataset.surface;
+    };
+  }, []);
+
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 

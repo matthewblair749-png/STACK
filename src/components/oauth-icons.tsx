@@ -1,7 +1,7 @@
 import { SiApple } from "react-icons/si";
 
 export function AppleIcon({ size = 18 }: { size?: number }) {
-  return <SiApple size={size} color="#000000" />;
+  return <SiApple size={size} color="currentColor" />;
 }
 
 export function GoogleIcon({ size = 18 }: { size?: number }) {

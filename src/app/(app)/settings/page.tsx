@@ -7,10 +7,11 @@ import { CreditCard } from "lucide-react";
 import { Card, SectionLabel } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MemoryPanel } from "@/components/app/memory-panel";
+import { ThemePicker } from "@/components/app/theme-toggle";
 import { useDemo } from "@/lib/demo-context";
 import { cn } from "@/lib/utils";
 
-const tabs = ["Profile", "Workspace", "Memory", "Notifications", "Security", "Billing"] as const;
+const tabs = ["Profile", "Workspace", "Appearance", "Memory", "Notifications", "Security", "Billing"] as const;
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Profile");
@@ -157,6 +158,14 @@ export default function SettingsPage() {
                 {workspaceStatus === "error" && <span className="text-xs text-red">Couldn&apos;t save. Try again.</span>}
               </div>
             </div>
+          </Card>
+        )}
+
+        {tab === "Appearance" && (
+          <Card>
+            <SectionLabel>Appearance</SectionLabel>
+            <p className="mt-3 text-sm text-neutral-500">Choose how STACK looks. &quot;System&quot; follows your device and switches automatically at night.</p>
+            <div className="mt-4"><ThemePicker /></div>
           </Card>
         )}
 

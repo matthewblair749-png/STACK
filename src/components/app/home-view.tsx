@@ -195,19 +195,19 @@ export function HomeView(p: HomeViewProps) {
 
       {/* Hero: the one thing to do next */}
       {!p.noApps && (
-        <motion.section {...motionProps(2)} aria-label="Your next move" className="relative mt-6 overflow-hidden rounded-3xl bg-ink p-6 text-white shadow-[0_24px_60px_-28px_rgba(0,0,0,0.6)] sm:p-8">
+        <motion.section {...motionProps(2)} aria-label="Your next move" className="relative mt-6 overflow-hidden rounded-3xl bg-[#08080c] p-6 text-[#ffffff] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.6)] ring-1 ring-[rgba(255,255,255,0.06)] sm:p-8">
           <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(47,94,255,0.55),transparent)]" />
           <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(255,196,46,0.18),transparent)]" />
           <div className="relative">
-            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60"><Zap size={13} /> Your next move</p>
+            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.6)]"><Zap size={13} /> Your next move</p>
             {loading ? (
-              <div className="mt-4 space-y-3"><Skeleton className="h-8 w-3/4 bg-white/10" /><Skeleton className="h-4 w-1/2 bg-white/10" /></div>
+              <div className="mt-4 space-y-3"><Skeleton className="h-8 w-3/4 bg-[rgba(255,255,255,0.1)]" /><Skeleton className="h-4 w-1/2 bg-[rgba(255,255,255,0.1)]" /></div>
             ) : hero ? (
               <>
                 <p className="mt-3 max-w-2xl text-2xl font-semibold leading-snug tracking-tight sm:text-[28px]">{hero.title}</p>
-                {hero.why && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/70">{hero.why}</p>}
+                {hero.why && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[rgba(255,255,255,0.7)]">{hero.why}</p>}
                 {hero.action && (
-                  <button onClick={() => p.onRun(hero.action!)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-ink transition-transform hover:-translate-y-0.5">
+                  <button onClick={() => p.onRun(hero.action!)} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#ffffff] px-4 py-2.5 text-sm font-semibold text-[#000000] transition-transform hover:-translate-y-0.5">
                     {hero.action.label} <ArrowRight size={15} />
                   </button>
                 )}
@@ -215,7 +215,7 @@ export function HomeView(p: HomeViewProps) {
             ) : (
               <>
                 <p className="mt-3 flex items-center gap-2.5 text-2xl font-semibold tracking-tight sm:text-[28px]"><CheckCircle2 className="text-green" size={26} /> You&apos;re all clear.</p>
-                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-white/70">Nothing is competing for your attention right now. When something matters, it shows up here first with the reason.</p>
+                <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[rgba(255,255,255,0.7)]">Nothing is competing for your attention right now. When something matters, it shows up here first with the reason.</p>
               </>
             )}
           </div>

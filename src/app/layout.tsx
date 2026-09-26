@@ -14,13 +14,19 @@ export const metadata: Metadata = {
     "STACK brings your tasks, projects, messages, meetings, files, calendars, and work apps together in one intelligent workspace.",
 };
 
+const THEME_INIT = `try{var p=localStorage.getItem("stack-theme");var d=p==="dark"||(p!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}catch(e){}var s=location.pathname;if(s==="/"||s.indexOf("/pricing")===0||s.indexOf("/privacy")===0||s.indexOf("/terms")===0)document.documentElement.dataset.surface="marketing";`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Applies the saved (or system) theme before the first paint so there is never a flash of the wrong one. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-paper text-ink">
         <SessionProvider>{children}</SessionProvider>
       </body>

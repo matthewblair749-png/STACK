@@ -9,6 +9,7 @@ import { Search, Bell, Menu, X, Sparkles, ArrowRight } from "lucide-react";
 import { useDemo } from "@/lib/demo-context";
 import { Sidebar } from "./sidebar";
 import { useWorkState } from "./work-state-provider";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Topbar({ title }: { title: string }) {
   const { setCommandOpen } = useDemo();
@@ -46,6 +47,7 @@ export function Topbar({ title }: { title: string }) {
         </button>
 
         <div className="flex items-center justify-end gap-1.5">
+          <ThemeToggle />
           <div className="relative">
             <button
               onClick={() => setNotifOpen((v) => !v)}

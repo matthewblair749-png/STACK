@@ -26,6 +26,62 @@
   --color-neutral-900: #222222;
 }
 
+/*
+ * Dark mode. The whole app is coloured through these variables, so redefining them here flips every
+ * bg-white / text-ink / border-neutral-* at once. "white" and "ink" swap roles on purpose: a light
+ * button with dark text (bg-ink text-white) becomes a dark-on-light button in dark mode, still readable.
+ * The attribute is set before first paint by a tiny script in the root layout (see layout.tsx).
+ * Marketing pages (data-surface="marketing") stay light: they are a fixed, hand-tuned brand design.
+ */
+:root[data-theme="dark"]:not([data-surface="marketing"]) {
+  color-scheme: dark;
+  --background: #0b0b0d;
+  --foreground: #f4f4f6;
+
+  --color-ink: #f4f4f6;
+  --color-paper: #0b0b0d;
+  --color-white: #141417;
+  --color-black: #000000;
+
+  --color-blue: #7b9bff;
+  --color-blue-soft: #1a2147;
+  --color-yellow: #ffc42e;
+  --color-yellow-soft: #2b2410;
+  --color-yellow-700: #f5c451;
+  --color-red: #ff6f61;
+  --color-red-soft: #351a1c;
+  --color-green: #3ccc74;
+  --color-green-soft: #12291b;
+
+  --color-neutral-25: #0e0e11;
+  --color-neutral-50: #18181c;
+  --color-neutral-100: #222227;
+  --color-neutral-200: #2e2e34;
+  --color-neutral-300: #40404a;
+  --color-neutral-400: #80808b;
+  --color-neutral-500: #9c9ca7;
+  --color-neutral-600: #b5b5bf;
+  --color-neutral-700: #cfcfd6;
+  --color-neutral-800: #e2e2e7;
+  --color-neutral-900: #f0f0f3;
+}
+
+/* Real brand logos are drawn for light backgrounds (GitHub is black). Give them a soft light chip in dark mode instead of recolouring them. */
+:root[data-theme="dark"]:not([data-surface="marketing"]) [data-logo] {
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+:root[data-theme="dark"]:not([data-surface="marketing"]) .glass-nav {
+  background: rgba(11, 11, 13, 0.72);
+}
+
+/* Smooth theme change, but never for people who asked for less motion. */
+html.theme-fade, html.theme-fade * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
