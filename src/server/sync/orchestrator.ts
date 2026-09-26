@@ -58,7 +58,7 @@ async function saveBatch<Row extends { externalId: string }, Existing extends { 
 
 async function syncOneProvider(workspaceId: string, userId: string, providerId: string): Promise<ProviderSyncResult> {
   const provider = getProvider(providerId);
-  if (!provider || !provider.isConfigured()) return { provider: providerId, error: "not configured" };
+  if (!provider) return { provider: providerId, error: "unknown app" };
 
   let tokens: ConnectedTokens;
   try {
@@ -66,6 +66,11 @@ async function syncOneProvider(workspaceId: string, userId: string, providerId: 
   } catch (err) {
     return { provider: providerId, error: msg(err) };
   }
+
+  // STACK's own developer app is only needed for the sign-in (OAuth) flow. A connection made with the
+  // person's own token never touches it, so it must not be blocked when that app isn't set up.
+  const viaToken = tokens.metadata?.method === "token";
+  if (!viaToken && !provider.isConfigured()) return { provider: providerId, error: "not configured" };
 
   const base = { workspaceId, userId, provider: providerId };
   const inKey = (ids: string[]) => ({ workspaceId, provider: providerId, externalId: { in: ids } });
