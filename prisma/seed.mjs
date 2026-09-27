@@ -52,6 +52,12 @@ const PROVIDER_MAP = {
   intercom: "intercom",
   vercel: "vercel",
   netlify: "netlify",
+  mailchimp: "mailchimp",
+  greenhouse: "greenhouse",
+  lever: "lever",
+  gorgias: "gorgias",
+  shipstation: "shipstation",
+  bamboohr: "bamboohr",
 };
 
 // name -> [category, description]. Used for every app referenced below,
