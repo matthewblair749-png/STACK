@@ -1,4 +1,4 @@
-import type { IntegrationProvider } from "./provider";
+﻿import type { IntegrationProvider } from "./provider";
 import { googleProvider } from "./providers/google";
 import { microsoftProvider } from "./providers/microsoft";
 import { slackProvider } from "./providers/slack";
@@ -32,6 +32,10 @@ import { leverProvider } from "./providers/lever";
 import { gorgiasProvider } from "./providers/gorgias";
 import { shipstationProvider } from "./providers/shipstation";
 import { bamboohrProvider } from "./providers/bamboohr";
+import { shippoProvider } from "./providers/shippo";
+import { cin7Provider } from "./providers/cin7";
+import { benchlingProvider } from "./providers/benchling";
+import { servicenowProvider } from "./providers/servicenow";
 
 export const integrationRegistry: Record<string, IntegrationProvider> = {
   google: googleProvider,
@@ -67,6 +71,10 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   gorgias: gorgiasProvider,
   shipstation: shipstationProvider,
   bamboohr: bamboohrProvider,
+  shippo: shippoProvider,
+  cin7: cin7Provider,
+  benchling: benchlingProvider,
+  servicenow: servicenowProvider,
 };
 
 export function getProvider(id: string): IntegrationProvider | undefined {

@@ -1,6 +1,6 @@
-// One-off data seed for the App and Profession config tables. Run with:
+﻿// One-off data seed for the App and Profession config tables. Run with:
 //   node prisma/seed.mjs
-// Safe to re-run — every write is an upsert keyed by slug.
+// Safe to re-run â€” every write is an upsert keyed by slug.
 import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
@@ -15,7 +15,7 @@ function slugify(name) {
 
 // slug -> real IntegrationProvider id, for the apps STACK can actually run
 // OAuth for today. Everything else gets oauthProviderId: null ("Not yet
-// supported") — still listed for personalization, never a fake Connect button.
+// supported") â€” still listed for personalization, never a fake Connect button.
 const PROVIDER_MAP = {
   gmail: "google",
   "google-calendar": "google",
@@ -58,6 +58,11 @@ const PROVIDER_MAP = {
   gorgias: "gorgias",
   shipstation: "shipstation",
   bamboohr: "bamboohr",
+  shippo: "shippo",
+  cin7: "cin7",
+  benchling: "benchling",
+  servicenow: "servicenow",
+  "shopify-pos": "shopify",
 };
 
 // name -> [category, description]. Used for every app referenced below,
@@ -65,32 +70,32 @@ const PROVIDER_MAP = {
 const APP_META = {
   GitHub: ["Development", "Code, repositories, and development work."],
   GitLab: ["Development", "Source control, CI/CD, and issue tracking."],
-  "VS Code": ["Development", "Code editor — local, nothing to connect."],
+  "VS Code": ["Development", "Code editor â€” local, nothing to connect."],
   Jira: ["Development", "Issue tracking and agile project management."],
   Linear: ["Development", "Fast, focused issue tracking for software teams."],
   Slack: ["Communication", "Team messaging, channels, and DMs."],
   Vercel: ["Development", "Deployment and hosting for web projects."],
   Netlify: ["Development", "Deployment and hosting for web projects."],
   Figma: ["Design", "Collaborative interface design and prototyping."],
-  Xcode: ["Development", "Apple's IDE — local, nothing to connect."],
-  "Android Studio": ["Development", "Google's IDE — local, nothing to connect."],
+  Xcode: ["Development", "Apple's IDE â€” local, nothing to connect."],
+  "Android Studio": ["Development", "Google's IDE â€” local, nothing to connect."],
   Firebase: ["Development", "Backend, auth, and database for apps."],
   Jupyter: ["Data & AI", "Interactive notebooks for code and analysis."],
   OpenAI: ["Data & AI", "AI models and APIs."],
   "Hugging Face": ["Data & AI", "Open models, datasets, and ML tooling."],
   AWS: ["Data & AI", "Cloud infrastructure and services."],
-  Python: ["Data & AI", "Programming language — local, nothing to connect."],
+  Python: ["Data & AI", "Programming language â€” local, nothing to connect."],
   Databricks: ["Data & AI", "Unified data and AI analytics platform."],
   Snowflake: ["Data & AI", "Cloud data warehouse."],
   Tableau: ["Data & AI", "Data visualization and analytics."],
-  Excel: ["Productivity", "Spreadsheets — local, nothing to connect."],
-  SQL: ["Data & AI", "Query language — local, nothing to connect."],
+  Excel: ["Productivity", "Spreadsheets â€” local, nothing to connect."],
+  SQL: ["Data & AI", "Query language â€” local, nothing to connect."],
   "Power BI": ["Data & AI", "Business analytics and reporting."],
   Looker: ["Data & AI", "Business intelligence and data exploration."],
   Splunk: ["Security & IT", "Log analysis and monitoring."],
   CrowdStrike: ["Security & IT", "Endpoint security and threat detection."],
   "Microsoft Sentinel": ["Security & IT", "Cloud-native SIEM and security analytics."],
-  Wireshark: ["Security & IT", "Network protocol analyzer — local tool."],
+  Wireshark: ["Security & IT", "Network protocol analyzer â€” local tool."],
   ServiceNow: ["Security & IT", "IT service management."],
   "Microsoft Intune": ["Security & IT", "Device and endpoint management."],
   TeamViewer: ["Security & IT", "Remote access and support."],
@@ -98,7 +103,7 @@ const APP_META = {
   Kubernetes: ["Development", "Container orchestration."],
   Jenkins: ["Development", "CI/CD automation server."],
   "Adobe XD": ["Design", "Interface design and prototyping."],
-  Sketch: ["Design", "Interface design tool — local, nothing to connect."],
+  Sketch: ["Design", "Interface design tool â€” local, nothing to connect."],
   FigJam: ["Design", "Online whiteboarding, built on Figma."],
   TestRail: ["Development", "Test case management."],
   Selenium: ["Development", "Browser automation for testing."],
@@ -214,22 +219,22 @@ const APP_META = {
   CoStar: ["Real Estate", "Commercial real estate data and analytics."],
   Argus: ["Real Estate", "Real estate valuation and analysis."],
   Encompass2: ["Real Estate", "Mortgage loan origination software."],
-  Photoshop: ["Design", "Image editing — local, nothing to connect."],
-  Illustrator: ["Design", "Vector graphics — local, nothing to connect."],
-  "Premiere Pro": ["Design", "Video editing — local, nothing to connect."],
-  "DaVinci Resolve": ["Design", "Video editing — local, nothing to connect."],
-  "Final Cut Pro": ["Design", "Video editing — local, nothing to connect."],
-  Blender: ["Design", "3D creation suite — local, nothing to connect."],
-  Maya: ["Design", "3D animation software — local, nothing to connect."],
-  "Cinema 4D": ["Design", "3D motion design — local, nothing to connect."],
-  "After Effects": ["Design", "Motion graphics — local, nothing to connect."],
-  "FL Studio": ["Design", "Music production — local, nothing to connect."],
-  Ableton: ["Design", "Music production — local, nothing to connect."],
-  "Logic Pro": ["Design", "Music production — local, nothing to connect."],
-  Lightroom: ["Design", "Photo editing — local, nothing to connect."],
-  "Capture One": ["Design", "Photo editing — local, nothing to connect."],
-  Nuke: ["Design", "VFX compositing — local, nothing to connect."],
-  Houdini: ["Design", "VFX and procedural 3D — local, nothing to connect."],
+  Photoshop: ["Design", "Image editing â€” local, nothing to connect."],
+  Illustrator: ["Design", "Vector graphics â€” local, nothing to connect."],
+  "Premiere Pro": ["Design", "Video editing â€” local, nothing to connect."],
+  "DaVinci Resolve": ["Design", "Video editing â€” local, nothing to connect."],
+  "Final Cut Pro": ["Design", "Video editing â€” local, nothing to connect."],
+  Blender: ["Design", "3D creation suite â€” local, nothing to connect."],
+  Maya: ["Design", "3D animation software â€” local, nothing to connect."],
+  "Cinema 4D": ["Design", "3D motion design â€” local, nothing to connect."],
+  "After Effects": ["Design", "Motion graphics â€” local, nothing to connect."],
+  "FL Studio": ["Design", "Music production â€” local, nothing to connect."],
+  Ableton: ["Design", "Music production â€” local, nothing to connect."],
+  "Logic Pro": ["Design", "Music production â€” local, nothing to connect."],
+  Lightroom: ["Design", "Photo editing â€” local, nothing to connect."],
+  "Capture One": ["Design", "Photo editing â€” local, nothing to connect."],
+  Nuke: ["Design", "VFX compositing â€” local, nothing to connect."],
+  Houdini: ["Design", "VFX and procedural 3D â€” local, nothing to connect."],
   "Google Ads": ["Marketing", "Search and display advertising."],
   "Meta Ads": ["Marketing", "Facebook and Instagram advertising."],
   Semrush: ["Marketing", "SEO and competitive research."],
@@ -243,13 +248,13 @@ const APP_META = {
   WordPress: ["Marketing", "Website and content management."],
   Webflow: ["Marketing", "Visual website design and CMS."],
   Contentful: ["Marketing", "Headless content management."],
-  R: ["Data & AI", "Statistical computing — local, nothing to connect."],
+  R: ["Data & AI", "Statistical computing â€” local, nothing to connect."],
   SAS: ["Data & AI", "Statistical analysis software."],
   SPSS: ["Data & AI", "Statistical analysis software."],
-  QGIS: ["Engineering", "Open-source GIS software — local tool."],
+  QGIS: ["Engineering", "Open-source GIS software â€” local tool."],
   LabArchives: ["Science & Research", "Electronic lab notebook."],
   Galaxy: ["Science & Research", "Bioinformatics workflow platform."],
-  Bioconductor: ["Science & Research", "Bioinformatics tools — local/R packages."],
+  Bioconductor: ["Science & Research", "Bioinformatics tools â€” local/R packages."],
   LIMS: ["Science & Research", "Laboratory information management system."],
   LabWare: ["Science & Research", "Laboratory information management system."],
   Benchling: ["Science & Research", "R&D and lab data platform."],
@@ -406,7 +411,7 @@ const universalAppNames = [
 ];
 
 // Mirrors the keys in src/components/brand-icons.tsx's `brandIcons` map (plus
-// the special-cased google/microsoft/apple ids) — every slug here has a real,
+// the special-cased google/microsoft/apple ids) â€” every slug here has a real,
 // verified brand mark rendered somewhere in the UI. Kept as a plain list here
 // since this seed script runs standalone via node, outside the Next build.
 const REAL_LOGO_SLUGS = new Set([
@@ -429,7 +434,7 @@ const REAL_LOGO_SLUGS = new Set([
   "meta-ads", "rhino", "revit",
 ]);
 
-// Real, verified official domains — only set for slugs we're confident about.
+// Real, verified official domains â€” only set for slugs we're confident about.
 const OFFICIAL_WEBSITES = {
   github: "https://github.com", gitlab: "https://gitlab.com", jira: "https://www.atlassian.com/software/jira",
   linear: "https://linear.app", slack: "https://slack.com", vercel: "https://vercel.com",
@@ -481,7 +486,7 @@ const OFFICIAL_WEBSITES = {
 };
 
 // Mirrors the hex values in brand-icons.tsx for the slugs that have a real
-// logo — kept in sync manually since this script runs outside the TS build.
+// logo â€” kept in sync manually since this script runs outside the TS build.
 const BRAND_COLORS = {
   gmail: "#EA4335", outlook: "#0078D4", slack: "#4A154B", "microsoft-teams": "#6264A7",
   zoom: "#2D8CFF", notion: "#000000", github: "#181717", "google-drive": "#0F9D58",
@@ -515,7 +520,7 @@ const BRAND_COLORS = {
   rhino: "#801010", revit: "#8B44F4",
 };
 
-// Local/desktop software — no cloud account for STACK to authorize against.
+// Local/desktop software â€” no cloud account for STACK to authorize against.
 const DESKTOP_SLUGS = new Set([
   "vs-code", "xcode", "android-studio", "jupyter", "python", "excel", "sql", "photoshop",
   "illustrator", "premiere-pro", "after-effects", "adobe-xd", "final-cut-pro", "davinci-resolve",
@@ -527,7 +532,7 @@ const DESKTOP_SLUGS = new Set([
 ]);
 
 // Public-data or consumer-facing services with no self-serve OAuth/API STACK
-// could realistically get access to — never fabricate a connection for these.
+// could realistically get access to â€” never fabricate a connection for these.
 const UNAVAILABLE_SLUGS = new Set([
   "mls", "zillow", "realtor-com", "costar", "bloomberg-terminal", "bloomberg", "argus",
 ]);

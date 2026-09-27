@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Plain-language facts about each real connector, shown before authorization and on the app's detail
  * page. Everything here mirrors what the connector code actually requests and does - if a connector's
  * scopes or actions change, change this file with it. `act` is only what STACK can really do today.
@@ -193,7 +193,10 @@ Object.assign(APP_META, {
   gorgias: { understands: ["Open support tickets, unread first"], read: ["Read tickets and customers"], act: [], wont: TOKEN_WONT, synonyms: ["support", "helpdesk", "tickets", "customer service", "ecommerce", "shopify"], unlocks: ["Spot unread customer tickets", "Know who's waiting"] },
   shipstation: { understands: ["Orders waiting to ship"], read: ["Read orders and stores"], act: [], wont: TOKEN_WONT, synonyms: ["shipping", "orders", "fulfillment", "ecommerce", "logistics", "packages"], unlocks: ["Catch orders sitting unshipped", "Keep fulfillment moving"] },
   bamboohr: { understands: ["Time-off requests waiting for approval"], read: ["Read time-off requests (admins and managers)"], act: [], wont: TOKEN_WONT, synonyms: ["hr", "human resources", "time off", "pto", "leave", "employees", "people"], unlocks: ["Approve time off on time", "See who's out"] },
-  netlify: { understands: ["The latest deploy of each of your sites"], read: ["Read your sites and deploys"], act: [], wont: TOKEN_WONT, synonyms: ["hosting", "deployments", "deploy", "developer", "web", "static sites"], unlocks: ["Catch failed deploys", "Link deploys to your work"] },
+  shippo: { understands: ["Orders that haven't shipped yet"], read: ["Read orders"], act: [], wont: TOKEN_WONT, synonyms: ["shipping", "labels", "orders", "fulfillment", "logistics", "packages"], unlocks: ["Catch unshipped orders", "Keep fulfillment moving"] },
+  cin7: { understands: ["Open sales orders in Cin7 Core"], read: ["Read sales orders"], act: [], wont: TOKEN_WONT, synonyms: ["inventory", "orders", "stock", "warehouse", "wholesale", "dear systems"], unlocks: ["See orders still open", "Keep stock and sales aligned"] },
+  benchling: { understands: ["Recently edited lab notebook entries you can see"], read: ["Read notebook entries (your own permissions)"], act: [], wont: TOKEN_WONT, synonyms: ["lab", "notebook", "research", "science", "eln", "biotech", "experiments"], unlocks: ["See what changed in the lab", "Keep experiments in view"] },
+  servicenow: { understands: ["Active incidents, most recently updated first"], read: ["Read incidents (read-only user recommended)"], act: [], wont: TOKEN_WONT, synonyms: ["it", "itsm", "incidents", "tickets", "helpdesk", "service desk"], unlocks: ["Spot urgent incidents", "Know who is waiting on IT"] },  netlify: { understands: ["The latest deploy of each of your sites"], read: ["Read your sites and deploys"], act: [], wont: TOKEN_WONT, synonyms: ["hosting", "deployments", "deploy", "developer", "web", "static sites"], unlocks: ["Catch failed deploys", "Link deploys to your work"] },
 });
 
 const DEFAULT_META: AppMeta = {
