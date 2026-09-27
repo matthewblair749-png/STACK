@@ -1,4 +1,4 @@
-export interface SetupVar {
+﻿export interface SetupVar {
   name: string;
   label: string;
   secret?: boolean;
@@ -69,6 +69,12 @@ export const SETUP_GUIDES: Record<string, SetupGuide> = {
     consoleLabel: "Box Developer Console",
     steps: ["Create Platform App - Custom App - User Authentication (OAuth 2.0).", "Configuration: add the redirect URL below and enable read access to files.", "Copy the Client ID and Client Secret."],
     vars: idSecret("BOX"),
+  },
+  clio: {
+    consoleUrl: "https://app.clio.com/nc/#/settings/developer_applications",
+    consoleLabel: "Clio developer applications",
+    steps: ["Settings - Developer Applications - Add.", "Name it STACK. Redirect URI: the URL below. Permissions: read only (matters, calendar).", "Copy the Application key (client ID) and Application secret."],
+    vars: idSecret("CLIO", "Application key", "Application secret"),
   },
   gitlab: {
     consoleUrl: "https://gitlab.com/-/user_settings/applications",

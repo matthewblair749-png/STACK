@@ -120,6 +120,14 @@ export const APP_META: Record<string, AppMeta> = {
     synonyms: ["files", "storage", "cloud storage", "documents", "sync"],
     unlocks: ["Find files quickly", "Link files to your projects"],
   },
+  clio: {
+    understands: ["Your open matters and upcoming court dates and deadlines"],
+    read: ["Read matters, clients' names and your calendar"],
+    act: [],
+    wont: ["Edit matters, bill time or contact clients", "Act on your behalf without your approval"],
+    synonyms: ["legal", "law", "law firm", "matters", "cases", "attorney", "lawyer", "practice management"],
+    unlocks: ["Never miss a court date", "See which matters changed"],
+  },
   box: {
     understands: ["Your most recently changed files"],
     read: ["Read file names and details"],

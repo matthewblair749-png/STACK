@@ -32,6 +32,7 @@ import { leverProvider } from "./providers/lever";
 import { gorgiasProvider } from "./providers/gorgias";
 import { shipstationProvider } from "./providers/shipstation";
 import { bamboohrProvider } from "./providers/bamboohr";
+import { clioProvider } from "./providers/clio";
 import { shippoProvider } from "./providers/shippo";
 import { cin7Provider } from "./providers/cin7";
 import { benchlingProvider } from "./providers/benchling";
@@ -72,6 +73,7 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   shipstation: shipstationProvider,
   bamboohr: bamboohrProvider,
   shippo: shippoProvider,
+  clio: clioProvider,
   cin7: cin7Provider,
   benchling: benchlingProvider,
   servicenow: servicenowProvider,

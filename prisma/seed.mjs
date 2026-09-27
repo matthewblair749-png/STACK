@@ -59,6 +59,7 @@ const PROVIDER_MAP = {
   shipstation: "shipstation",
   bamboohr: "bamboohr",
   shippo: "shippo",
+  clio: "clio",
   cin7: "cin7",
   benchling: "benchling",
   servicenow: "servicenow",
