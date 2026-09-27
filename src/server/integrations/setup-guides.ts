@@ -76,6 +76,12 @@ export const SETUP_GUIDES: Record<string, SetupGuide> = {
     steps: ["Settings - Developer Applications - Add.", "Name it STACK. Redirect URI: the URL below. Permissions: read only (matters, calendar).", "Copy the Application key (client ID) and Application secret."],
     vars: idSecret("CLIO", "Application key", "Application secret"),
   },
+  freshbooks: {
+    consoleUrl: "https://my.freshbooks.com/#/developer",
+    consoleLabel: "FreshBooks Developer Portal",
+    steps: ["Create New App. Name it STACK.", "Redirect URI: the URL below. Scopes: user:profile:read and user:invoices:read only.", "Copy the Client ID and Client Secret."],
+    vars: idSecret("FRESHBOOKS"),
+  },
   gitlab: {
     consoleUrl: "https://gitlab.com/-/user_settings/applications",
     consoleLabel: "GitLab applications",

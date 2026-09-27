@@ -128,6 +128,14 @@ export const APP_META: Record<string, AppMeta> = {
     synonyms: ["legal", "law", "law firm", "matters", "cases", "attorney", "lawyer", "practice management"],
     unlocks: ["Never miss a court date", "See which matters changed"],
   },
+  freshbooks: {
+    understands: ["Invoices that are sent but not paid yet, overdue first"],
+    read: ["Read your invoices and clients' names"],
+    act: [],
+    wont: ["Send, edit or delete invoices", "Act on your behalf without your approval"],
+    synonyms: ["invoices", "accounting", "bookkeeping", "billing", "payments", "small business", "expenses", "freelance"],
+    unlocks: ["See who owes you money", "Catch overdue invoices"],
+  },
   box: {
     understands: ["Your most recently changed files"],
     read: ["Read file names and details"],
