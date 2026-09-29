@@ -93,7 +93,7 @@ export async function runLocalAsk(opts: {
     for (const t of overdue.slice(0, 3)) findings.push({ title: `Overdue: ${t.title}`, detail: `Was due ${day(t.dueDate!)}.`, source: cite("task", t.title, "/tasks") });
     for (const t of dueToday.slice(0, 3)) findings.push({ title: `Due today: ${t.title}`, detail: `${t.priority} priority.`, source: cite("task", t.title, "/tasks") });
     for (const e of events) findings.push({ title: `Meeting: ${e.title}`, detail: `Starts ${when(e.startAt)}.`, source: cite("meeting", e.title, e.permalink ?? "/calendar") });
-    for (const m of messages) findings.push({ title: `Unread: ${trim(m.subject, 70) || "(no subject)"}`, detail: `From ${m.fromName ?? "someone"}.`, source: cite("email", trim(m.subject, 70) || "Message", m.permalink ?? "/inbox") });
+    for (const m of messages) findings.push({ title: `Unread: ${trim(m.subject, 70) || "(no subject)"}`, detail: `From ${m.fromName ?? "someone"}.`, source: cite("message", trim(m.subject, 70) || "Message", m.permalink ?? "/inbox") });
     for (const p of projects) findings.push({ title: `${p.name} is ${p.status === "Behind" ? "behind" : "at risk"}`, detail: "Marked in Projects.", source: cite("project", p.name, `/projects/${p.id}`) });
     headline = findings.length
       ? `Here's what needs your attention (${findings.length} item${findings.length === 1 ? "" : "s"}).`
@@ -106,7 +106,7 @@ export async function runLocalAsk(opts: {
     if (!events.length && noApps) actions.push({ label: "Connect an app", href: "/integrations" });
   } else if (intent === "email") {
     const msgs = await db.syncedMessage.findMany({ where: { workspaceId, userId, isUnread: true }, orderBy: { receivedAt: "desc" }, take: 8, select: { subject: true, fromName: true, snippet: true, receivedAt: true, permalink: true, provider: true } });
-    for (const m of msgs) findings.push({ title: trim(m.subject, 80) || "(no subject)", detail: `${m.fromName ?? "Someone"} - ${day(m.receivedAt)}. ${trim(m.snippet, 90)}`, source: cite("email", trim(m.subject, 80) || "Message", m.permalink ?? "/inbox") });
+    for (const m of msgs) findings.push({ title: trim(m.subject, 80) || "(no subject)", detail: `${m.fromName ?? "Someone"} - ${day(m.receivedAt)}. ${trim(m.snippet, 90)}`, source: cite("message", trim(m.subject, 80) || "Message", m.permalink ?? "/inbox") });
     headline = msgs.length ? `You have ${msgs.length} unread item${msgs.length === 1 ? "" : "s"}${msgs.length === 8 ? " (showing the latest 8)" : ""}.` : noApps ? "No email or chat app is connected yet." : "No unread messages.";
     if (!msgs.length && noApps) actions.push({ label: "Connect an app", href: "/integrations" });
   } else if (intent === "tasks") {
@@ -135,7 +135,7 @@ export async function runLocalAsk(opts: {
         db.project.findMany({ where: { workspaceId, ...has("name") }, take: 3, select: { id: true, name: true } }),
       ]);
       for (const f of files) findings.push({ title: f.name, detail: `File, modified ${day(f.modifiedAt)}.`, source: cite("file", f.name, f.webUrl ?? "/files") });
-      for (const m of msgs) findings.push({ title: trim(m.subject, 80) || "(no subject)", detail: `Message from ${m.fromName ?? "someone"}, ${day(m.receivedAt)}.`, source: cite("email", trim(m.subject, 80) || "Message", m.permalink ?? "/inbox") });
+      for (const m of msgs) findings.push({ title: trim(m.subject, 80) || "(no subject)", detail: `Message from ${m.fromName ?? "someone"}, ${day(m.receivedAt)}.`, source: cite("message", trim(m.subject, 80) || "Message", m.permalink ?? "/inbox") });
       for (const t of tasks) findings.push({ title: t.title, detail: `Task (${t.status}).`, source: cite("task", t.title, "/tasks") });
       for (const p of projects) findings.push({ title: p.name, detail: "Project.", source: cite("project", p.name, `/projects/${p.id}`) });
       headline = findings.length
