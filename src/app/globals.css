@@ -27,6 +27,31 @@
 }
 
 /*
+ * The signed-in app's light theme: a warm off-white canvas with a violet/indigo accent (replacing the
+ * default blue) and soft lavender highlights, in place of the stark-white + blue default above. Scoped
+ * the same way dark mode is - the marketing site keeps its own fixed palette regardless of this.
+ */
+:root[data-theme="light"]:not([data-surface="marketing"]) {
+  --background: #faf9f7;
+  --foreground: #17151d;
+
+  --color-ink: #17151d;
+  --color-paper: #ffffff;
+
+  --color-blue: #6c5ce0;
+  --color-blue-soft: #f1eefb;
+
+  --color-neutral-25: #faf9f8;
+  --color-neutral-50: #f7f6f3;
+  --color-neutral-100: #edece8;
+  --color-neutral-200: #e0ddd7;
+  --color-neutral-400: #a5a19a;
+  --color-neutral-500: #7a766e;
+  --color-neutral-700: #47433c;
+  --color-neutral-900: #201e19;
+}
+
+/*
  * Dark mode. The whole app is coloured through these variables, so redefining them here flips every
  * bg-white / text-ink / border-neutral-* at once. "white" and "ink" swap roles on purpose: a light
  * button with dark text (bg-ink text-white) becomes a dark-on-light button in dark mode, still readable.
