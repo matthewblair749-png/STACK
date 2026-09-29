@@ -31,3 +31,28 @@ export function isDataGroupId(id: string | null | undefined): id is DataGroupId 
 
 /** The groups that appear in the Updates tab (email, chat and tasks have their own tabs). */
 export const UPDATE_GROUPS = DATA_GROUPS.filter((g) => g.id !== "email" && g.id !== "chat" && g.id !== "work");
+
+// Calendar and Files aren't DATA_GROUPS (those pages show every connected provider generically,
+// unfiltered) - but a person connecting one of these still deserves to be told where to look.
+const CALENDAR_PROVIDERS = new Set(["google", "microsoft", "calendly", "clio"]);
+const FILE_PROVIDERS = new Set(["google", "microsoft", "notion", "dropbox", "box", "figma"]);
+
+export interface Destination {
+  label: string;
+  href: string;
+}
+
+/** Every tab a connected app's real data will actually show up in - used so the connect screen and
+ * the app's detail view can honestly say where to look, instead of a vague "unlocks" blurb. */
+export function destinationsFor(providerId: string): Destination[] {
+  const out: Destination[] = [];
+  if (GROUP_BY_ID.email.providers.includes(providerId)) out.push({ label: "Inbox", href: "/inbox" });
+  if (GROUP_BY_ID.chat.providers.includes(providerId)) out.push({ label: "Conversations", href: "/messages" });
+  if (GROUP_BY_ID.work.providers.includes(providerId)) out.push({ label: "My Work", href: "/tasks" });
+  for (const g of UPDATE_GROUPS) {
+    if (g.providers.includes(providerId)) out.push({ label: `Updates - ${g.label}`, href: `/updates?group=${g.id}` });
+  }
+  if (CALENDAR_PROVIDERS.has(providerId)) out.push({ label: "Calendar", href: "/calendar" });
+  if (FILE_PROVIDERS.has(providerId)) out.push({ label: "Files", href: "/files" });
+  return out;
+}

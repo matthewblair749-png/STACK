@@ -1,11 +1,31 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { Check, ExternalLink, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Check, ExternalLink, X } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { providerLabel } from "@/lib/providers-meta";
+import { destinationsFor } from "@/lib/data-groups";
 import { cn } from "@/lib/utils";
 import type { CatalogApp } from "./types";
+
+/** Real, clickable pointers to the tab(s) this app's data will actually land in. */
+function WhereYouSeeIt({ providerId }: { providerId: string | null }) {
+  const destinations = providerId ? destinationsFor(providerId) : [];
+  if (destinations.length === 0) return null;
+  return (
+    <div className="mt-4">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Where you&apos;ll see it</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {destinations.map((d) => (
+          <Link key={d.href} href={d.href} className="flex items-center gap-1 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-medium text-ink hover:border-ink">
+            {d.label} <ArrowRight size={11} />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function Modal({ label, children, onClose }: { label: string; children: ReactNode; onClose: () => void }) {
   return (
@@ -54,6 +74,8 @@ export function PermissionSheet({ app, onCancel, onContinue }: { app: CatalogApp
           </ul>
         </div>
       </div>
+
+      <WhereYouSeeIt providerId={app.oauthProviderId} />
 
       {meta && meta.act.length > 0 && (
         <div className="mt-4 rounded-xl bg-neutral-50 p-3">

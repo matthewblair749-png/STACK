@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { MessageList } from "@/components/app/message-list";
-import { GROUP_BY_ID, UPDATE_GROUPS, type DataGroupId } from "@/lib/data-groups";
+import { GROUP_BY_ID, UPDATE_GROUPS, isDataGroupId, type DataGroupId } from "@/lib/data-groups";
 import { providerLabel } from "@/lib/providers-meta";
 import { cn } from "@/lib/utils";
 
-export default function UpdatesPage() {
-  const [group, setGroup] = useState<DataGroupId>(UPDATE_GROUPS[0].id);
+function UpdatesTabs() {
+  const requested = useSearchParams().get("group");
+  const [group, setGroup] = useState<DataGroupId>(isDataGroupId(requested) ? requested : UPDATE_GROUPS[0].id);
   const active = GROUP_BY_ID[group];
 
   return (
@@ -37,5 +39,13 @@ export default function UpdatesPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function UpdatesPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-neutral-400">Loading...</div>}>
+      <UpdatesTabs />
+    </Suspense>
   );
 }

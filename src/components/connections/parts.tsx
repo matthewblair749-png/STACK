@@ -1,9 +1,11 @@
 "use client";
 
-import { AlertTriangle, Check, CheckCircle2, Circle, Loader2, RefreshCw, X } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, ArrowRight, Check, CheckCircle2, Circle, Loader2, RefreshCw, X } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { relativeTime } from "@/components/app/home-parts";
 import { providerLabel } from "@/lib/providers-meta";
+import { destinationsFor } from "@/lib/data-groups";
 import { cn } from "@/lib/utils";
 import { healthLabel, healthMessage, type CatalogApp, type QueueItem } from "./types";
 
@@ -134,6 +136,17 @@ export function AppDrawer({
               <ul className="mt-2 space-y-1.5">{meta.understands.map((u) => <li key={u} className="flex items-start gap-2 text-sm text-ink"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-blue" /> {u}</li>)}</ul>
             </Section>
             {app.account && <Section title="Connected account"><p className="mt-1 text-sm text-ink">{app.account}</p></Section>}
+            {app.oauthProviderId && destinationsFor(app.oauthProviderId).length > 0 && (
+              <Section title="Where you'll see it">
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {destinationsFor(app.oauthProviderId).map((d) => (
+                    <Link key={d.href} href={d.href} className="flex items-center gap-1 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-medium text-ink hover:border-ink">
+                      {d.label} <ArrowRight size={11} />
+                    </Link>
+                  ))}
+                </div>
+              </Section>
+            )}
             <Section title="Access (read)">
               <ul className="mt-2 space-y-1">{meta.read.map((r) => <li key={r} className="text-sm text-ink">{r}</li>)}</ul>
             </Section>
