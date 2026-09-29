@@ -23,16 +23,16 @@ const apps: ConnectedApp[] = [
 const state: WorkState = {
   generatedAt: minutes(0),
   hasSyncedContent: true,
-  connectedProviders: ["google", "slack", "github", "zoom"],
+  connectedProviders: ["google", "slack", "github", "linear"],
   lastSyncAt: minutes(-3),
   understand: {
     overview: "27 important conversations, 2 meetings today.",
     counts: { importantMessages: 27, upcomingMeetings: 2, projectsNeedingAttention: 1, openTasks: 4 },
     importantMessages: [
-      { id: "m1", from: "Priya Shah", subject: "Q3 contract - need your sign-off before Friday", receivedAt: minutes(-12), href: "#" },
-      { id: "m2", from: "GitHub", subject: "Review requested: Add token connect for Notion", receivedAt: minutes(-48), href: "#" },
-      { id: "m3", from: "Marcus Lee", subject: "Re: Launch checklist", receivedAt: minutes(-130), href: "#" },
-      { id: "m4", from: "Slack - #design", subject: "New mockups are up for review", receivedAt: minutes(-260), href: "#" },
+      { id: "m1", from: "Priya Shah", subject: "Q3 contract - need your sign-off before Friday", receivedAt: minutes(-12), href: "#", appId: "google" },
+      { id: "m2", from: "GitHub", subject: "Review requested: Add token connect for Notion", receivedAt: minutes(-48), href: "#", appId: "github" },
+      { id: "m3", from: "Marcus Lee", subject: "Re: Launch checklist", receivedAt: minutes(-130), href: "#", appId: "google" },
+      { id: "m4", from: "Slack - #design", subject: "New mockups are up for review", receivedAt: minutes(-260), href: "#", appId: "slack" },
     ],
     upcomingMeetings: [],
     projectChanges: [],

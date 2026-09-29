@@ -29,6 +29,11 @@ export function isDataGroupId(id: string | null | undefined): id is DataGroupId 
   return !!id && id in GROUP_BY_ID;
 }
 
+/** Which group a connected app's messages belong to - used so Home doesn't call everything a "conversation". */
+export function groupFor(providerId: string): DataGroup | undefined {
+  return DATA_GROUPS.find((g) => g.providers.includes(providerId));
+}
+
 /** The groups that appear in the Updates tab (email, chat and tasks have their own tabs). */
 export const UPDATE_GROUPS = DATA_GROUPS.filter((g) => g.id !== "email" && g.id !== "chat" && g.id !== "work");
 

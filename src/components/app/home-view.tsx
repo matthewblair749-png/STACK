@@ -8,6 +8,7 @@ import { AskStackBar } from "@/components/app/ask-stack-bar";
 import { ActionCard, type PendingActionData } from "@/components/app/action-card";
 import { ActionButton, isExternal, ProjectIntelCard, relativeTime, Skeleton, SourceLogos, whenLabel } from "@/components/app/home-parts";
 import { IntegrationLogo } from "@/components/brand-icons";
+import { groupFor } from "@/lib/data-groups";
 import type { DailyBrief, PriorityItem, ProjectCard, WorkAction, WorkState } from "@/lib/work-types";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +71,15 @@ function CardTitle({ icon, title, right }: { icon: ReactNode; title: string; rig
 }
 
 const initials = (name: string) => name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase()).join("") || "?";
-const kindLabel = (k: PriorityItem["kind"]) => (k === "event" ? "Meeting" : k === "message" ? "Conversation" : k === "waiting" ? "Waiting on you" : "Task");
+/** "Conversation" is only accurate for email/chat - an invoice, order or candidate update from a
+ * connected app gets that app's own category (Money, Orders, People & hiring...) instead. */
+function kindLabel(k: PriorityItem["kind"], appId?: string) {
+  if (k === "event") return "Meeting";
+  if (k === "waiting") return "Waiting on you";
+  if (k === "task") return "Task";
+  const group = appId ? groupFor(appId) : undefined;
+  return !group || group.id === "email" || group.id === "chat" ? "Conversation" : group.label;
+}
 
 function Empty({ icon, title, body }: { icon: ReactNode; title: string; body: string }) {
   return (
@@ -118,7 +127,7 @@ export function HomeView(p: HomeViewProps) {
 
   const priorityActions = (x: PriorityItem): WorkAction[] => {
     const list = [...x.actions];
-    if (x.kind === "message") list.push({ label: "Create task", command: `Create a task from this email: "${x.title}"` });
+    if (x.kind === "message") list.push({ label: "Create task", command: `Create a task from this: "${x.title}"` });
     return list.slice(0, 3);
   };
 
@@ -265,7 +274,8 @@ export function HomeView(p: HomeViewProps) {
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">{i + 1}</span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ring-1 ring-neutral-200">{kindLabel(x.kind)}</span>
+                            {x.appId && <IntegrationLogo app={x.appId} name={x.appId} size="sm" />}
+                            <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ring-1 ring-neutral-200">{kindLabel(x.kind, x.appId)}</span>
                             {x.due && <span className="text-xs text-neutral-400">{whenLabel(x.due)}</span>}
                           </div>
                           <p className="mt-1.5 text-[15px] font-semibold leading-snug text-ink">{x.title}</p>
@@ -285,18 +295,23 @@ export function HomeView(p: HomeViewProps) {
             </motion.section>
 
             <motion.section {...motionProps(6)} id="understand" aria-labelledby="convo-title" className={cn(card, "scroll-mt-6 p-5 sm:p-6")}>
-              <CardTitle icon={<MessageCircle size={15} />} title={convoCount > 0 ? `Important conversations (${convoCount})` : "Important conversations"} right={<Link href="/inbox" className="text-xs font-medium text-neutral-500 hover:text-ink">View all</Link>} />
-              <span id="convo-title" className="sr-only">Important conversations</span>
+              <CardTitle icon={<MessageCircle size={15} />} title={convoCount > 0 ? `Needs a look (${convoCount})` : "Needs a look"} right={<Link href="/inbox" className="text-xs font-medium text-neutral-500 hover:text-ink">View all</Link>} />
+              <span id="convo-title" className="sr-only">Needs a look</span>
               {loading || !state ? (
                 <div className="mt-5 space-y-3"><Skeleton className="h-14" /><Skeleton className="h-14" /></div>
               ) : messages.length === 0 ? (
-                <Empty icon={<MessageCircle size={22} />} title="Your inbox is quiet" body={state.hasSyncedContent ? "No important conversations right now." : "Nothing synced yet. Press Sync now to pull in your latest messages."} />
+                <Empty icon={<MessageCircle size={22} />} title="Nothing needs a look" body={state.hasSyncedContent ? "No important messages or updates right now." : "Nothing synced yet. Press Sync now to pull in your connected apps' latest."} />
               ) : (
                 <ul className="mt-3 divide-y divide-neutral-100">
                   {messages.map((m) => {
                     const inner = (
                       <>
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600">{initials(m.from)}</span>
+                        <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600">
+                          {initials(m.from)}
+                          <span className="absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white ring-1 ring-neutral-100">
+                            <IntegrationLogo app={m.appId} name={m.appId} size="sm" />
+                          </span>
+                        </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-baseline justify-between gap-3"><span className="truncate text-sm font-semibold text-ink">{m.from}</span><span className="shrink-0 text-xs text-neutral-400">{relativeTime(m.receivedAt)}</span></span>
                           <span className="block truncate text-sm text-neutral-600">{m.subject || "(no subject)"}</span>

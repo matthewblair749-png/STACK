@@ -29,6 +29,8 @@ export interface PriorityItem {
   due?: string;
   actions: WorkAction[];
   refs: SourceRef[];
+  /** The connected app this came from, when it's a message-kind item - not every app is email/chat. */
+  appId?: string;
 }
 
 export interface ProjectPulse {
@@ -61,7 +63,7 @@ export interface WorkState {
   understand: {
     overview: string;
     counts: { importantMessages: number; upcomingMeetings: number; projectsNeedingAttention: number; openTasks: number };
-    importantMessages: { id: string; from: string; subject: string; receivedAt: string; href?: string }[];
+    importantMessages: { id: string; from: string; subject: string; receivedAt: string; href?: string; appId: string }[];
     upcomingMeetings: { id: string; title: string; startAt: string; href?: string }[];
     projectChanges: { id: string; name: string; status: string; updatedAt: string }[];
     /** Per-project summaries of what actually happened, with the apps they came from. */

@@ -1,7 +1,14 @@
 import { db } from "@/server/db";
+import { GROUP_BY_ID } from "@/lib/data-groups";
+import { providerLabel } from "@/lib/providers-meta";
 import type {
   DailyBrief, PriorityItem, ProjectPulse, SourceRef, WaitingItem, WorkAction, WorkState,
 } from "@/lib/work-types";
+
+/** Only these groups are an actual back-and-forth conversation - everything else (an invoice, an
+ * order, a candidate update...) is a real alert from a connected app, not something "waiting on a
+ * reply", so it gets its own honest wording instead of email/chat phrasing. */
+const CONVERSATIONAL = new Set([...GROUP_BY_ID.email.providers, ...GROUP_BY_ID.chat.providers]);
 
 const DAY = 24 * 60 * 60 * 1000;
 const URGENT_WORDS = /\b(urgent|asap|action required|deadline|please respond|waiting on you|need(s|ed)? (this|your)|can you)\b/i;
@@ -197,22 +204,30 @@ export async function computeWorkState(workspaceId: string, userId: string): Pro
     const text = `${m.subject ?? ""} ${m.snippet}`;
     const urgent = URGENT_WORDS.test(text);
     if (!m.isUnread && !urgent) continue;
-    importantMessages.push({ id: m.id, from: m.fromName ?? "Unknown sender", subject: m.subject ?? "(no subject)", receivedAt: m.receivedAt.toISOString(), href: m.permalink ?? undefined });
+    const conversational = CONVERSATIONAL.has(m.provider);
+    importantMessages.push({ id: m.id, from: m.fromName ?? "Unknown sender", subject: m.subject ?? "(no subject)", receivedAt: m.receivedAt.toISOString(), href: m.permalink ?? undefined, appId: m.provider });
     if (!(urgent && m.isUnread)) continue;
     const from = m.fromName ?? "someone";
-    waitingOnMe.push({ id: m.id, title: m.subject ?? "(no subject)", who: from, since: m.receivedAt.toISOString(), href: m.permalink ?? undefined });
+    // "Waiting on you" means a person is waiting - true for an unread, urgent-sounding email or DM,
+    // not for an automated alert (an order, an invoice...), which has no one on the other end.
+    if (conversational) waitingOnMe.push({ id: m.id, title: m.subject ?? "(no subject)", who: from, since: m.receivedAt.toISOString(), href: m.permalink ?? undefined });
     items.set(`message:${m.id}`, {
       id: `message:${m.id}`,
       kind: "message",
       title: `${from}: ${m.subject ?? "a message"}`,
-      why: [m.isUnread ? "Unread." : "Read but likely unanswered.", "Wording suggests they are waiting on a reply."],
-      nextStep: `Review and reply to ${from}.`,
+      why: conversational
+        ? ["Unread.", "Wording suggests they are waiting on a reply."]
+        : ["Unread.", "Wording suggests this needs a response or a decision."],
+      nextStep: conversational ? `Review and reply to ${from}.` : `Review "${m.subject ?? "this"}" from ${from}.`,
       score: 55,
       refs: [{ type: "SyncedMessage", id: m.id, label: m.subject ?? "Message", href: m.permalink ?? undefined }],
-      actions: [
-        { label: "Draft response", command: `Draft a response to ${from} about "${m.subject ?? "their message"}"` },
-        ...(m.permalink ? [{ label: "Open message", href: m.permalink }] : []),
-      ],
+      appId: m.provider,
+      actions: conversational
+        ? [
+            { label: "Draft response", command: `Draft a response to ${from} about "${m.subject ?? "their message"}"` },
+            ...(m.permalink ? [{ label: "Open message", href: m.permalink }] : []),
+          ]
+        : (m.permalink ? [{ label: `Open in ${providerLabel(m.provider)}`, href: m.permalink }] : []),
     });
   }
 
@@ -289,7 +304,7 @@ export async function computeWorkState(workspaceId: string, userId: string): Pro
 
   const hasSyncedContent = messages.length + events.length > 0;
   const bits: string[] = [];
-  if (counts.importantMessages) bits.push(plural(counts.importantMessages, "important conversation"));
+  if (counts.importantMessages) bits.push(plural(counts.importantMessages, "important update"));
   if (counts.upcomingMeetings) bits.push(plural(counts.upcomingMeetings, "upcoming meeting"));
   if (counts.projectsNeedingAttention) bits.push(plural(counts.projectsNeedingAttention, "project") + (counts.projectsNeedingAttention === 1 ? " requiring attention" : " requiring attention"));
   if (counts.openTasks) bits.push(plural(counts.openTasks, "open task"));
@@ -303,7 +318,10 @@ export async function computeWorkState(workspaceId: string, userId: string): Pro
   const act: WorkAction[] = [];
   if (events.length) act.push({ label: "Prepare meeting", command: "Prepare me for my next meeting", hint: `"${events[0].title}" at ${fmtTime(events[0].startAt)}` });
   act.push({ label: "Create task", intent: "new-task", hint: "Add it to STACK" });
-  if (importantMessages.length) act.push({ label: "Draft response", command: `Draft a response to ${importantMessages[0].from} about "${importantMessages[0].subject}"`, hint: `${importantMessages[0].from}` });
+  // "Draft response" only makes sense for an actual conversation - offer it for the first message-like
+  // item that's really email/chat, not whichever unread item happens to sort first.
+  const firstConversational = importantMessages.find((m) => CONVERSATIONAL.has(m.appId));
+  if (firstConversational) act.push({ label: "Draft response", command: `Draft a response to ${firstConversational.from} about "${firstConversational.subject}"`, hint: firstConversational.from });
   act.push({ label: "Find document", command: "Find the latest proposal", hint: "Searches your synced files" });
   const atRisk = pulses.find((p) => p.status === "AtRisk" || p.status === "Behind" || p.blocked > 0);
   if (atRisk) act.push({ label: "Review project", href: `/projects/${atRisk.id}`, hint: atRisk.name });
@@ -447,7 +465,11 @@ export function buildDailyBrief(state: WorkState, firstName: string): DailyBrief
   const hour = new Date().getHours();
   const greeting = `${hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"}, ${firstName}.`;
   const meetingsToPrepare = state.priorities.filter((p) => p.kind === "event").length;
-  const peopleWaiting = state.moveForward.waitingOnMe.length + state.priorities.filter((p) => p.kind === "message").length;
+  // waitingOnMe already covers every real person waiting on you (from tasks and from conversations) -
+  // adding message-kind priorities on top double-counted the same conversations, and after non-chat
+  // alerts started producing "message" priorities too, it inflated this with things no one is
+  // actually waiting on (an invoice, an order...).
+  const peopleWaiting = state.moveForward.waitingOnMe.length;
   const top = state.priorities[0];
   return {
     greeting,
