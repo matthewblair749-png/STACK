@@ -55,6 +55,23 @@ export const slackProvider: IntegrationProvider = {
   capabilities: ["messages", "search"],
   isConfigured,
   missingSetup: () => (isConfigured() ? [] : [`set ${envVars().join(" and ")}`]),
+  tokenConnect: {
+    label: "Slack User OAuth Token",
+    placeholder: "xoxp-...",
+    helpUrl: "https://api.slack.com/apps?new_app=1",
+    steps: [
+      "Open the link below and create an app From scratch, in the workspace you want STACK to read.",
+      `Open OAuth & Permissions and add these User Token Scopes: ${USER_SCOPES.split(",").join(", ")}.`,
+      "Click Install to Workspace at the top of that page and allow access.",
+      "Copy the User OAuth Token (starts with xoxp-) and paste it here.",
+    ],
+    async validate(token) {
+      const res = await fetch("https://slack.com/api/auth.test", { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.ok !== true) throw new Error(`Slack rejected that token: ${data.error ?? "unknown_error"}`);
+      return { account: data.user && data.team ? `${data.user} - ${data.team}` : (data.team ?? data.user) };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     requireConfigured();

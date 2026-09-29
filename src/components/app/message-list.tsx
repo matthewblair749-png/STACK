@@ -7,6 +7,7 @@ import { ActionCard, type PendingActionData } from "@/components/app/action-card
 import { VirtualList } from "@/components/app/virtual-list";
 import { useToast } from "@/components/app/toast";
 import { useSyncedList } from "@/lib/use-synced-list";
+import type { DataGroupId } from "@/lib/data-groups";
 import { cn } from "@/lib/utils";
 import { EmptySynced, ErrorNote, ListSkeleton, PageShell, SearchBox } from "./synced-shared";
 import { whenLabel } from "./home-parts";
@@ -24,7 +25,7 @@ interface SyncedMessage {
 }
 
 /** Shared by Inbox (email) and Conversations (chat): real synced messages, windowed, actionable. */
-export function MessageList({ channel, title, subtitle, noun }: { channel: "email" | "chat"; title: string; subtitle: string; noun: string }) {
+export function MessageList({ group, title, subtitle, noun }: { group: DataGroupId; title: string; subtitle: string; noun: string }) {
   const toast = useToast();
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -35,7 +36,7 @@ export function MessageList({ channel, title, subtitle, noun }: { channel: "emai
     return () => window.clearTimeout(t);
   }, [q]);
 
-  const list = useSyncedList<SyncedMessage>("messages", { channel, q: debounced || undefined });
+  const list = useSyncedList<SyncedMessage>("messages", { group, q: debounced || undefined });
 
   async function turnIntoTask(m: SyncedMessage) {
     const res = await fetch("/api/actions", {

@@ -82,17 +82,12 @@ Each provider lists allowed redirect URLs. Add the live one for your website. Ad
   4. Basic Information: copy the Client ID and Client Secret.
 - Copy back: `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`
 
-### Zoom
+### Video calling
 
-- Create it here: https://marketplace.zoom.us/develop/create
-- Redirect URL (live): `https://www.stackunder.website/api/integrations/zoom/callback`
-- Redirect URL (local, optional): `http://localhost:3000/api/integrations/zoom/callback`
-- Permissions to grant (read): Read your scheduled meetings
-- Steps:
-  1. Create - General app (user-managed OAuth).
-  2. Add the redirect URL below.
-  3. Scopes: add meeting:read.
-  4. Copy the Client ID and Client Secret.
+STACK has its own built-in video calling (Calls, in the sidebar) - no third-party app to register, no
+redirect URL, nothing to connect. It's peer-to-peer WebRTC using free public STUN servers. If some of
+your users are behind a strict/symmetric NAT and their calls won't connect, set `TURN_URL` /
+`TURN_USERNAME` / `TURN_CREDENTIAL` (see `.env.example`) to relay through a TURN server instead.
 - Copy back: `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`
 
 ### Box

@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Home, CheckSquare, FolderKanban, Inbox, Calendar, Files, MessageSquare, Sparkles,
-  AppWindow, Workflow, Users, Plug, Settings, HelpCircle, ChevronsUpDown, PanelLeft, Check, LogOut, Plus,
+  Home, CheckSquare, FolderKanban, Inbox, Calendar, Files, MessageSquare, Bell, Sparkles,
+  AppWindow, Workflow, Users, Plug, Settings, HelpCircle, ChevronsUpDown, PanelLeft, Check, LogOut, Plus, Video,
 } from "lucide-react";
 import { Logo, LogoMark } from "@/components/logo";
 import { IntegrationLogo } from "@/components/brand-icons";
@@ -33,6 +33,8 @@ const mainNav: NavItem[] = [
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Files", href: "/files", icon: Files },
   { label: "Conversations", href: "/messages", icon: MessageSquare },
+  { label: "Calls", href: "/calls", icon: Video },
+  { label: "Updates", href: "/updates", icon: Bell },
   { label: "AI", href: "/ai", icon: Sparkles },
 ];
 

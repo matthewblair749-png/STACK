@@ -12,7 +12,7 @@ const apps = [
   { name: "Asana", brandId: "asana", top: "24%", left: "92%", depth: 0.9, delay: 0.15 },
   { name: "Slack", brandId: "slack", top: "80%", left: "12%", depth: 0.8, delay: 0.45 },
   { name: "Drive", brandId: "drive", top: "92%", left: "36%", depth: 0.9, delay: 0.6 },
-  { name: "Zoom", brandId: "zoom", top: "92%", left: "64%", depth: 0.7, delay: 0.2 },
+  { name: "Linear", brandId: "linear", top: "92%", left: "64%", depth: 0.7, delay: 0.2 },
   { name: "GitHub", brandId: "github", top: "80%", left: "90%", depth: 0.6, delay: 0.35 },
 ];
 

@@ -29,8 +29,6 @@ type Revoker = (t: ConnectedTokens) => Promise<boolean>;
 const REVOKERS: Record<string, Revoker> = {
   google: (t) => call(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(t.refreshToken ?? t.accessToken)}`, { method: "POST" }),
   slack: (t) => call("https://slack.com/api/auth.revoke", { method: "POST", headers: { Authorization: `Bearer ${t.accessToken}` } }),
-  zoom: (t) =>
-    call("https://zoom.us/oauth/revoke", { method: "POST", headers: { Authorization: basicAuth(env("ZOOM_CLIENT_ID"), env("ZOOM_CLIENT_SECRET")), "Content-Type": "application/x-www-form-urlencoded" }, body: form({ token: t.accessToken }) }),
   dropbox: (t) => call("https://api.dropboxapi.com/2/auth/token/revoke", { method: "POST", headers: { Authorization: `Bearer ${t.accessToken}` } }),
   gitlab: (t) => call("https://gitlab.com/oauth/revoke", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form({ client_id: env("GITLAB_CLIENT_ID"), client_secret: env("GITLAB_CLIENT_SECRET"), token: t.accessToken }) }),
   box: (t) => call("https://api.box.com/oauth2/revoke", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form({ client_id: env("BOX_CLIENT_ID"), client_secret: env("BOX_CLIENT_SECRET"), token: t.accessToken }) }),

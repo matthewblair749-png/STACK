@@ -3,11 +3,15 @@
 import { useMemo, useState } from "react";
 import {
   Search, Plus, List as ListIcon, Kanban, GanttChart, Calendar as CalendarIcon,
-  Circle, CheckCircle2, ChevronDown, MessageSquareText,
+  Circle, CheckCircle2, ChevronDown, MessageSquareText, ExternalLink,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useDemo } from "@/lib/demo-context";
+import { useSyncedList } from "@/lib/use-synced-list";
+import { externalToTask, type SyncedWorkItem } from "@/lib/external-tasks";
+import { providerLabel } from "@/lib/providers-meta";
+import { IntegrationLogo } from "@/components/brand-icons";
 import type { Priority, Task } from "@/lib/types";
 import { PriorityDot, Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,27 +36,41 @@ type View = "list" | "board" | "timeline" | "calendar";
 const priorityOrder: Record<Priority, number> = { urgent: 0, important: 1, normal: 2 };
 
 export default function TasksPage() {
-  const { tasks, toggleTask, addTask, updateTask, deleteTask, projects, people } = useDemo();
+  const { tasks: ownTasks, toggleTask: toggleOwn, addTask, updateTask: updateOwn, deleteTask, projects, people } = useDemo();
+  const external = useSyncedList<SyncedWorkItem>("messages", { group: "work" });
+  const externalTasks = useMemo(() => external.items.map(externalToTask), [external.items]);
+  const tasks = useMemo(() => [...ownTasks, ...externalTasks], [ownTasks, externalTasks]);
+  const toggleTask = (id: string) => {
+    if (!id.startsWith("ext:")) toggleOwn(id);
+  };
+  const updateTask = (id: string, patch: Partial<Task>) => {
+    if (!id.startsWith("ext:")) updateOwn(id, patch);
+  };
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const personName = (id?: string) => people.find((p) => p.id === id)?.name;
   const [view, setView] = useState<View>("list");
   const [query, setQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"priority" | "due" | "created">("priority");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
+  const externalProviders = useMemo(() => [...new Set(externalTasks.map((t) => t.external!.provider))], [externalTasks]);
+
   const filtered = useMemo(() => {
     let list = tasks.filter((t) => t.title.toLowerCase().includes(query.toLowerCase()));
     if (priorityFilter !== "all") list = list.filter((t) => t.priority === priorityFilter);
+    if (sourceFilter === "stack") list = list.filter((t) => !t.external);
+    else if (sourceFilter !== "all") list = list.filter((t) => t.external?.provider === sourceFilter);
     list = [...list].sort((a, b) => {
       if (sortBy === "priority") return priorityOrder[a.priority] - priorityOrder[b.priority];
       if (sortBy === "created") return a.createdAt.localeCompare(b.createdAt);
       return (a.dueDate ?? "").localeCompare(b.dueDate ?? "");
     });
     return list;
-  }, [tasks, query, priorityFilter, sortBy]);
+  }, [tasks, query, priorityFilter, sourceFilter, sortBy]);
 
   function projectName(id?: string) {
     return projects.find((p) => p.id === id)?.name;
@@ -63,6 +81,11 @@ export default function TasksPage() {
     setModalOpen(true);
   }
   function openEdit(t: Task) {
+    // Items from other apps are changed in that app, so open them there instead of an edit form.
+    if (t.external) {
+      if (t.external.url) window.open(t.external.url, "_blank", "noopener,noreferrer");
+      return;
+    }
     setEditing(t);
     setModalOpen(true);
   }
@@ -117,6 +140,21 @@ export default function TasksPage() {
           <option value="normal">Normal</option>
         </select>
 
+        {externalProviders.length > 0 && (
+          <select
+            value={sourceFilter}
+            onChange={(e) => setSourceFilter(e.target.value)}
+            aria-label="Filter by source"
+            className="rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-600 outline-none"
+          >
+            <option value="all">All sources</option>
+            <option value="stack">STACK</option>
+            {externalProviders.map((p) => (
+              <option key={p} value={p}>{providerLabel(p)}</option>
+            ))}
+          </select>
+        )}
+
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -148,6 +186,12 @@ export default function TasksPage() {
           <Button size="sm" onClick={openNew}><Plus size={14} /> New task</Button>
         </div>
       </div>
+
+      {external.error && (
+        <p className="mt-4 rounded-xl bg-red-soft px-4 py-3 text-sm text-red">
+          Couldn&apos;t load tasks from your connected apps. <button onClick={external.reload} className="font-semibold underline">Try again</button>
+        </p>
+      )}
 
       <div className="mt-6">
         {view === "list" && (
@@ -190,12 +234,19 @@ function TaskRow({
   return (
     <div className="border-b border-neutral-100 last:border-0">
       <div className="flex items-center gap-3 px-2 py-2.5">
-        <button onClick={() => toggleTask(task.id)}>
-          {task.done ? <CheckCircle2 size={18} className="text-blue" /> : <Circle size={18} className="text-neutral-300" />}
-        </button>
+        {task.external ? (
+          <span title={`Lives in ${providerLabel(task.external.provider)}`} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+            <IntegrationLogo app={task.external.provider} name={providerLabel(task.external.provider)} size="md" />
+          </span>
+        ) : (
+          <button onClick={() => toggleTask(task.id)} aria-label={task.done ? "Mark as not done" : "Mark as done"}>
+            {task.done ? <CheckCircle2 size={18} className="text-blue" /> : <Circle size={18} className="text-neutral-300" />}
+          </button>
+        )}
         <button onClick={() => openEdit(task)} className="flex-1 text-left">
           <p className={cn("text-sm text-ink", task.done && "text-neutral-400 line-through")}>{task.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+            {task.external && <Badge accent="neutral">{task.external.container ?? providerLabel(task.external.provider)}</Badge>}
             {isOverdue(task) && <Badge accent="red">Overdue</Badge>}
             {task.status === "Blocked" && <Badge accent="red">Blocked{task.blockedReason ? `: ${task.blockedReason}` : ""}</Badge>}
             {task.waitingOnId && !task.done && <Badge accent="yellow">Waiting on {personName?.(task.waitingOnId) ?? "someone"}</Badge>}
@@ -205,6 +256,7 @@ function TaskRow({
           </div>
         </button>
         <PriorityDot priority={task.priority} />
+        {task.external?.url && <ExternalLink size={13} className="shrink-0 text-neutral-300" aria-label={`Opens in ${providerLabel(task.external.provider)}`} />}
         {task.subtasks.length > 0 && (
           <button onClick={() => setExpanded((v) => !v)} className="flex items-center gap-1 text-xs text-neutral-400">
             <MessageSquareText size={13} /> {doneSubtasks}/{task.subtasks.length}
@@ -330,17 +382,17 @@ function BoardView({
               {colTasks.map((t) => (
                 <div
                   key={t.id}
-                  draggable
+                  draggable={!t.external}
                   onDragStart={(e) => e.dataTransfer.setData("text/task-id", t.id)}
                   onClick={() => openEdit(t)}
-                  className="cursor-grab rounded-lg border border-neutral-100 bg-white p-3 active:cursor-grabbing"
+                  className={cn("rounded-lg border border-neutral-100 bg-white p-3", t.external ? "cursor-pointer" : "cursor-grab active:cursor-grabbing")}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className={cn("text-sm text-ink", t.done && "text-neutral-400 line-through")}>{t.title}</p>
                     {isOverdue(t) && <Badge accent="red" className="shrink-0">Overdue</Badge>}
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-neutral-400">
-                    <span>{projectName(t.projectId) ?? "—"}</span>
+                    <span>{t.external ? providerLabel(t.external.provider) : projectName(t.projectId) ?? "—"}</span>
                     <span>{formatDueDate(t.dueDate)}</span>
                   </div>
                 </div>

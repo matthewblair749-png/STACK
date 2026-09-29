@@ -3,7 +3,8 @@ import { db } from "@/server/db";
 import { requireSessionAndWorkspace } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 
-const EMAIL_PROVIDERS = ["google", "microsoft"];
+import { GROUP_BY_ID, isDataGroupId, type DataGroupId } from "@/lib/data-groups";
+
 const PAGE = 40;
 
 /**
@@ -22,11 +23,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ kind
 
     let items: unknown[] = [];
     if (kind === "messages") {
-      const channel = sp.get("channel"); // "email" | "chat"
+      const group = sp.get("group");
+      if (group && !isDataGroupId(group)) return NextResponse.json({ error: "Unknown group." }, { status: 400 });
       const rows = await db.syncedMessage.findMany({
         where: {
           ...base,
-          ...(channel === "email" ? { provider: { in: EMAIL_PROVIDERS } } : channel === "chat" ? { provider: { notIn: EMAIL_PROVIDERS } } : {}),
+          ...(group ? { provider: { in: GROUP_BY_ID[group as DataGroupId].providers } } : {}),
           ...(q ? { OR: [{ subject: { contains: q, mode: "insensitive" } }, { snippet: { contains: q, mode: "insensitive" } }, { fromName: { contains: q, mode: "insensitive" } }, { fromAddress: { contains: q, mode: "insensitive" } }] } : {}),
         },
         orderBy: { receivedAt: "desc" },

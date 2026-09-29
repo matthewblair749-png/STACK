@@ -4,7 +4,6 @@ import { microsoftProvider } from "./providers/microsoft";
 import { slackProvider } from "./providers/slack";
 import { notionProvider } from "./providers/notion";
 import { githubProvider } from "./providers/github";
-import { zoomProvider } from "./providers/zoom";
 import { dropboxProvider } from "./providers/dropbox";
 import { boxProvider } from "./providers/box";
 import { gitlabProvider } from "./providers/gitlab";
@@ -45,7 +44,6 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   slack: slackProvider,
   notion: notionProvider,
   github: githubProvider,
-  zoom: zoomProvider,
   dropbox: dropboxProvider,
   box: boxProvider,
   gitlab: gitlabProvider,

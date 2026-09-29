@@ -52,12 +52,6 @@ export const SETUP_GUIDES: Record<string, SetupGuide> = {
     steps: ["New integration - type Public.", "Add the redirect URL below.", "Copy the OAuth client ID and secret from the Distribution / Secrets tab."],
     vars: idSecret("NOTION", "OAuth client ID", "OAuth client secret"),
   },
-  zoom: {
-    consoleUrl: "https://marketplace.zoom.us/develop/create",
-    consoleLabel: "Zoom App Marketplace",
-    steps: ["Create - General app (user-managed OAuth).", "Add the redirect URL below.", "Scopes: add the granular scope meeting:read:list_meetings (Zoom now uses granular names; the plain meeting:read is not enough).", "Copy the Client ID and Client Secret."],
-    vars: idSecret("ZOOM"),
-  },
   dropbox: {
     consoleUrl: "https://www.dropbox.com/developers/apps/create",
     consoleLabel: "Dropbox App Console",

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { BrandIcon } from "@/components/brand-icons";
 
 const tools = [
-  { name: "Zoom", id: "zoom" },
+  { name: "Linear", id: "linear" },
   { name: "Notion", id: "notion" },
   { name: "GitHub", id: "github" },
   { name: "Google Drive", id: "drive" },

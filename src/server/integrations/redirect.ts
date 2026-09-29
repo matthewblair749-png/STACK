@@ -1,6 +1,6 @@
 /**
- * Some providers (Zoom, Slack) refuse `http://localhost` redirect URLs. For those, set
- * OAUTH_REDIRECT_BASE_<PROVIDER>=https://your-tunnel.example (e.g. OAUTH_REDIRECT_BASE_ZOOM) and register
+ * Some providers (e.g. Slack) refuse `http://localhost` redirect URLs. For those, set
+ * OAUTH_REDIRECT_BASE_<PROVIDER>=https://your-tunnel.example (e.g. OAUTH_REDIRECT_BASE_SLACK) and register
  * that address with the provider. The user keeps using the normal app address; only the provider's redirect
  * goes through the public address, and the callback bounces it straight back (see `relayTarget`).
  */

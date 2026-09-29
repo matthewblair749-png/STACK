@@ -19,6 +19,25 @@ export const dropboxProvider: IntegrationProvider = {
   capabilities: ["files", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
+  tokenConnect: {
+    label: "Dropbox generated access token",
+    placeholder: "sl.•••••••••••••••••••••",
+    helpUrl: "https://www.dropbox.com/developers/apps",
+    steps: [
+      "Open the Dropbox App Console and create an app (Scoped access, Full Dropbox, name it STACK) - or open it if you already made one.",
+      "On the Permissions tab, check files.metadata.read and account_info.read, then click Submit.",
+      "On the Settings tab, under OAuth 2, click Generate under Generated access token.",
+      "Copy the token and paste it here.",
+    ],
+    async validate(token) {
+      const account = await getJson("Dropbox token check", "https://api.dropboxapi.com/2/users/get_current_account", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: "null",
+      });
+      return { account: account.email ?? account.name?.display_name };
+    },
+  },
 
   getAuthUrl(state, redirectUri) {
     env.require("Dropbox");

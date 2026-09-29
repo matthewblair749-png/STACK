@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Search, ArrowRight, Monitor, Clock, Ban, AlertTriangle } from "lucide-react";
 import { Logo, LogoMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { IntegrationLogo } from "@/components/brand-icons";
+import { QuickStart } from "@/components/onboarding/quick-start";
 import { referralSources } from "@/lib/profession-apps";
 import { cn } from "@/lib/utils";
 
@@ -273,6 +273,11 @@ export default function OnboardingPage() {
     }
   }
 
+  function buildMyDay() {
+    saveProgress({ selectedPlan: "Free", completed: true });
+    router.push(`/ai?q=${encodeURIComponent("What should I work on today?")}`);
+  }
+
   function enterStack() {
     saveProgress({ completed: true });
     router.push("/home");
@@ -306,19 +311,7 @@ export default function OnboardingPage() {
           exit={{ opacity: 0, x: -16 }}
           transition={{ duration: 0.25 }}
         >
-          {step === 0 && (
-            <div className="flex flex-col items-center text-center">
-              <LogoMark size={44} />
-              <h1 className="mt-6 text-3xl font-semibold tracking-tight text-ink">Welcome to STACK.</h1>
-              <p className="mt-2 text-lg text-neutral-600">Your work, all in one place.</p>
-              <p className="mt-3 max-w-sm text-sm text-neutral-500">
-                Connect the tools you already use and let STACK bring your work together.
-              </p>
-              <p className="mt-6 text-sm text-neutral-400">
-                Already have an account? <Link href="/login" className="font-medium text-ink underline">Sign in</Link>
-              </p>
-            </div>
-          )}
+          {step === 0 && <QuickStart onBuild={buildMyDay} onCustomize={goNext} />}
 
           {step === 1 && (
             <div>
@@ -510,10 +503,10 @@ export default function OnboardingPage() {
         </motion.div>
       </AnimatePresence>
 
-      {step !== 5 && (
+      {step !== 5 && step !== 0 && (
         <div className="mt-10 flex items-center justify-between">
-          {step > 0 ? <Button variant="ghost" onClick={goBack}>Back</Button> : <span />}
-          {step === 4 ? <span /> : <Button onClick={goNext}>{step === 0 ? "Get Started" : "Continue"}</Button>}
+          <Button variant="ghost" onClick={goBack}>Back</Button>
+          {step === 4 ? <span /> : <Button onClick={goNext}>Continue</Button>}
         </div>
       )}
     </div>

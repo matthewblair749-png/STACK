@@ -43,7 +43,6 @@ second Neon database/branch for production, set its `DATABASE_URL` in Vercel, an
 | Google (integrations) | `https://stackunder.website/api/integrations/google/callback` |
 | Google (sign-in) | `https://stackunder.website/api/auth/callback/google` |
 | Slack | `https://stackunder.website/api/integrations/slack/callback` |
-| Zoom | `https://stackunder.website/api/integrations/zoom/callback` (and add it to the OAuth allow list) |
 | GitHub | `https://stackunder.website/api/integrations/github/callback` |
 | Any other app | `https://stackunder.website/api/integrations/<app>/callback` |
 

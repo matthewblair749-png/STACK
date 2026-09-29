@@ -104,14 +104,6 @@ export const APP_META: Record<string, AppMeta> = {
     synonyms: ["docs", "wiki", "notes", "knowledge base", "documents", "workspace", "pages"],
     unlocks: ["Find documents and notes", "Link docs to your projects"],
   },
-  zoom: {
-    understands: ["Your upcoming meetings"],
-    read: ["Read your scheduled meetings"],
-    act: [],
-    wont: ["Start, edit or delete meetings", "Join or record calls"],
-    synonyms: ["video", "meetings", "calls", "video calls", "conference", "webinar"],
-    unlocks: ["Prepare for meetings", "See meetings on your calendar"],
-  },
   dropbox: {
     understands: ["Your most recently changed files"],
     read: ["Read file names and details (not file contents)"],

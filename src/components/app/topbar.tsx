@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Search, Bell, Menu, X, Sparkles, ArrowRight } from "lucide-react";
+import { Search, Bell, Menu, X, Sparkles, ArrowRight, Video } from "lucide-react";
 import { useDemo } from "@/lib/demo-context";
 import { Sidebar } from "./sidebar";
 import { useWorkState } from "./work-state-provider";
@@ -19,7 +19,20 @@ export function Topbar({ title }: { title: string }) {
   const router = useRouter();
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [startingCall, setStartingCall] = useState(false);
   const attention = state?.priorities ?? [];
+
+  async function startCall() {
+    if (startingCall) return;
+    setStartingCall(true);
+    try {
+      const res = await fetch("/api/calls", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const body = await res.json();
+      if (res.ok) router.push(`/call/${body.call.id}`);
+    } finally {
+      setStartingCall(false);
+    }
+  }
 
   return (
     <>
@@ -93,6 +106,10 @@ export function Topbar({ title }: { title: string }) {
               )}
             </AnimatePresence>
           </div>
+
+          <button onClick={startCall} disabled={startingCall} aria-label="Start a call" title="Start a call" className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-500 hover:bg-neutral-100 disabled:opacity-50">
+            <Video size={17} />
+          </button>
 
           <button onClick={() => router.push("/ai")} aria-label="Ask STACK AI" title="Ask STACK AI" className="flex h-9 w-9 items-center justify-center rounded-xl text-blue hover:bg-blue-soft">
             <Sparkles size={18} />

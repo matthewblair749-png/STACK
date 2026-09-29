@@ -39,6 +39,8 @@ model User {
   pendingActions  PendingAction[]
   memoryItems     MemoryItem[]
   conversations   Conversation[]
+  hostedCalls     Call[]            @relation("CallHost")
+  callParticipations CallParticipant[]
 }
 
 model Account {
@@ -107,6 +109,7 @@ model Workspace {
   pendingActions PendingAction[]
   memoryItems    MemoryItem[]
   conversations  Conversation[]
+  calls          Call[]
 }
 
 model WorkspaceMember {
@@ -457,6 +460,76 @@ model ConversationMessage {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
+}
+
+// ---------- STACK Calls: native video calling (WebRTC, signaled by polling) ----------
+
+enum CallStatus {
+  Active
+  Ended
+}
+
+/// A native STACK video call. Signaling (offer/answer/ICE) is exchanged by the
+/// participants polling CallSignal rather than a persistent WebSocket, matching
+/// this app's "polling only, no realtime push" architecture. Media itself is
+/// peer-to-peer WebRTC and never touches this server.
+model Call {
+  id        String     @id @default(cuid())
+  workspaceId String
+  hostId    String
+  title     String?
+  status    CallStatus @default(Active)
+  startedAt DateTime   @default(now())
+  endedAt   DateTime?
+  createdAt DateTime   @default(now())
+
+  workspace    Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  host         User              @relation("CallHost", fields: [hostId], references: [id])
+  participants CallParticipant[]
+  signals      CallSignal[]
+
+  @@index([workspaceId, status])
+}
+
+/// One person's seat in a call. `peerId` is a random id the browser generates per
+/// join and is what WebRTC signals are addressed to/from - it's not a stable
+/// identity, just a routing address for this one call. `lastSeenAt` is a
+/// heartbeat: a participant with no heartbeat in the last ~20s is treated as
+/// gone without anyone having to push a "left" event.
+model CallParticipant {
+  id          String    @id @default(cuid())
+  callId      String
+  userId      String
+  peerId      String
+  displayName String
+  micOn       Boolean   @default(true)
+  cameraOn    Boolean   @default(true)
+  joinedAt    DateTime  @default(now())
+  leftAt      DateTime?
+  lastSeenAt  DateTime  @default(now())
+
+  call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, peerId])
+  @@index([callId, lastSeenAt])
+}
+
+/// A single WebRTC signaling message (offer, answer or ICE candidate) addressed
+/// from one participant's peerId to another's. Rows are deleted the moment the
+/// addressee's poll reads them - this table is a mailbox, not a history.
+model CallSignal {
+  id         String   @id @default(cuid())
+  callId     String
+  fromPeerId String
+  toPeerId   String
+  type       String
+  payload    Json
+  createdAt  DateTime @default(now())
+
+  call Call @relation(fields: [callId], references: [id], onDelete: Cascade)
+
+  @@index([callId, toPeerId, createdAt])
 }
 
 /// Personal work memory (schema only this phase — no management UI yet).

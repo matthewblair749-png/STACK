@@ -27,7 +27,6 @@ const PROVIDER_MAP = {
   "microsoft-365": "microsoft",
   "microsoft-teams": "microsoft",
   slack: "slack",
-  zoom: "zoom",
   notion: "notion",
   github: "github",
   gitlab: "gitlab",

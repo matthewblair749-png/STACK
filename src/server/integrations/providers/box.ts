@@ -40,15 +40,20 @@ export const boxProvider: IntegrationProvider = {
   },
 
   async getFiles(tokens): Promise<ProviderFile[]> {
-    const data = await getJson("Box files", "https://api.box.com/2.0/search?type=file&limit=30&sort=modified_at&direction=DESC&fields=id,name,modified_at,modified_by", {
+    // /2.0/search requires a non-empty `query` and rejects a plain listing request, so recently
+    // touched files are read from /2.0/recent_items instead - the endpoint Box has for this.
+    const data = await getJson("Box files", "https://api.box.com/2.0/recent_items?limit=50&fields=id,name,modified_at,modified_by", {
       headers: { Authorization: `Bearer ${tokens.accessToken}` },
     });
-    return ((data.entries ?? []) as Record<string, any>[]).map((f) => ({
-      id: String(f.id),
-      name: f.name,
-      url: `https://app.box.com/file/${f.id}`,
-      modifiedAt: f.modified_at,
-      ownerName: f.modified_by?.name,
-    }));
+    return ((data.entries ?? []) as Record<string, any>[])
+      .filter((e) => e.item?.type === "file")
+      .slice(0, 30)
+      .map((e) => ({
+        id: String(e.item.id),
+        name: e.item.name,
+        url: `https://app.box.com/file/${e.item.id}`,
+        modifiedAt: e.item.modified_at ?? e.interaction_at,
+        ownerName: e.item.modified_by?.name,
+      }));
   },
 };

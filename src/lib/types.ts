@@ -55,6 +55,8 @@ export interface Task {
   status?: "Todo" | "InProgress" | "Blocked" | "Done";
   blockedReason?: string | null;
   waitingOnId?: string | null;
+  /** Set for items that live in another app (Asana, Jira, ...). They're shown in My Work but changed in that app. */
+  external?: { provider: string; url?: string; container?: string };
 }
 
 export interface Project {
