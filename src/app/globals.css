@@ -70,8 +70,10 @@
   --color-white: #141417;
   --color-black: #000000;
 
-  --color-blue: #7b9bff;
-  --color-blue-soft: #1a2147;
+  /* Same violet identity as the light theme's #6b69e2, lightened for contrast on this dark
+     background - derived the same way this block already lightens every other accent. */
+  --color-blue: #a29ef0;
+  --color-blue-soft: #282242;
   --color-yellow: #ffc42e;
   --color-yellow-soft: #2b2410;
   --color-yellow-700: #f5c451;

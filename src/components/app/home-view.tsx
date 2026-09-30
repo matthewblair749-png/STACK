@@ -177,7 +177,7 @@ export function HomeView(p: HomeViewProps) {
       {/* Nothing connected: a warm, clear first step */}
       {p.noApps && (
         <motion.section {...motionProps(1)} aria-labelledby="connect-title" className={cn(card, "mt-6 overflow-hidden")}>
-          <div className="bg-[radial-gradient(120%_140%_at_0%_0%,#eef2ff_0%,#ffffff_60%)] p-6 sm:p-8">
+          <div className="bg-[radial-gradient(120%_140%_at_0%_0%,var(--color-blue-soft)_0%,var(--color-paper)_60%)] p-6 sm:p-8">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink text-white"><Sparkles size={20} /></span>
             <h2 id="connect-title" className="mt-4 text-2xl font-semibold tracking-tight text-ink">Bring STACK to life</h2>
             <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-neutral-600">Connect the tools you already use. STACK reads your email, chats, meetings and files, works out what matters, and helps you act on it. Nothing is read until you connect an app, and nothing is sent without your approval.</p>
@@ -205,7 +205,7 @@ export function HomeView(p: HomeViewProps) {
       {/* Hero: the one thing to do next */}
       {!p.noApps && (
         <motion.section {...motionProps(2)} aria-label="Your next move" className="relative mt-6 overflow-hidden rounded-3xl bg-[#08080c] p-6 text-[#ffffff] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.6)] ring-1 ring-[rgba(255,255,255,0.06)] sm:p-8">
-          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(47,94,255,0.55),transparent)]" />
+          <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(162,158,240,0.55),transparent)]" />
           <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[radial-gradient(closest-side,rgba(255,196,46,0.18),transparent)]" />
           <div className="relative">
             <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.6)]"><Zap size={13} /> Your next move</p>
