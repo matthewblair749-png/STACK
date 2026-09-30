@@ -32,19 +32,21 @@
  * the same way dark mode is - the marketing site keeps its own fixed palette regardless of this.
  */
 :root[data-theme="light"]:not([data-surface="marketing"]) {
-  --background: #faf9f7;
-  --foreground: #17151d;
+  --background: #f8f8f6;
+  --foreground: #18171a;
 
-  --color-ink: #17151d;
+  --color-ink: #18171a;
   --color-paper: #ffffff;
 
-  --color-blue: #6c5ce0;
-  --color-blue-soft: #f1eefb;
+  /* Sampled directly from the reference screenshot's accent icon (#6b69e2 / #6a68e1). */
+  --color-blue: #6b69e2;
+  --color-blue-soft: #edecfb;
 
-  --color-neutral-25: #faf9f8;
-  --color-neutral-50: #f7f6f3;
-  --color-neutral-100: #edece8;
-  --color-neutral-200: #e0ddd7;
+  --color-neutral-25: #f8f8f6;
+  --color-neutral-50: #f4f3f0;
+  /* Sampled directly from the reference's sidebar background. */
+  --color-neutral-100: #efeee7;
+  --color-neutral-200: #e1ddd3;
   --color-neutral-400: #a5a19a;
   --color-neutral-500: #7a766e;
   --color-neutral-700: #47433c;
