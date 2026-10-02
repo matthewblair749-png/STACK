@@ -1,10 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
-import { avatarUrl } from "@/lib/avatars";
+import { Lock, ShieldCheck, UserCheck } from "lucide-react";
 
-const avatarSeeds = [32, 47, 12, 68];
+/** Real commitments the product actually enforces - no invented user counts or ratings. */
+const points = [
+  { icon: ShieldCheck, text: "Read-only by default" },
+  { icon: UserCheck, text: "Nothing sent without your approval" },
+  { icon: Lock, text: "Connections encrypted" },
+];
 
 export function TrustRow() {
   return (
@@ -12,36 +16,15 @@ export function TrustRow() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.24 }}
-      className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
+      className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
     >
-      <div className="flex items-center gap-3">
-        <div className="flex -space-x-2">
-          {avatarSeeds.map((seed) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={seed}
-              src={avatarUrl(seed, 56)}
-              alt=""
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-full border-2 border-white object-cover"
-            />
-          ))}
-        </div>
-        <div className="text-left">
-          <p className="text-xs font-semibold text-ink">Trusted by 12,000+ teams</p>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={11} className="fill-yellow text-yellow" />
-            ))}
-            <span className="ml-1 text-xs text-neutral-400">4.9 average rating</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden h-8 w-px bg-neutral-200 sm:block" />
-
-      <p className="text-xs text-neutral-400">Free forever plan · No credit card required</p>
+      {points.map(({ icon: Icon, text }) => (
+        <span key={text} className="flex items-center gap-1.5 text-xs font-medium text-neutral-500">
+          <Icon size={13} className="text-blue" /> {text}
+        </span>
+      ))}
+      <span className="hidden h-4 w-px bg-neutral-200 sm:block" />
+      <span className="text-xs text-neutral-400">Free during early access · No credit card</span>
     </motion.div>
   );
 }

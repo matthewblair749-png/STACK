@@ -14,15 +14,15 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wider text-blue">Pricing</p>
           <h2 className="mt-4 text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
-            Simple, transparent pricing.
+            Free while we&apos;re in early access.
           </h2>
           <p className="mt-6 text-lg text-neutral-500 sm:text-xl">
-            Start free. Upgrade when your team is ready. No hidden fees, no surprise limits.
+            No card, no trial clock. If paid plans arrive later, you&apos;ll hear about it before anything is ever charged.
           </p>
         </div>
       )}
 
-      <div className="mx-auto mt-16 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mx-auto mt-16 grid max-w-3xl gap-6 sm:grid-cols-2">
         {pricingPlans.map((plan, i) => (
           <motion.div
             key={plan.name}
@@ -51,15 +51,17 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
               ))}
             </ul>
 
-            <Link href={plan.name === "Enterprise" ? "/#contact" : "/signup"} className="mt-7">
-              <Button
-                size="lg"
-                className="w-full"
-                variant={plan.highlighted ? "secondary" : "outline"}
-              >
+            {plan.comingSoon ? (
+              <Button size="lg" className="mt-7 w-full" variant="outline" disabled>
                 {plan.cta}
               </Button>
-            </Link>
+            ) : (
+              <Link href="/signup" className="mt-7">
+                <Button size="lg" className="w-full" variant={plan.highlighted ? "secondary" : "outline"}>
+                  {plan.cta}
+                </Button>
+              </Link>
+            )}
           </motion.div>
         ))}
       </div>

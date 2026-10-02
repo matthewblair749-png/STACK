@@ -9,14 +9,13 @@ const tools = [
   { name: "GitHub", id: "github" },
   { name: "Google Drive", id: "drive" },
   { name: "Dropbox", id: "dropbox" },
-  { name: "OneDrive", id: "onedrive" },
   { name: "Box", id: "box" },
   { name: "Google Calendar", id: "google-calendar" },
-  { name: "Outlook Calendar", id: "outlook-calendar" },
   { name: "Trello", id: "trello" },
   { name: "Asana", id: "asana" },
-  { name: "Google", id: "google" },
-  { name: "Microsoft", id: "microsoft" },
+  { name: "Slack", id: "slack" },
+  { name: "ClickUp", id: "clickup" },
+  { name: "Zendesk", id: "zendesk" },
 ];
 
 export function LogoCloud() {

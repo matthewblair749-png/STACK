@@ -93,20 +93,27 @@ function BillingPageInner() {
     return <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 text-sm text-neutral-400">Loading billing...</div>;
   }
 
+  // No payment provider is set up: nothing can be bought, so don't show upgrade buttons that can only fail.
+  // (Setting the Stripe environment variables brings the plans and checkout below back automatically.)
+  if (!status.configured) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8">
+        <Card>
+          <SectionLabel>Your plan</SectionLabel>
+          <p className="mt-1 text-2xl font-semibold text-ink">Early access - free</p>
+          <p className="mt-2 max-w-xl text-sm text-neutral-600">
+            Everything in STACK is free while it&apos;s in early access. There&apos;s nothing to pay and no card on file. If paid plans arrive later,
+            you&apos;ll be told before anything is ever charged.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8">
       {error && (
         <div className="mb-4 rounded-xl border border-red/30 bg-red-soft px-4 py-3 text-sm text-red">{error}</div>
-      )}
-
-      {!status.configured && (
-        <div className="mb-5 rounded-xl border border-yellow/40 bg-yellow/10 px-4 py-3 text-sm text-ink">
-          Billing isn&apos;t configured yet. Set <code className="font-mono text-xs">STRIPE_SECRET_KEY</code>,{" "}
-          <code className="font-mono text-xs">STRIPE_WEBHOOK_SECRET</code>, and the plan price IDs (
-          <code className="font-mono text-xs">STRIPE_PRICE_SOLO</code>,{" "}
-          <code className="font-mono text-xs">STRIPE_PRICE_TEAM</code>,{" "}
-          <code className="font-mono text-xs">STRIPE_PRICE_BUSINESS</code>) to enable real subscriptions.
-        </div>
       )}
 
       <Card>

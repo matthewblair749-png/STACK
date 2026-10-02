@@ -46,7 +46,7 @@ export function ProductShowcase() {
           <span className="h-2.5 w-2.5 rounded-full bg-yellow" />
           <span className="h-2.5 w-2.5 rounded-full bg-blue" />
           <div className="mx-auto flex items-center gap-2 rounded-lg bg-neutral-50 px-3 py-1 text-xs text-neutral-400">
-            <Search size={12} /> app.stack.com/home
+            <Search size={12} /> stackunder.website/home
           </div>
         </div>
 

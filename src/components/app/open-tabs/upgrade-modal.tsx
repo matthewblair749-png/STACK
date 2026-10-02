@@ -2,26 +2,25 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles, Zap, Workflow, LayoutGrid } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const benefits = [
-  { icon: LayoutGrid, label: "10 Open Tabs" },
-  { icon: Sparkles, label: "STACK AI" },
-  { icon: Workflow, label: "Automations" },
-  { icon: Zap, label: "Expanded workspace" },
-];
-
+/**
+ * Shown when every Open Tabs slot is in use. It only offers an upgrade when one can really be bought, and
+ * only promises what a paid plan actually changes (more Open Tabs) - nothing that doesn't exist.
+ */
 export function UpgradeModal({
   open,
   onClose,
   used,
   limit,
+  canUpgrade,
 }: {
   open: boolean;
   onClose: () => void;
   used: number;
   limit: number;
+  canUpgrade: boolean;
 }) {
   return (
     <AnimatePresence>
@@ -41,34 +40,29 @@ export function UpgradeModal({
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-sm overflow-hidden rounded-[20px] border border-neutral-100 bg-white shadow-2xl"
           >
-            <div className="bg-gradient-to-br from-blue-soft to-white px-6 pt-6 pb-5">
+            <div className="bg-gradient-to-br from-blue-soft to-paper px-6 pt-6 pb-5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue shadow-sm">
                 <LayoutGrid size={18} />
               </div>
               <p className="mt-4 text-lg font-semibold text-ink">You&apos;ve reached your Open Tabs limit.</p>
               <p className="mt-1.5 text-sm text-neutral-500">
-                Free accounts can keep up to {limit} work apps open at once. Upgrade to Solo to keep up to 10 Open
-                Tabs together.
+                {canUpgrade
+                  ? `The Free plan keeps up to ${limit} work apps open at once. Paid plans raise that to 10.`
+                  : `You can keep up to ${limit} work apps open at once. Close one to open another.`}
               </p>
               <p className="mt-3 text-xs font-medium text-neutral-400">
                 You&apos;re using {used} / {limit} Open Tabs
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 px-6 py-4">
-              {benefits.map((b) => (
-                <div key={b.label} className="flex items-center gap-2 rounded-xl bg-neutral-50 px-2.5 py-2 text-xs text-neutral-600">
-                  <b.icon size={13} className="text-blue" /> {b.label}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-2 px-6 pb-6">
-              <Link href="/billing" className="w-full">
-                <Button className="w-full">Upgrade to Solo →</Button>
-              </Link>
-              <button onClick={onClose} className="w-full py-1.5 text-sm font-medium text-neutral-400 hover:text-ink">
-                Not now
+            <div className="flex flex-col gap-2 px-6 py-5">
+              {canUpgrade && (
+                <Link href="/billing" className="w-full">
+                  <Button className="w-full">See plans</Button>
+                </Link>
+              )}
+              <button onClick={onClose} className="w-full py-1.5 text-sm font-medium text-neutral-500 hover:text-ink">
+                {canUpgrade ? "Not now" : "Got it"}
               </button>
             </div>
           </motion.div>

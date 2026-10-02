@@ -16,7 +16,7 @@ import { MobileTabSwitcher } from "@/components/app/open-tabs/mobile-tab-switche
 const signatureApps: Array<"gmail" | "slack" | "notion" | "drive"> = ["gmail", "slack", "notion", "drive"];
 
 export default function OpenTabsPage() {
-  const { openTabs, activeTabId, openTabsLimit, closeTab, cycleTab } = useDemo();
+  const { openTabs, activeTabId, openTabsLimit, canUpgrade, closeTab, cycleTab } = useDemo();
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
@@ -107,7 +107,7 @@ export default function OpenTabsPage() {
           setUpgradeOpen(true);
         }}
       />
-      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} used={openTabs.length} limit={openTabsLimit} />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} used={openTabs.length} limit={openTabsLimit} canUpgrade={canUpgrade} />
       <AskStackPanel
         open={askOpen}
         onOpenChange={(v) => {

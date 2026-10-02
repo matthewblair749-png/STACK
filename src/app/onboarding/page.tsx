@@ -13,9 +13,6 @@ import { cn } from "@/lib/utils";
 
 const STEP_LABELS = ["Welcome", "Profession", "Apps", "Source", "Plan", "Ready"];
 
-type PlanId = "Solo" | "Team" | "Business";
-type Interval = "monthly" | "yearly";
-
 interface Profession {
   id: string;
   slug: string;
@@ -45,42 +42,13 @@ interface AppEntry {
   logoPath?: string | null;
 }
 
-const plans: {
-  id: PlanId;
-  name: string;
-  monthly: number;
-  yearly: number;
-  per: string;
-  description: string;
-  features: string[];
-}[] = [
-  {
-    id: "Solo",
-    name: "Solo",
-    monthly: 5,
-    yearly: 50,
-    per: "/month",
-    description: "For individuals.",
-    features: ["1 user", "Connected apps", "AI assistant", "Tasks", "Projects", "Calendar", "Files", "Basic automations"],
-  },
-  {
-    id: "Team",
-    name: "Team",
-    monthly: 12,
-    yearly: 120,
-    per: "/user/month",
-    description: "For teams.",
-    features: ["Shared workspace", "Team projects", "Advanced AI", "Team conversations", "Connected apps", "Automations", "Admin controls"],
-  },
-  {
-    id: "Business",
-    name: "Business",
-    monthly: 20,
-    yearly: 200,
-    per: "/user/month",
-    description: "For larger organizations.",
-    features: ["Advanced security", "Organization controls", "Custom integrations", "Advanced administration", "Dedicated support"],
-  },
+/** Everything a new account really gets today - no paid tiers are sold until they offer something real. */
+const EARLY_ACCESS_INCLUDES = [
+  "Connect any supported app",
+  "Home, Inbox, My Work, Calendar and Files",
+  "STACK AI, with sources for every answer",
+  "Video calls in the browser",
+  "Projects and tasks",
 ];
 
 const readyMessages = ["Connecting your apps...", "Organizing your work...", "Setting up your AI workspace..."];
@@ -99,10 +67,6 @@ export default function OnboardingPage() {
   const [connectPending, setConnectPending] = useState<string | null>(null);
 
   const [referral, setReferral] = useState<string | null>(null);
-
-  const [interval, setInterval] = useState<Interval>("monthly");
-  const [checkoutPending, setCheckoutPending] = useState<PlanId | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const [readyMessageIndex, setReadyMessageIndex] = useState(0);
 
@@ -127,7 +91,6 @@ export default function OnboardingPage() {
         }
         if (p.professionSlug) setProfession(p.professionSlug);
         if (p.referralSource) setReferral(p.referralSource);
-        if (p.billingInterval) setInterval(p.billingInterval);
         setStep(p.currentStep ?? 0);
         setReady(true);
       })
@@ -252,25 +215,6 @@ export default function OnboardingPage() {
     saveProgress({ selectedPlan: "Free", completed: true });
     setReadyMessageIndex(0);
     setStep(5);
-  }
-
-  async function subscribe(planId: PlanId) {
-    setCheckoutPending(planId);
-    setCheckoutError(null);
-    saveProgress({ selectedPlan: planId, billingInterval: interval });
-    try {
-      const res = await fetch("/api/billing/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId, interval }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error || "Checkout failed.");
-      window.location.assign(body.url);
-    } catch (err) {
-      setCheckoutError(err instanceof Error ? err.message : "Checkout failed.");
-      setCheckoutPending(null);
-    }
   }
 
   function buildMyDay() {
@@ -425,54 +369,22 @@ export default function OnboardingPage() {
 
           {step === 4 && (
             <div>
-              <h1 className="text-center text-2xl font-semibold text-ink">Choose the plan that works for you.</h1>
-              <div className="mt-5 flex items-center justify-center gap-1 rounded-xl bg-neutral-100 p-1">
-                {(["monthly", "yearly"] as Interval[]).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setInterval(v)}
-                    className={cn(
-                      "rounded-lg px-4 py-1.5 text-sm font-medium capitalize transition-colors",
-                      interval === v ? "bg-white text-ink shadow-sm" : "text-neutral-500",
-                    )}
-                  >
-                    {v}
-                  </button>
-                ))}
+              <h1 className="text-center text-2xl font-semibold text-ink">STACK is free during early access.</h1>
+              <p className="mx-auto mt-2 max-w-md text-center text-sm text-neutral-500">No card, no trial clock. If paid plans arrive later, we&apos;ll tell you before anything is ever charged.</p>
+              <div className="mx-auto mt-6 max-w-md rounded-2xl border border-neutral-200 p-5">
+                <p className="text-sm font-semibold text-ink">Included for you</p>
+                <ul className="mt-3 space-y-2">
+                  {EARLY_ACCESS_INCLUDES.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-neutral-600">
+                      <Check size={14} className="mt-0.5 shrink-0 text-blue" /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              {checkoutError && <p className="mt-3 text-center text-xs text-red">{checkoutError}</p>}
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {plans.map((plan) => (
-                  <div key={plan.id} className="flex flex-col rounded-2xl border border-neutral-200 p-4">
-                    <p className="text-sm font-semibold text-ink">{plan.name}</p>
-                    <p className="mt-2 text-2xl font-semibold text-ink">
-                      ${interval === "monthly" ? plan.monthly : Math.round(plan.yearly / 12)}
-                      <span className="text-sm font-normal text-neutral-400">{plan.per}</span>
-                    </p>
-                    {interval === "yearly" && <p className="text-xs text-neutral-400">${plan.yearly} billed yearly</p>}
-                    <p className="mt-2 text-xs text-neutral-500">{plan.description}</p>
-                    <ul className="mt-3 flex-1 space-y-1.5">
-                      {plan.features.map((f) => (
-                        <li key={f} className="flex items-start gap-1.5 text-xs text-neutral-600">
-                          <Check size={12} className="mt-0.5 shrink-0 text-blue" /> {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button size="sm" className="mt-4 w-full" disabled={checkoutPending !== null} onClick={() => subscribe(plan.id)}>
-                      {checkoutPending === plan.id ? "Redirecting..." : `Choose ${plan.name}`}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 rounded-2xl border border-neutral-200 p-4 text-center">
-                <p className="text-sm font-medium text-ink">Enterprise — Custom</p>
-                <p className="mt-1 text-xs text-neutral-500">Advanced security, organization controls, custom integrations, dedicated support.</p>
-                <a href="mailto:sales@stack.app" className="mt-2 inline-block text-xs font-medium text-blue hover:underline">Contact Sales</a>
-              </div>
-              <div className="mt-4 flex justify-center">
-                <button onClick={chooseFree} className="text-sm font-medium text-neutral-400 hover:text-ink">
-                  Continue with Free →
-                </button>
+              <div className="mt-6 flex justify-center">
+                <Button onClick={chooseFree}>
+                  Continue <ArrowRight size={15} />
+                </Button>
               </div>
             </div>
           )}

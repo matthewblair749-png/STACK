@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy Policy - STACK" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="September 25, 2026">
+    <LegalPage title="Privacy Policy" updated="October 2, 2026">
       <p>STACK helps you understand, prioritize and act on your work by connecting the apps you already use. This policy explains what STACK collects, why, who it is shared with, and the control you have. We only access an app after you sign in to it and approve access yourself.</p>
 
       <h2>What we collect</h2>
@@ -14,6 +14,7 @@ export default function PrivacyPage() {
         <li><strong>Data from apps you connect:</strong> only what you authorize. For example, from Google: email subject lines, senders and short previews, calendar event details, and Drive file names and links. From other apps: notifications, tasks, issues, meetings, deals or files, as described on each app&apos;s connection screen. STACK does not import passwords, and requests read-only access by default.</li>
         <li><strong>Content you create in STACK:</strong> tasks, projects, conversations with STACK AI, and the actions you approve.</li>
         <li><strong>Security records:</strong> when an app is connected or disconnected and when a sync fails. These never contain your tokens or message content.</li>
+        <li><strong>Calls:</strong> who joined a STACK call and when. Audio and video travel directly between participants&apos; browsers; STACK does not record or store them.</li>
       </ul>
 
       <h2>How we use it</h2>
@@ -33,8 +34,8 @@ export default function PrivacyPage() {
 
       <h2>How we protect it</h2>
       <ul>
-        <li>Access tokens for your connected apps are encrypted at rest and are never sent to your browser.</li>
-        <li>Connections use each app&apos;s official sign-in (OAuth). STACK never sees your password for those apps.</li>
+        <li>Access tokens, API keys and any other credentials for your connected apps are encrypted at rest (AES-256-GCM) and are never sent back to your browser.</li>
+        <li>Most connections use the app&apos;s official sign-in (OAuth), so STACK never sees your password. Some apps only offer an API key or token you create yourself in that app and paste into STACK. One app (ServiceNow) only supports a username and password; for it we recommend a dedicated read-only account.</li>
         <li>Anything that would send, change or delete something in another app needs your explicit approval first.</li>
         <li>You only see information you are already allowed to see in the underlying app.</li>
       </ul>
@@ -43,7 +44,7 @@ export default function PrivacyPage() {
       <ul>
         <li><strong>Disconnect an app</strong> at any time from Integrations. STACK then revokes its access where the app allows it, deletes the stored credentials, and deletes the content it imported from that app.</li>
         <li><strong>Revoke access yourself</strong> in the app&apos;s own settings, for example your Google Account&apos;s third-party access page.</li>
-        <li><strong>Delete your account and data</strong> by contacting us. We will delete your STACK data within a reasonable period.</li>
+        <li><strong>Delete your account and data</strong> yourself, any time, from Settings. STACK revokes its access to every connected app where the app allows it, then permanently deletes your account, your workspace and everything imported into it.</li>
       </ul>
 
       <h2>Sharing</h2>

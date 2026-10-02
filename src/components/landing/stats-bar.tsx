@@ -2,14 +2,14 @@
 
 import { motion } from "framer-motion";
 
-const stats = [
-  { value: "12,000+", label: "Teams onboarded" },
-  { value: "180+", label: "Apps connected" },
-  { value: "4.9/5", label: "Average rating" },
-  { value: "38%", label: "Less time in tabs" },
-];
-
-export function StatsBar() {
+/** Facts about what STACK actually does - every number here is true by construction, not marketing. */
+export function StatsBar({ appCount }: { appCount: number }) {
+  const stats = [
+    { value: String(appCount), label: "Apps you can connect today" },
+    { value: "0", label: "Actions taken without your approval" },
+    { value: "AES-256", label: "Encryption for every connection" },
+    { value: "Free", label: "During early access" },
+  ];
   return (
     <section className="mx-auto max-w-6xl px-6 py-20">
       <motion.div

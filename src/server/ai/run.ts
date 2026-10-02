@@ -26,6 +26,8 @@ export interface AskResult {
 
 export type AskEvent = { type: "step"; label: string } | { type: "context"; used: UsedSources };
 
+/** Full (model-backed) AI answers per person per rolling 24 hours. Override with AI_DAILY_LIMIT. */
+const DEFAULT_DAILY_LIMIT = 50;
 const MAX_ATTACHMENTS = 3;
 const MAX_ATTACHMENT_CHARS = 200_000;
 
@@ -239,6 +241,23 @@ function unavailableReason(err: unknown): string | undefined {
  * basic assistant (real data, no model) so chat keeps working even with no key or credits.
  */
 export async function runAsk(opts: AskOpts): Promise<AskResult> {
+  // Model answers cost real money per call, and anyone can sign up. Past a per-person daily cap, answers
+  // come from the free built-in assistant instead - the chat keeps working, the bill can't run away.
+  const limit = Number(process.env.AI_DAILY_LIMIT) > 0 ? Number(process.env.AI_DAILY_LIMIT) : DEFAULT_DAILY_LIMIT;
+  const usedToday = await db.conversationMessage.count({
+    where: { role: "ai", createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, conversation: { userId: opts.userId } },
+  });
+  if (usedToday >= limit) {
+    return runLocalAsk({
+      workspaceId: opts.workspaceId,
+      userId: opts.userId,
+      question: opts.question,
+      projectId: opts.projectId,
+      reason: `You've used today's ${limit} full AI answers, so this one comes from your synced data only. Full answers come back within 24 hours.`,
+      emit: opts.emit,
+    });
+  }
+
   const attempts: (() => Promise<AskResult>)[] = [];
   if (process.env.ANTHROPIC_API_KEY) attempts.push(() => runModelAsk(opts, "claude"));
   if (compatConfigured()) attempts.push(() => runModelAsk(opts, "compat"));

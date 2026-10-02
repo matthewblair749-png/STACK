@@ -6,69 +6,37 @@ export interface PricingPlan {
   features: string[];
   cta: string;
   highlighted?: boolean;
+  /** Not available yet - shown honestly, with no sign-up or checkout attached. */
+  comingSoon?: boolean;
 }
 
+/**
+ * Only what can really be used today is offered. Paid tiers return when they unlock something real -
+ * listing features that don't exist (or selling a checkout that can't complete) isn't a plan.
+ */
 export const pricingPlans: PricingPlan[] = [
   {
-    name: "Free",
+    name: "Early access",
     price: "$0",
-    period: "/month",
-    description: "Try STACK with the basics.",
-    features: ["Basic workspace", "Limited integrations", "Basic tasks", "Limited AI"],
+    period: "while in early access",
+    description: "Everything STACK does today, free.",
+    features: [
+      "Connect any supported app",
+      "Home, Inbox, My Work, Calendar and Files",
+      "STACK AI with sources for every answer",
+      "Video calls in the browser",
+      "Projects and tasks",
+      "Approve every action before it happens",
+    ],
     cta: "Get started",
-  },
-  {
-    name: "Solo",
-    price: "$5",
-    period: "/month",
-    description: "For individuals who want it all connected.",
-    features: [
-      "Unlimited integrations",
-      "AI assistant",
-      "Tasks & projects",
-      "Calendar",
-      "File search",
-      "Automations",
-    ],
-    cta: "Start free trial",
-  },
-  {
-    name: "Team",
-    price: "$12",
-    period: "/user/month",
-    description: "For teams working together.",
-    features: [
-      "Everything in Solo",
-      "Shared workspace",
-      "Team projects",
-      "Team AI",
-      "Shared knowledge",
-      "Workflow automation",
-      "Admin controls",
-    ],
-    cta: "Start free trial",
     highlighted: true,
   },
   {
-    name: "Business",
-    price: "$20",
-    period: "/user/month",
-    description: "For growing companies that need more control.",
-    features: [
-      "Advanced AI",
-      "Company-wide search",
-      "Advanced automation",
-      "Analytics",
-      "Advanced permissions",
-      "Priority support",
-    ],
-    cta: "Start free trial",
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    description: "For organizations with advanced needs.",
-    features: ["SSO", "Advanced security", "Custom integrations", "Dedicated support", "Custom contracts"],
-    cta: "Contact sales",
+    name: "Teams",
+    price: "Coming soon",
+    description: "STACK for a whole team, on the roadmap.",
+    features: ["Invite teammates to your workspace", "Shared projects and tasks", "Calls with your whole team"],
+    cta: "Not available yet",
+    comingSoon: true,
   },
 ];

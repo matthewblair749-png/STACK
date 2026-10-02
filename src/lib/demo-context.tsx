@@ -53,6 +53,8 @@ interface DemoState {
 
   plan: PlanId;
   openTabsLimit: number;
+  /** True only when paid plans can really be bought (billing configured) and this workspace is on Free. */
+  canUpgrade: boolean;
 
   openTabs: OpenTab[];
   activeTabId: string | null;
@@ -105,6 +107,9 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   const [commandOpen, setCommandOpen] = useState(false);
 
   const [plan, setPlan] = useState<PlanId>("free");
+  // While no payment provider is set up nothing can be bought, so early access gets the paid limits
+  // instead of a cap with an "upgrade" that can't complete.
+  const [billingConfigured, setBillingConfigured] = useState(true);
   const [openTabs, setOpenTabs] = useState<OpenTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [recentlyClosed, setRecentlyClosed] = useState<RecentlyClosedTab[]>([]);
@@ -118,8 +123,11 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     apiCall<{ people: Person[] }>("/api/workspace/members").then((d) => setPeople(d.people)).catch(() => {});
     apiCall<{ workspace: Workspace }>("/api/workspace").then((d) => setWorkspace(d.workspace)).catch(() => {});
     apiCall<{ insights: Insight[] }>("/api/insights").then((d) => setInsights(d.insights)).catch(() => {});
-    apiCall<{ plan: string }>("/api/billing/status")
-      .then((d) => setPlan(PLAN_FROM_API[d.plan] ?? "free"))
+    apiCall<{ plan: string; configured: boolean }>("/api/billing/status")
+      .then((d) => {
+        setPlan(PLAN_FROM_API[d.plan] ?? "free");
+        setBillingConfigured(d.configured);
+      })
       .catch(() => {});
   }, []);
 
@@ -150,7 +158,8 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
     }
   }, [openTabs, activeTabId, recentlyClosed]);
 
-  const openTabsLimit = getOpenTabsLimit(plan);
+  const openTabsLimit = billingConfigured ? getOpenTabsLimit(plan) : getOpenTabsLimit("solo");
+  const canUpgrade = billingConfigured && plan === "free";
 
   const toggleTask = useCallback((id: string) => {
     setTasks((prev) => {
@@ -375,6 +384,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
 
       plan,
       openTabsLimit,
+      canUpgrade,
 
       openTabs,
       activeTabId,
@@ -411,6 +421,7 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
       dismissInsight,
       plan,
       openTabsLimit,
+      canUpgrade,
       openTabs,
       activeTabId,
       recentlyClosed,

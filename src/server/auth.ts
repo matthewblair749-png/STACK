@@ -52,7 +52,11 @@ if (
   }
 }
 
-if (process.env.RESEND_API_KEY && process.env.EMAIL_FROM) {
+// Resend's shared sandbox sender (anything @resend.dev) only delivers to the Resend account owner's
+// own inbox. Offering email sign-in with it in production would show real users "check your email"
+// for a link that never arrives - so it's only enabled once EMAIL_FROM is on a verified domain.
+const sandboxSender = /@resend\.dev$/i.test(process.env.EMAIL_FROM ?? "");
+if (process.env.RESEND_API_KEY && process.env.EMAIL_FROM && !(sandboxSender && process.env.NODE_ENV === "production")) {
   providers.push(
     Resend({
       apiKey: process.env.RESEND_API_KEY,

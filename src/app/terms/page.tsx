@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Terms of Service - STACK" };
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Service" updated="September 25, 2026">
+    <LegalPage title="Terms of Service" updated="October 2, 2026">
       <p>These terms govern your use of STACK. By creating an account or using STACK you agree to them. If you use STACK for an organization, you confirm you may accept these terms for it.</p>
 
       <h2>The service</h2>
@@ -33,10 +33,10 @@ export default function TermsPage() {
       </ul>
 
       <h2>Your data</h2>
-      <p>You keep ownership of your data and of the content in your connected apps. We handle it as described in our <Link className="font-medium text-blue underline" href="/privacy">Privacy Policy</Link>. You can disconnect apps and ask us to delete your data at any time.</p>
+      <p>You keep ownership of your data and of the content in your connected apps. We handle it as described in our <Link className="font-medium text-blue underline" href="/privacy">Privacy Policy</Link>. You can disconnect apps at any time, and delete your account and all of its data yourself from Settings.</p>
 
-      <h2>Plans and payment</h2>
-      <p>Paid plans are billed as shown when you subscribe, and you can cancel at any time. Cancellation takes effect at the end of the current billing period unless we say otherwise at checkout.</p>
+      <h2>Plans, payment and usage limits</h2>
+      <p>STACK is free to use during early access. Each account includes a daily number of full AI answers; past it, STACK keeps answering from your synced data without an AI model until the limit resets. If we introduce paid plans, we will tell you before anything is charged, they will be billed as shown when you subscribe, and you will be able to cancel at any time, effective at the end of the current billing period.</p>
 
       <h2>Availability and changes</h2>
       <p>We work to keep STACK available but do not promise it will always be uninterrupted or error-free. We may improve, change or discontinue features, and will give reasonable notice of changes that materially affect you.</p>

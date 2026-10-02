@@ -28,7 +28,7 @@ export function WorkspaceSection() {
   const items = [
     { icon: CheckSquare, label: "Tasks", desc: "Priorities, due dates, subtasks", accent: "blue" as const },
     { icon: FolderKanban, label: "Projects", desc: "Progress, timelines, AI summaries", accent: "yellow" as const },
-    { icon: MessageSquare, label: "Messages", desc: "Slack, Teams, email in one feed", accent: "red" as const },
+    { icon: MessageSquare, label: "Messages", desc: "Slack and email in one feed", accent: "red" as const },
     { icon: Files, label: "Files", desc: "Search across every connected drive", accent: "blue" as const },
   ];
   const accentBg = { blue: "bg-blue-soft text-blue", yellow: "bg-yellow-soft text-neutral-900", red: "bg-red-soft text-red" };
@@ -119,8 +119,8 @@ export function SurfacesSection() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
           eyebrow="Everywhere you work"
-          title="Every surface, exactly where you expect it."
-          subtitle="STACK stays in sync across desktop, web, and mobile — pick up a task on your phone, finish it at your desk."
+          title="Every screen, nothing to install."
+          subtitle="STACK runs in your browser and adapts to any screen - pick up a task on your phone, finish it at your desk. Same account, same data."
           className="max-w-2xl"
         />
         <Visual>
@@ -144,7 +144,7 @@ export function SurfacesSection() {
                   <div className="rounded-lg bg-neutral-50" />
                 </div>
               </div>
-              <span className="text-sm text-neutral-500">Desktop &amp; web</span>
+              <span className="text-sm text-neutral-500">Desktop browser</span>
             </motion.div>
 
             <motion.div
@@ -174,7 +174,7 @@ export function SurfacesSection() {
                 <div className="flex-1 rounded-lg bg-red-soft" />
                 <div className="h-2 rounded bg-neutral-50" />
               </div>
-              <span className="text-sm text-neutral-500">Mobile</span>
+              <span className="text-sm text-neutral-500">Phone</span>
             </motion.div>
           </div>
         </Visual>
@@ -223,8 +223,9 @@ export function AskAISection() {
               <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-soft text-blue">
                 <Sparkles size={14} />
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-neutral-50 px-3 py-2 text-sm text-neutral-700">
-                <Circle size={13} className="text-red" /> Created &ldquo;Unblock onboarding timeline&rdquo; · assigned to Alex Rivera
+              <div className="rounded-xl bg-neutral-50 px-3 py-2 text-sm text-neutral-700">
+                <p className="flex items-center gap-2"><Circle size={13} className="text-red" /> Task &ldquo;Unblock onboarding timeline&rdquo; for Alex Rivera</p>
+                <p className="mt-1.5 text-xs text-neutral-400">Waiting for your approval - Approve · Edit · Cancel</p>
               </div>
             </div>
           </div>
@@ -247,10 +248,10 @@ export function AutomationSection() {
     <section className="bg-yellow-soft py-28 sm:py-36">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
-          eyebrow="Automations"
+          eyebrow="Automations · Coming soon"
           accent="yellow"
-          title="Let STACK handle the busywork."
-          subtitle="Build visual workflows that trigger on emails, messages, meetings, or deadlines — no code required."
+          title="Next: let STACK handle the busywork."
+          subtitle="Visual workflows that trigger on emails, messages, meetings or deadlines are in the works. Today, STACK drafts tasks and replies for you to approve in one click."
           className="max-w-2xl"
         />
         <Visual>
