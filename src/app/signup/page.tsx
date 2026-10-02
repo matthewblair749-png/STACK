@@ -3,16 +3,24 @@ import { AuthCard } from "@/components/auth-card";
 import { AuthButtons } from "@/components/auth-buttons";
 import { configuredAuthProviders } from "@/server/auth";
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl: raw } = await searchParams;
+  const callbackUrl = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/home";
+  const isInvite = callbackUrl.startsWith("/invite/");
   const ids = new Set(configuredAuthProviders.map((p) => p.id));
 
   return (
     <AuthCard
-      title="Create your workspace."
-      subtitle="Free to start. No credit card required."
+      title={isInvite ? "Create your account to join." : "Create your workspace."}
+      subtitle={isInvite ? "Free. You'll join your team's workspace right after." : "Free to start. No credit card required."}
       footer={
         <>
-          Already have an account? <Link href="/login" className="font-medium text-ink underline">Log in</Link>
+          Already have an account?{" "}
+          <Link href={callbackUrl === "/home" ? "/login" : `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-medium text-ink underline">Log in</Link>
         </>
       }
     >
@@ -23,7 +31,7 @@ export default function SignupPage() {
           apple: ids.has("apple"),
           email: ids.has("resend"),
         }}
-        callbackUrl="/home"
+        callbackUrl={callbackUrl}
       />
 
       <p className="mt-4 text-center text-xs text-neutral-400">

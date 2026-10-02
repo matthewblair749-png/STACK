@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { requireSession } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
-import { decrypt } from "@/server/crypto";
-import { revokeConnection } from "@/server/integrations/revoke";
+import { deleteUserAccount } from "@/server/account";
 
 interface UpdateUserBody {
   name?: string;
@@ -49,33 +48,7 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE() {
   try {
     const session = await requireSession();
-
-    // Revoke every app grant at the provider first (best effort), so deleting the account also cuts off
-    // access at Google, Slack, etc. - not just STACK's stored copy of the tokens.
-    const grants = await db.integration.findMany({ where: { userId: session.user.id }, select: { provider: true, accessToken: true, refreshToken: true, scopes: true } });
-    await Promise.all(
-      grants
-        .filter((g) => g.accessToken)
-        .map(async (g) => {
-          try {
-            await revokeConnection(g.provider, { accessToken: decrypt(g.accessToken!), refreshToken: g.refreshToken ? decrypt(g.refreshToken) : undefined, scopes: g.scopes });
-          } catch (e) {
-            // A failed revoke (or an undecryptable old token) must never block deleting the account.
-            console.error("revoke during account deletion failed", g.provider, e);
-          }
-        }),
-    );
-
-    const ownedWorkspaces = await db.workspace.findMany({
-      where: { ownerId: session.user.id },
-      select: { id: true },
-    });
-
-    await db.$transaction([
-      ...ownedWorkspaces.map((w) => db.workspace.delete({ where: { id: w.id } })),
-      db.user.delete({ where: { id: session.user.id } }),
-    ]);
-
+    await deleteUserAccount(session.user.id);
     return NextResponse.json({ ok: true });
   } catch (err) {
     return handleApiError(err, "DELETE /api/user failed");

@@ -121,7 +121,7 @@ export default function SettingsPage() {
               <div className="mt-3 flex items-center justify-between rounded-xl border border-red/20 bg-red-soft/40 px-4 py-3">
                 <div>
                   <span className="text-sm text-ink">Delete account</span>
-                  <p className="text-xs text-neutral-500">Permanently deletes your account and any workspace you own.</p>
+                  <p className="text-xs text-neutral-500">Permanently deletes your account and any workspace you own, including for teammates you invited to it. Tasks you created in other people&apos;s workspaces pass to their owner.</p>
                 </div>
                 {confirmDelete ? (
                   <div className="flex items-center gap-2">

@@ -41,6 +41,8 @@ model User {
   conversations   Conversation[]
   hostedCalls     Call[]            @relation("CallHost")
   callParticipations CallParticipant[]
+  invitesCreated  WorkspaceInvite[] @relation("InviteCreator")
+  invitesAccepted WorkspaceInvite[] @relation("InviteAcceptor")
 }
 
 model Account {
@@ -110,6 +112,7 @@ model Workspace {
   memoryItems    MemoryItem[]
   conversations  Conversation[]
   calls          Call[]
+  invites        WorkspaceInvite[]
 }
 
 model WorkspaceMember {
@@ -124,6 +127,27 @@ model WorkspaceMember {
 
   @@unique([workspaceId, userId])
   @@index([userId])
+}
+
+/// A single-use link that lets one person join a workspace. Only a SHA-256 hash of the link's secret is
+/// stored, so a copy of the database can't be used to join anyone's workspace. Expires after 7 days.
+model WorkspaceInvite {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  tokenHash    String        @unique
+  role         WorkspaceRole @default(Member)
+  createdById  String
+  createdAt    DateTime      @default(now())
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  acceptedById String?
+  revokedAt    DateTime?
+
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy  User      @relation("InviteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  acceptedBy User?     @relation("InviteAcceptor", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
 }
 
 // ---------- Core work data ----------

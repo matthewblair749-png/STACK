@@ -32,15 +32,26 @@ export async function computeProjectOverview(workspaceId: string, userId: string
     select: { fromType: true, fromId: true, toType: true, toId: true },
     take: 2000,
   });
+  // Synced content is private to the person whose account it came from. Projects are shared with the
+  // whole workspace, so only count linked items that belong to *this* viewer - a teammate's emails or
+  // files never show up here, not even as a number.
+  const idsOf = (t: string) => links.filter((l) => l.fromType === t).map((l) => l.fromId);
+  const [mine1, mine2, mine3] = await Promise.all([
+    db.syncedMessage.findMany({ where: { workspaceId, userId, id: { in: idsOf("SyncedMessage") } }, select: { id: true } }),
+    db.syncedEvent.findMany({ where: { workspaceId, userId, id: { in: idsOf("SyncedEvent") } }, select: { id: true } }),
+    db.syncedFile.findMany({ where: { workspaceId, userId, id: { in: idsOf("SyncedFile") } }, select: { id: true } }),
+  ]);
+  const mine = new Set([...mine1, ...mine2, ...mine3].map((r) => r.id));
+
   const linked = new Map<string, { messages: Set<string>; meetings: Set<string>; files: Set<string> }>();
   for (const l of links) {
+    if (!mine.has(l.fromId)) continue;
     const pid = l.toType === "Project" ? l.toId : taskToProject.get(l.toId);
     if (!pid) continue;
     let e = linked.get(pid);
     if (!e) linked.set(pid, (e = { messages: new Set(), meetings: new Set(), files: new Set() }));
     (l.fromType === "SyncedMessage" ? e.messages : l.fromType === "SyncedEvent" ? e.meetings : e.files).add(l.fromId);
   }
-  void userId;
 
   const nameOf = (id: string) => members.find((m) => m.userId === id)?.user;
   return projects.map((p) => {

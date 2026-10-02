@@ -49,6 +49,7 @@ export default function PrivacyPage() {
 
       <h2>Sharing</h2>
       <p>We share data only with service providers that run STACK for us (hosting, database, email delivery, AI processing and payments), under terms that limit them to providing those services, or when the law requires it.</p>
+      <p><strong>Shared workspaces:</strong> if you join or invite others to a workspace, its members can see each other&apos;s name, email address and role, plus the tasks, projects and calls in that workspace. Data from your connected apps (email, messages, files, meetings) and your AI chats stay private to you and are never shown to teammates. If you leave or are removed from a workspace, your connections and imported data in it are deleted; tasks you created stay with the team.</p>
 
       <h2>Changes and contact</h2>
       <p>If we change this policy in a meaningful way, we will update the date above and, where appropriate, tell you in the product.</p>

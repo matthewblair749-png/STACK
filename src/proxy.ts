@@ -21,6 +21,7 @@ const PROTECTED_PREFIXES = [
   "/onboarding",
   "/calls",
   "/call",
+  "/invite",
 ];
 
 // Static files under /public (e.g. /integrations/<slug>.svg logo assets) can share
