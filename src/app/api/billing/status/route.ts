@@ -3,6 +3,7 @@ import { db } from "@/server/db";
 import { requireSessionAndWorkspace } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 import { isStripeConfigured } from "@/server/stripe";
+import { effectivePlan, PAST_DUE_GRACE_DAYS } from "@/server/billing";
 
 export async function GET() {
   try {
@@ -14,7 +15,10 @@ export async function GET() {
 
     return NextResponse.json({
       configured: isStripeConfigured(),
-      plan: subscription?.plan ?? "Free",
+      // What the workspace actually gets now (limits follow this), and what was bought.
+      plan: effectivePlan(subscription),
+      billedPlan: subscription?.plan ?? "Free",
+      graceDays: PAST_DUE_GRACE_DAYS,
       status: subscription?.status ?? "Active",
       currentPeriodEnd: subscription?.currentPeriodEnd,
       hasStripeCustomer: !!subscription?.stripeCustomerId,

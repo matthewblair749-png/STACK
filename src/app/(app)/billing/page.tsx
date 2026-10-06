@@ -11,7 +11,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface BillingStatus {
   configured: boolean;
+  /** What the workspace gets right now; differs from billedPlan once a failed payment's grace period ends. */
   plan: "Free" | "Solo" | "Team" | "Business" | "Enterprise";
+  billedPlan: "Free" | "Solo" | "Team" | "Business" | "Enterprise";
+  graceDays: number;
   status: string;
   currentPeriodEnd?: string;
   hasStripeCustomer: boolean;
@@ -114,6 +117,13 @@ function BillingPageInner() {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8">
       {error && (
         <div className="mb-4 rounded-xl border border-red/30 bg-red-soft px-4 py-3 text-sm text-red">{error}</div>
+      )}
+      {status.status === "PastDue" && (
+        <div role="alert" className="mb-4 rounded-xl border border-red/30 bg-red-soft px-4 py-3 text-sm text-ink">
+          {status.plan === status.billedPlan
+            ? `Your last payment didn't go through. Update your card in Manage billing - paid features stay on for up to ${status.graceDays} days after your billing date.`
+            : `Your last payment didn't go through, so this workspace is back on Free. Update your card in Manage billing to restore ${status.billedPlan}.`}
+        </div>
       )}
 
       <Card>
