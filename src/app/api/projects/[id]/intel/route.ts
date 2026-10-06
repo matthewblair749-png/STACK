@@ -4,6 +4,8 @@ import { db } from "@/server/db";
 import { requireSessionAndWorkspace } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 import { buildWorkContext } from "@/server/work/context";
+import { PROJECT_SUMMARY_PREFIX } from "@/server/work/memory";
+import { aiAllowance } from "@/server/ai/run";
 
 const STALE_MS = 12 * 60 * 60 * 1000;
 const STATUS_TEXT: Record<string, string> = { OnTrack: "on track", AtRisk: "at risk", Behind: "behind schedule", Completed: "completed" };
@@ -69,10 +71,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     let summary = { text: computed, source: "computed" as "computed" | "ai", updatedAt: undefined as string | undefined };
     const refresh = req.nextUrl.searchParams.get("refresh") === "1";
-    const fresh = project.summary && project.summaryUpdatedAt && now.getTime() - project.summaryUpdatedAt.getTime() < STALE_MS;
-    if (project.summary && fresh && !refresh) {
-      summary = { text: project.summary, source: "ai", updatedAt: project.summaryUpdatedAt!.toISOString() };
-    } else if (process.env.ANTHROPIC_API_KEY && (tasks.length > 0 || messages.length > 0)) {
+    // The AI overview is written from this person's own synced email and meetings, so it is cached per
+    // person - never on the shared project, where a teammate would see text drawn from someone else's inbox.
+    const cacheKey = { workspaceId_userId_key: { workspaceId, userId: session.user.id, key: `${PROJECT_SUMMARY_PREFIX}${id}` } };
+    const cached = await db.memoryItem.findUnique({ where: cacheKey });
+    const cachedText = cached && typeof cached.value === "object" && cached.value && !Array.isArray(cached.value) ? (cached.value as { text?: unknown }).text : undefined;
+    const fresh = typeof cachedText === "string" && cached && now.getTime() - cached.updatedAt.getTime() < STALE_MS;
+    if (fresh && !refresh) {
+      summary = { text: cachedText as string, source: "ai", updatedAt: cached!.updatedAt.toISOString() };
+    } else if (process.env.ANTHROPIC_API_KEY && (tasks.length > 0 || messages.length > 0) && (await aiAllowance(session.user.id)).allowed) {
       try {
         const context = await buildWorkContext(workspaceId, session.user.id, id);
         const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -86,7 +93,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         });
         const text = res.content.map((c) => (c.type === "text" ? c.text : "")).join("").trim();
         if (text) {
-          await db.project.update({ where: { id }, data: { summary: text, summaryUpdatedAt: now } });
+          await db.memoryItem.upsert({ where: cacheKey, create: { ...cacheKey.workspaceId_userId_key, value: { text } }, update: { value: { text } } });
           summary = { text, source: "ai", updatedAt: now.toISOString() };
         }
       } catch (err) {

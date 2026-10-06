@@ -1,6 +1,12 @@
 import { db } from "@/server/db";
 
 export const IGNORE_PREFIX = "ignored:";
+/** Private per-person caches (never shown as memory, never fed back into the AI as facts). */
+export const CACHE_PREFIX = "cache:";
+export const PROJECT_SUMMARY_PREFIX = `${CACHE_PREFIX}project-summary:`;
+
+/** Only real, user-visible facts: not "ignored" markers and not private caches. */
+export const VISIBLE_MEMORY = { AND: [{ NOT: { key: { startsWith: IGNORE_PREFIX } } }, { NOT: { key: { startsWith: CACHE_PREFIX } } }] };
 
 /**
  * Work memory: durable, user-visible facts STACK has noticed in the user's own synced data

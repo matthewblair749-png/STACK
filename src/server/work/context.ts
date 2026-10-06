@@ -1,5 +1,6 @@
 import { db } from "@/server/db";
 import { computeWorkState } from "./state";
+import { VISIBLE_MEMORY } from "./memory";
 
 export interface ContextRef {
   label: string;
@@ -65,7 +66,7 @@ export async function buildWorkContext(workspaceId: string, userId: string, focu
       select: { fromType: true, fromId: true, toType: true, toId: true },
       take: 500,
     }),
-    db.memoryItem.findMany({ where: { workspaceId, userId }, orderBy: { updatedAt: "desc" }, take: 20, select: { key: true, value: true } }),
+    db.memoryItem.findMany({ where: { workspaceId, userId, ...VISIBLE_MEMORY }, orderBy: { updatedAt: "desc" }, take: 20, select: { key: true, value: true } }),
     db.integration.findMany({ where: { workspaceId, userId }, select: { provider: true, syncError: true } }),
   ]);
 

@@ -4,6 +4,7 @@ import type { PendingActionKind } from "@prisma/client";
 import { db } from "@/server/db";
 import { validateActionPayload } from "@/server/actions/types";
 import { buildWorkContext, type ContextRef } from "@/server/work/context";
+import { PROJECT_SUMMARY_PREFIX } from "@/server/work/memory";
 import type { StructuredAnswer } from "@/lib/work-types";
 import { runLocalAsk } from "./local";
 
@@ -236,6 +237,20 @@ function unavailableReason(err: unknown): string | undefined {
 }
 
 /**
+ * Whether this person still has full (model-backed) AI answers left in the rolling 24 hours. Counts chat
+ * answers and AI project summaries alike, so no route can spend past the cap.
+ */
+export async function aiAllowance(userId: string): Promise<{ allowed: boolean; limit: number }> {
+  const limit = Number(process.env.AI_DAILY_LIMIT) > 0 ? Number(process.env.AI_DAILY_LIMIT) : DEFAULT_DAILY_LIMIT;
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const [answers, summaries] = await Promise.all([
+    db.conversationMessage.count({ where: { role: "ai", createdAt: { gte: since }, conversation: { userId } } }),
+    db.memoryItem.count({ where: { userId, key: { startsWith: PROJECT_SUMMARY_PREFIX }, updatedAt: { gte: since } } }),
+  ]);
+  return { allowed: answers + summaries < limit, limit };
+}
+
+/**
  * Answers with the best model available, in order: Claude (ANTHROPIC_API_KEY), then any OpenAI-compatible
  * provider (LLM_BASE_URL + LLM_MODEL: Groq, Gemini, OpenRouter, local Ollama...), then STACK's built-in
  * basic assistant (real data, no model) so chat keeps working even with no key or credits.
@@ -243,11 +258,8 @@ function unavailableReason(err: unknown): string | undefined {
 export async function runAsk(opts: AskOpts): Promise<AskResult> {
   // Model answers cost real money per call, and anyone can sign up. Past a per-person daily cap, answers
   // come from the free built-in assistant instead - the chat keeps working, the bill can't run away.
-  const limit = Number(process.env.AI_DAILY_LIMIT) > 0 ? Number(process.env.AI_DAILY_LIMIT) : DEFAULT_DAILY_LIMIT;
-  const usedToday = await db.conversationMessage.count({
-    where: { role: "ai", createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, conversation: { userId: opts.userId } },
-  });
-  if (usedToday >= limit) {
+  const { allowed, limit } = await aiAllowance(opts.userId);
+  if (!allowed) {
     return runLocalAsk({
       workspaceId: opts.workspaceId,
       userId: opts.userId,
