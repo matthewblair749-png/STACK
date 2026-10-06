@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Home, CheckSquare, FolderKanban, Inbox, Calendar, Files, MessageSquare, Bell, Sparkles,
-  AppWindow, Workflow, Users, Plug, Settings, HelpCircle, ChevronsUpDown, PanelLeft, Check, LogOut, Plus, Video,
+  AppWindow, Users, Plug, Settings, HelpCircle, ChevronsUpDown, PanelLeft, Check, LogOut, Plus, Video,
 } from "lucide-react";
 import { Logo, LogoMark } from "@/components/logo";
 import { IntegrationLogo } from "@/components/brand-icons";
@@ -40,7 +40,6 @@ const mainNav: NavItem[] = [
 
 const moreNav: NavItem[] = [
   { label: "Open Tabs", href: "/open-tabs", icon: AppWindow },
-  { label: "Automations", href: "/automations", icon: Workflow },
   { label: "Team", href: "/team", icon: Users },
   { label: "Connected Apps", href: "/integrations", icon: Plug },
 ];
