@@ -3,6 +3,9 @@ import type { IntegrationProvider, ProviderFile } from "../provider";
 import { envPair, getJson, tokenRequest } from "../oauth-util";
 
 const env = envPair("BOX");
+// Box client IDs are 32 lowercase letters/digits. Anything else (e.g. a GitHub "Ov23..." ID pasted into the
+// wrong variable) can never complete sign-in, so it must not show a Connect button.
+const idLooksLikeBox = () => /^[a-z0-9]{32}$/.test(env.id());
 
 const tokenCall = (params: Record<string, string>, refreshToken?: string) =>
   tokenRequest(
@@ -16,8 +19,8 @@ export const boxProvider: IntegrationProvider = {
   id: "box",
   label: "Box",
   capabilities: ["files", "search"],
-  isConfigured: env.isConfigured,
-  missingSetup: env.missing,
+  isConfigured: () => env.isConfigured() && idLooksLikeBox(),
+  missingSetup: () => (env.isConfigured() && !idLooksLikeBox() ? ["BOX_CLIENT_ID isn't a Box client ID (expected 32 lowercase letters and digits)"] : env.missing()),
 
   getAuthUrl(state, redirectUri) {
     env.require("Box");
