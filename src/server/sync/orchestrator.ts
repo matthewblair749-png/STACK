@@ -6,6 +6,7 @@ import type { ConnectedTokens } from "@/server/integrations/provider";
 import { buildContextGraph } from "./context-graph";
 import { computeInsights } from "@/server/insights/compute";
 import { refreshMemory } from "@/server/work/memory";
+import { friendlyProviderError } from "@/server/integrations/errors";
 
 interface ProviderSyncResult {
   provider: string;
@@ -19,15 +20,10 @@ interface ProviderSyncResult {
  * Turns provider API failures into something a person can act on. The common one: the API isn't
  * enabled in the app's Google Cloud project - Google's raw JSON is unreadable, so say what to do.
  */
-const msg = (err: unknown) => {
-  const raw = err instanceof Error ? err.message : String(err);
-  if (/SERVICE_DISABLED|accessNotConfigured|has not been used in project/i.test(raw)) {
-    const api = raw.match(/"serviceTitle":\s*"([^"]+)"/)?.[1] ?? "A required Google API";
-    const url = raw.match(/"activationUrl":\s*"([^"]+)"/)?.[1];
-    return `${api} isn't enabled in your Google Cloud project.${url ? ` Enable it at ${url}, wait a minute, then sync again.` : " Enable it in Google Cloud, then sync again."}`;
-  }
-  if (/\b401\b/.test(raw)) return "Google rejected the saved sign-in. Reconnect Google in Connected Apps.";
-  return raw.replace(/\s+/g, " ").slice(0, 300);
+const msg = (providerId: string, err: unknown) => {
+  // The raw provider error is for whoever runs STACK (server logs); people get a sentence they can act on.
+  console.warn(`sync ${providerId} failed:`, err instanceof Error ? err.message.replace(/\s+/g, " ").slice(0, 500) : err);
+  return friendlyProviderError(getProvider(providerId)?.label ?? providerId, err);
 };
 
 /**
@@ -58,19 +54,19 @@ async function saveBatch<Row extends { externalId: string }, Existing extends { 
 
 async function syncOneProvider(workspaceId: string, userId: string, providerId: string): Promise<ProviderSyncResult> {
   const provider = getProvider(providerId);
-  if (!provider) return { provider: providerId, error: "unknown app" };
+  if (!provider) return { provider: providerId, error: "STACK no longer supports this app. Disconnect it in Connected Apps." };
 
   let tokens: ConnectedTokens;
   try {
     tokens = await getFreshTokens(workspaceId, userId, providerId);
   } catch (err) {
-    return { provider: providerId, error: msg(err) };
+    return { provider: providerId, error: msg(providerId, err) };
   }
 
   // STACK's own developer app is only needed for the sign-in (OAuth) flow. A connection made with the
   // person's own token never touches it, so it must not be blocked when that app isn't set up.
   const viaToken = tokens.metadata?.method === "token";
-  if (!viaToken && !provider.isConfigured()) return { provider: providerId, error: "not configured" };
+  if (!viaToken && !provider.isConfigured()) return { provider: providerId, error: `${provider.label} sign-in isn't available in STACK right now. Try again later.` };
 
   const base = { workspaceId, userId, provider: providerId };
   const inKey = (ids: string[]) => ({ workspaceId, provider: providerId, externalId: { in: ids } });
@@ -104,7 +100,7 @@ async function syncOneProvider(workspaceId: string, userId: string, providerId: 
           });
           return { messages: rows.length };
         } catch (err) {
-          return { error: `messages: ${msg(err)}` };
+          return { error: msg(providerId, err) };
         }
       })(),
     );
@@ -134,7 +130,7 @@ async function syncOneProvider(workspaceId: string, userId: string, providerId: 
           });
           return { events: rows.length };
         } catch (err) {
-          return { error: `events: ${msg(err)}` };
+          return { error: msg(providerId, err) };
         }
       })(),
     );
@@ -163,7 +159,7 @@ async function syncOneProvider(workspaceId: string, userId: string, providerId: 
           });
           return { files: rows.length };
         } catch (err) {
-          return { error: `files: ${msg(err)}` };
+          return { error: msg(providerId, err) };
         }
       })(),
     );
@@ -178,7 +174,8 @@ async function syncOneProvider(workspaceId: string, userId: string, providerId: 
     if (p.events !== undefined) result.events = p.events;
     if (p.files !== undefined) result.files = p.files;
   }
-  if (errors.length) result.error = errors.join("; ");
+  // Messages, events and files usually fail for the same reason - say it once.
+  if (errors.length) result.error = [...new Set(errors)].join(" ");
   return result;
 }
 
@@ -188,7 +185,7 @@ export async function syncWorkspaceIntegrations(workspaceId: string, userId: str
   // Every connected app syncs at the same time, not one after another.
   const perProvider = await Promise.all(
     integrations.map((i) =>
-      syncOneProvider(workspaceId, userId, i.provider).catch((err): ProviderSyncResult => ({ provider: i.provider, error: msg(err) })),
+      syncOneProvider(workspaceId, userId, i.provider).catch((err): ProviderSyncResult => ({ provider: i.provider, error: msg(i.provider, err) })),
     ),
   );
 

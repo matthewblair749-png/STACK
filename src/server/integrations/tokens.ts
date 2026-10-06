@@ -2,6 +2,7 @@ import { db } from "@/server/db";
 import { encrypt, decrypt } from "@/server/crypto";
 import { getProvider } from "./registry";
 import type { ConnectedTokens } from "./provider";
+import { friendlyProviderError } from "./errors";
 
 export class IntegrationAuthError extends Error {}
 
@@ -52,7 +53,8 @@ export async function getFreshTokens(
       const message = err instanceof Error ? err.message : String(err);
       const isPermanent = /\b(400|401)\b/.test(message) || /invalid_grant|invalid_token|revoked/i.test(message);
       if (isPermanent) {
-        await db.integration.update({ where: { id: row.id }, data: { syncError: message } });
+        console.warn(`token refresh for ${providerId} failed permanently:`, message.replace(/\s+/g, " ").slice(0, 500));
+        await db.integration.update({ where: { id: row.id }, data: { syncError: friendlyProviderError(provider.label, err) } });
         throw new IntegrationAuthError(message);
       }
       throw err;

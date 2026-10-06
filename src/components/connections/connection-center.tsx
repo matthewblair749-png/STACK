@@ -133,7 +133,7 @@ export function ConnectionCenter() {
         if (app.setup) {
           setSetupError(null);
           setSetupApp(app);
-        } else toast({ title: `${app.name} isn't available yet`, description: app.missingSetup.join("; "), tone: "error" });
+        } else toast({ title: `${app.name} isn't available yet`, description: app.missingSetup.join("; ") || "STACK can't connect to this app yet. We're working on it.", tone: "info" });
         return;
       }
       if (app.connectFields?.length) setFieldsApp(app);

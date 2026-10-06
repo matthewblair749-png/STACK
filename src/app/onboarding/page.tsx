@@ -452,7 +452,7 @@ function AppCard({ app, pending, onConnect }: { app: AppEntry; pending: boolean;
         size="sm"
         variant={app.connected ? "outline" : "primary"}
         disabled={disabled}
-        title={app.status === "needs_setup" ? app.missingSetup.join("; ") : app.status === "external_tool" ? "STACK doesn't have this integration built yet" : app.status === "desktop_app" ? "Local software — nothing for STACK to authorize" : app.status === "unavailable" ? "No public API exists for STACK to connect to" : undefined}
+        title={app.status === "needs_setup" ? app.missingSetup.join("; ") || "STACK can't connect to this app yet" : app.status === "external_tool" ? "STACK doesn't have this integration built yet" : app.status === "desktop_app" ? "Local software — nothing for STACK to authorize" : app.status === "unavailable" ? "No public API exists for STACK to connect to" : undefined}
         onClick={onConnect}
         className="shrink-0"
       >

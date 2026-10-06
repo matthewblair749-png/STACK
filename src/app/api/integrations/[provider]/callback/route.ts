@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/server/db";
 import { encrypt } from "@/server/crypto";
 import { getProvider } from "@/server/integrations/registry";
+import { friendlyProviderError } from "@/server/integrations/errors";
 import { redirectBase, relayTarget } from "@/server/integrations/redirect";
 import { audit } from "@/server/audit";
 import { requireSessionAndWorkspace } from "@/server/workspace";
@@ -35,8 +36,12 @@ export async function GET(
   const cookieValue = req.cookies.get(cookieName)?.value;
 
   if (req.nextUrl.searchParams.get("error")) {
-    const reason = req.nextUrl.searchParams.get("error_description") ?? req.nextUrl.searchParams.get("error");
-    return fail(`${provider.label} sign-in didn't complete${reason ? `: ${reason}` : ""}.`);
+    // Never echo the provider's text back: it's raw, and anyone can put anything in this URL.
+    const errCode = req.nextUrl.searchParams.get("error");
+    const reason = req.nextUrl.searchParams.get("error_description") ?? errCode;
+    console.warn(`${provider.label} sign-in returned an error:`, reason?.slice(0, 300));
+    if (errCode === "access_denied") return fail(`You cancelled connecting ${provider.label}. Connect again whenever you're ready.`);
+    return fail(friendlyProviderError(provider.label, new Error(reason ?? ""), "connect"));
   }
   if (!code || !state || !cookieValue) {
     return fail(`${provider.label} sign-in response was invalid. Try connecting again.`);
@@ -96,7 +101,6 @@ export async function GET(
     return response;
   } catch (err) {
     console.error(`${provider.label} OAuth callback failed`, err);
-    const detail = err instanceof Error ? err.message.replace(/\s+/g, " ").slice(0, 160) : "";
-    return fail(`Connecting ${provider.label} failed${detail ? `: ${detail}` : ". Try again."}`);
+    return fail(friendlyProviderError(provider.label, err, "connect"));
   }
 }

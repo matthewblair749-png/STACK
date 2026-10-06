@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
         connected,
         lastSynced: row ? relativeTime(row.updatedAt) : undefined,
         configured,
-        missingSetup: configured ? [] : provider.missingSetup(),
+        missingSetup: configured || process.env.NODE_ENV === "production" ? [] : provider.missingSetup(),
         connectFields: provider.connectFields,
         setup:
           process.env.NODE_ENV !== "production" && !configured && SETUP_GUIDES[provider.id]

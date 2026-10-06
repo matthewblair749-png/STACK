@@ -86,7 +86,8 @@ export async function GET(req: NextRequest) {
         supported: !!provider,
         configured,
         connected,
-        missingSetup: provider && !configured ? provider.missingSetup() : [],
+        // Setup steps name env vars - for whoever runs STACK, never shown to people on the live site.
+        missingSetup: !isProd && provider && !configured ? provider.missingSetup() : [],
         connectFields: provider?.connectFields,
         tokenConnect: provider?.tokenConnect ? { label: provider.tokenConnect.label, placeholder: provider.tokenConnect.placeholder, helpUrl: provider.tokenConnect.helpUrl, steps: provider.tokenConnect.steps, fields: provider.tokenConnect.fields } : undefined,
         setup,
