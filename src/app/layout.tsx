@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "@/components/providers/session-provider";
 import "./globals.css";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -9,9 +10,19 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "STACK — All your work, together.",
   description:
     "STACK brings your tasks, projects, messages, meetings, files, calendars, and work apps together in one intelligent workspace.",
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: "/",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image", title: `${SITE_NAME} — ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
 };
 
 const THEME_INIT = `try{var p=localStorage.getItem("stack-theme");var d=p==="dark"||(p!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light"}catch(e){}var s=location.pathname;if(s==="/"||s.indexOf("/pricing")===0||s.indexOf("/privacy")===0||s.indexOf("/terms")===0)document.documentElement.dataset.surface="marketing";`;

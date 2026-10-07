@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy Policy - STACK" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="October 2, 2026">
+    <LegalPage title="Privacy Policy" updated="October 7, 2026">
       <p>STACK helps you understand, prioritize and act on your work by connecting the apps you already use. This policy explains what STACK collects, why, who it is shared with, and the control you have. We only access an app after you sign in to it and approve access yourself.</p>
 
       <h2>What we collect</h2>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>AI processing</h2>
-      <p>When you ask STACK AI a question, the relevant parts of your synced work (for example a few message previews or task titles) are sent to an AI model provider to produce the answer. The providers we use are Anthropic and, as a fallback, an OpenAI-compatible provider we configure. This data is sent only to answer your request, and we do not permit these providers to train their models on it.</p>
+      <p>When you ask STACK AI a question, the relevant parts of your synced work (for example a few message previews or task titles) are sent to an AI model provider to produce the answer. We use Anthropic (Claude) and, as a fallback when Claude is unavailable, Groq. This data is sent only to answer your request. Both providers&apos; API terms say they don&apos;t use it to train their models. Each person has a daily limit on AI answers.</p>
 
       <h2>How we protect it</h2>
       <ul>
@@ -47,9 +47,35 @@ export default function PrivacyPage() {
         <li><strong>Delete your account and data</strong> yourself, any time, from Settings. STACK revokes its access to every connected app where the app allows it, then permanently deletes your account, your workspace and everything imported into it.</li>
       </ul>
 
-      <h2>Sharing</h2>
-      <p>We share data only with service providers that run STACK for us (hosting, database, email delivery, AI processing and payments), under terms that limit them to providing those services, or when the law requires it.</p>
+      <h2>Sharing and service providers</h2>
+      <p>We share data only with the service providers that run STACK for us, under terms that limit them to providing those services, or when the law requires it. They are:</p>
+      <ul>
+        <li><strong>Vercel</strong> - hosts the website and app.</li>
+        <li><strong>Neon</strong> - our database, where your account, imported data and encrypted credentials are stored.</li>
+        <li><strong>Anthropic</strong> and <strong>Groq</strong> - AI answers, as described above.</li>
+        <li><strong>Resend</strong> - delivers sign-in emails, when you sign in by email.</li>
+        <li><strong>Stripe</strong> - payments, if paid plans are offered. STACK never sees or stores your card number.</li>
+        <li><strong>Sentry</strong> - error reports, if enabled. Reports describe what broke in the app and are configured not to include your IP address, cookies or message content.</li>
+        <li>The apps you choose to connect, which STACK reads from (and acts in only after you approve).</li>
+      </ul>
       <p><strong>Shared workspaces:</strong> if you join or invite others to a workspace, its members can see each other&apos;s name, email address and role, plus the tasks, projects and calls in that workspace. Data from your connected apps (email, messages, files, meetings) and your AI chats stay private to you and are never shown to teammates. If you leave or are removed from a workspace, your connections and imported data in it are deleted; tasks you created stay with the team.</p>
+
+      <h2>How long we keep data</h2>
+      <ul>
+        <li>Data imported from an app is kept while that app is connected, and deleted when you disconnect it, leave the workspace, or delete your account.</li>
+        <li>Your tasks, projects and AI chats are kept until you delete them or your account.</li>
+        <li>Sign-in sessions end after 30 days without use. Short-lived security records, such as rate-limit counters, are cleared within a day.</li>
+        <li>Our database provider keeps short-term backups for disaster recovery, so deleted data can remain in those backups for a limited time before it ages out.</li>
+      </ul>
+
+      <h2>Cookies</h2>
+      <p>STACK uses only the cookies it needs to work: one that keeps you signed in, one that remembers which workspace you were last in, and a short-lived one that protects an app connection while you sign in to it. There are no advertising or tracking cookies.</p>
+
+      <h2>Your rights</h2>
+      <p>You can see and delete your data in the product at any time, as described above. To get a copy of your data, or for any other privacy request, contact us at the address below and we will respond within 30 days.</p>
+
+      <h2>Children</h2>
+      <p>STACK is a work tool for people aged 16 and over. It isn&apos;t directed at children, and we don&apos;t knowingly collect their data. If you believe a child has an account, contact us and we will delete it.</p>
 
       <h2>Changes and contact</h2>
       <p>If we change this policy in a meaningful way, we will update the date above and, where appropriate, tell you in the product.</p>

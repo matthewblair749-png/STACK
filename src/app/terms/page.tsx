@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Terms of Service - STACK" };
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Service" updated="October 2, 2026">
+    <LegalPage title="Terms of Service" updated="October 7, 2026">
       <p>These terms govern your use of STACK. By creating an account or using STACK you agree to them. If you use STACK for an organization, you confirm you may accept these terms for it.</p>
 
       <h2>The service</h2>
@@ -14,6 +14,7 @@ export default function TermsPage() {
 
       <h2>Your account and connected apps</h2>
       <ul>
+        <li>You must be at least 16 years old to use STACK.</li>
         <li>Keep your sign-in secure and tell us if you think it has been compromised.</li>
         <li>Connect only accounts you are entitled to connect. Connecting an app means you authorize STACK to access what the connection screen describes.</li>
         <li>You are responsible for making sure your use of STACK with those apps complies with their terms and with your organization&apos;s policies.</li>
