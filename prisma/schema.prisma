@@ -745,3 +745,11 @@ model AuditEvent {
 
   @@index([workspaceId, createdAt])
 }
+
+/// Fixed-window request counters for rate limiting (sign-in emails, AI, invites, token connect).
+/// One row per limited key; rows are tiny and old ones are pruned opportunistically.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}

@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { ACTIVE_WORKSPACE_COOKIE, requireSession } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 import { acceptInvite, previewInvite } from "@/server/invites";
+import { rateLimit, tooManyRequests } from "@/server/rate-limit";
 
 /** What the invite is for. Requires sign-in, so a leaked link can't be used to probe workspace names anonymously. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
     const { token } = await params;
     const session = await requireSession();
+    const limit = await rateLimit("inviteUse", session.user.id);
+    if (!limit.ok) return tooManyRequests(limit);
     const { status, workspaceName, invitedBy, role } = await previewInvite(token, session.user.id);
     return NextResponse.json({ status, workspaceName, invitedBy, role });
   } catch (err) {
@@ -20,6 +23,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ to
   try {
     const { token } = await params;
     const session = await requireSession();
+    const limit = await rateLimit("inviteUse", session.user.id);
+    if (!limit.ok) return tooManyRequests(limit);
     const workspaceId = await acceptInvite(token, session.user.id);
     const res = NextResponse.json({ ok: true });
     res.cookies.set(ACTIVE_WORKSPACE_COOKIE, workspaceId, {

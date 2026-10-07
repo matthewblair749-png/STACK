@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export function ForgotPasswordForm({ emailConfigured }: { emailConfigured: boolean }) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error" | "limited">("idle");
 
   if (!emailConfigured) {
     return (
@@ -21,7 +21,7 @@ export function ForgotPasswordForm({ emailConfigured }: { emailConfigured: boole
     e.preventDefault();
     setStatus("sending");
     const res = await signIn("resend", { email, redirect: false, callbackUrl: "/home" });
-    setStatus(res?.error ? "error" : "sent");
+    setStatus(res?.error === "RateLimited" ? "limited" : res?.error ? "error" : "sent");
   }
 
   if (status === "sent") {
@@ -46,6 +46,7 @@ export function ForgotPasswordForm({ emailConfigured }: { emailConfigured: boole
       <Button type="submit" className="w-full justify-center" disabled={status === "sending"}>
         {status === "sending" ? "Sending..." : "Send sign-in link"}
       </Button>
+      {status === "limited" && <p className="text-center text-xs text-red">Too many sign-in links were requested. Wait 15 minutes, then try again.</p>}
       {status === "error" && <p className="text-center text-xs text-red">Couldn&apos;t send the link. Try again.</p>}
     </form>
   );

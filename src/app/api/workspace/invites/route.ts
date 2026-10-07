@@ -3,6 +3,7 @@ import type { WorkspaceRole } from "@prisma/client";
 import { requireSessionAndWorkspace } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 import { createInvite, listPendingInvites } from "@/server/invites";
+import { rateLimit, tooManyRequests } from "@/server/rate-limit";
 
 export async function GET() {
   try {
@@ -19,6 +20,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const { session, workspaceId, role } = await requireSessionAndWorkspace();
+    const limit = await rateLimit("inviteCreate", session.user.id);
+    if (!limit.ok) return tooManyRequests(limit, "You've created a lot of invite links. Wait a moment and try again.");
     const body = (await req.json().catch(() => ({}))) as { role?: WorkspaceRole };
     const { token, invite } = await createInvite(workspaceId, session.user.id, role, body.role === "Admin" ? "Admin" : "Member");
     const url = `${req.nextUrl.origin}/invite/${token}`;

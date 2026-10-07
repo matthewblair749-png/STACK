@@ -5,6 +5,7 @@ import { encrypt } from "@/server/crypto";
 import { getProvider } from "@/server/integrations/registry";
 import { requireSessionAndWorkspace, UnauthorizedError, ForbiddenError } from "@/server/workspace";
 import { audit } from "@/server/audit";
+import { rateLimit, tooManyRequests } from "@/server/rate-limit";
 
 /**
  * Connects an app with an access token the user created in that app. The token is checked against the app
@@ -18,6 +19,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
 
   try {
     const { session, workspaceId } = await requireSessionAndWorkspace();
+    const limit = await rateLimit("tokenConnect", session.user.id);
+    if (!limit.ok) return tooManyRequests(limit, "Too many connection attempts. Wait a moment and try again.");
     const body = (await req.json().catch(() => ({}))) as { token?: unknown; fields?: Record<string, unknown> };
     const token = typeof body.token === "string" ? body.token.trim() : "";
     if (token.length < 20 || token.length > 600 || /\s/.test(token)) {

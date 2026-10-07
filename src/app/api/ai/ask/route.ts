@@ -4,6 +4,12 @@ import { db } from "@/server/db";
 import { requireSessionAndWorkspace } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 import { AiNotConfiguredError, runAsk, validateAttachments, type AskEvent, type AskResult } from "@/server/ai/run";
+import { rateLimit, tooManyRequests } from "@/server/rate-limit";
+
+/** Generous for a real question; stops one request from carrying a huge (expensive) prompt. */
+const MAX_QUESTION_CHARS = 4000;
+const MAX_HISTORY_TURNS = 8;
+const MAX_HISTORY_CHARS = 4000;
 
 const NOT_CONFIGURED = "STACK AI isn't configured yet - set ANTHROPIC_API_KEY (and optionally ANTHROPIC_MODEL) in your environment to enable it.";
 
@@ -62,8 +68,18 @@ export async function POST(req: NextRequest) {
       attachments?: unknown;
       stream?: boolean;
     };
-    const question = body.question?.trim();
+    const question = typeof body.question === "string" ? body.question.trim() : "";
     if (!question) return NextResponse.json({ error: "Ask a question first." }, { status: 400 });
+    if (question.length > MAX_QUESTION_CHARS) {
+      return NextResponse.json({ error: `That question is too long (limit ${MAX_QUESTION_CHARS.toLocaleString()} characters). Attach longer text as a file instead.` }, { status: 400 });
+    }
+    const limit = await rateLimit("aiAsk", userId);
+    if (!limit.ok) return tooManyRequests(limit, "You're asking STACK questions very quickly. Wait a moment and try again.");
+    // Only the recent, well-formed part of the history is used, each turn capped.
+    body.history = (Array.isArray(body.history) ? body.history : [])
+      .filter((t) => t && (t.role === "user" || t.role === "ai") && typeof t.text === "string")
+      .slice(-MAX_HISTORY_TURNS)
+      .map((t) => ({ role: t.role, text: t.text.slice(0, MAX_HISTORY_CHARS) }));
     const att = validateAttachments(body.attachments);
     if (!att.ok) return NextResponse.json({ error: att.error }, { status: 400 });
 
