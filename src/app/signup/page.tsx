@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AuthCard } from "@/components/auth-card";
 import { AuthButtons } from "@/components/auth-buttons";
 import { configuredAuthProviders } from "@/server/auth";
+import { safeCallbackUrl } from "@/lib/safe-callback";
 
 export default async function SignupPage({
   searchParams,
@@ -9,7 +10,7 @@ export default async function SignupPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const { callbackUrl: raw } = await searchParams;
-  const callbackUrl = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/home";
+  const callbackUrl = safeCallbackUrl(raw);
   const isInvite = callbackUrl.startsWith("/invite/");
   const ids = new Set(configuredAuthProviders.map((p) => p.id));
 
