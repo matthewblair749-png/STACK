@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { UnauthorizedError, ForbiddenError } from "./workspace";
 
 /** An expected failure whose message is safe to show the person (bad input, not allowed, gone). */
@@ -20,5 +21,7 @@ export function handleApiError(err: unknown, context: string) {
     return NextResponse.json({ error: err.message }, { status: err.status });
   }
   console.error(context, err);
+  // Unexpected failures only (not 4xx); a no-op unless error monitoring is configured.
+  Sentry.captureException(err, { tags: { context } });
   return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
 }
