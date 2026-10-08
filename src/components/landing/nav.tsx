@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -67,8 +67,8 @@ export function LandingNav() {
             <Link href="/login" className="text-sm font-medium text-neutral-700 hover:text-ink">
               Log in
             </Link>
-            <Link href="/signup">
-              <Button size="sm">Get started →</Button>
+            <Link href="/signup" className={buttonClasses({ size: "sm" })}>
+              Get started →
             </Link>
           </div>
 

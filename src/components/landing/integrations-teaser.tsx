@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { SectionHeader } from "./section-header";
 
@@ -36,7 +36,7 @@ export function IntegrationsTeaser({ featured, total }: { featured: { id: string
         </motion.ul>
 
         <div className="mt-12 flex justify-center">
-          <Link href="/signup"><Button size="lg" variant="outline">Get started and connect yours</Button></Link>
+          <Link href="/signup" className={buttonClasses({ size: "lg", variant: "outline" })}>Get started and connect yours</Link>
         </div>
       </div>
     </section>

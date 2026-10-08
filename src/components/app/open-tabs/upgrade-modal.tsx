@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { LayoutGrid } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 
 /**
  * Shown when every Open Tabs slot is in use. It only offers an upgrade when one can really be bought, and
@@ -57,8 +57,8 @@ export function UpgradeModal({
 
             <div className="flex flex-col gap-2 px-6 py-5">
               {canUpgrade && (
-                <Link href="/billing" className="w-full">
-                  <Button className="w-full">See plans</Button>
+                <Link href="/billing" className={buttonClasses({ className: "w-full" })}>
+                  See plans
                 </Link>
               )}
               <button onClick={onClose} className="w-full py-1.5 text-sm font-medium text-neutral-500 hover:text-ink">

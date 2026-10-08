@@ -125,6 +125,7 @@ export default function TasksPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search tasks..."
+            aria-label="Search tasks"
             className="w-40 text-sm outline-none placeholder:text-neutral-400"
           />
         </div>
@@ -132,6 +133,7 @@ export default function TasksPage() {
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value as Priority | "all")}
+          aria-label="Filter by priority"
           className="rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-600 outline-none"
         >
           <option value="all">All priorities</option>
@@ -158,6 +160,7 @@ export default function TasksPage() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+          aria-label="Sort tasks"
           className="rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-600 outline-none"
         >
           <option value="priority">Sort: Priority</option>

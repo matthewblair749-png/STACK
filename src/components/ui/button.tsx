@@ -19,6 +19,16 @@ const sizes: Record<Size, string> = {
   lg: "h-14 px-8 text-base rounded-xl gap-2",
 };
 
+/** Button styling for elements that aren't buttons, e.g. a Link that should look like one. */
+export function buttonClasses({ variant = "primary", size = "md", className }: { variant?: Variant; size?: Size; className?: string } = {}) {
+  return cn(
+    "inline-flex items-center justify-center font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue focus-visible:ring-offset-2",
+    variants[variant],
+    sizes[size],
+    className,
+  );
+}
+
 export function Button({
   variant = "primary",
   size = "md",

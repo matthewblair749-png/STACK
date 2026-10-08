@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, PlayCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { FloatingApps } from "./floating-apps";
 import { TrustRow } from "./trust-row";
 import { LogoCloud } from "./logo-cloud";
@@ -49,17 +49,13 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.18 }}
           className="mt-9 flex flex-wrap items-center justify-center gap-3"
         >
-          <Link href="/signup">
-            <Button size="lg" className="group">
-              Get started
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-            </Button>
+          <Link href="/signup" className={buttonClasses({ size: "lg", className: "group" })}>
+            Get started
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
-          <Link href="/#product">
-            <Button size="lg" variant="outline">
-              <PlayCircle size={17} />
-              See how it works
-            </Button>
+          <Link href="/#product" className={buttonClasses({ size: "lg", variant: "outline" })}>
+            <PlayCircle size={17} />
+            See how it works
           </Link>
         </motion.div>
 

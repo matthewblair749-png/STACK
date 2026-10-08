@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { pricingPlans } from "@/components/pricing-plans";
 import { cn } from "@/lib/utils";
 
@@ -56,10 +56,8 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
                 {plan.cta}
               </Button>
             ) : (
-              <Link href="/signup" className="mt-7">
-                <Button size="lg" className="w-full" variant={plan.highlighted ? "secondary" : "outline"}>
-                  {plan.cta}
-                </Button>
+              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full" })}>
+                {plan.cta}
               </Link>
             )}
           </motion.div>

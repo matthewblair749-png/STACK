@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 
 export function FinalCTA() {
@@ -21,11 +21,9 @@ export function FinalCTA() {
         <p className="mx-auto mt-6 max-w-md text-xl text-neutral-500">
           One workspace for the work you already do.
         </p>
-        <Link href="/signup" className="mt-10 inline-block">
-          <Button size="lg" className="group">
-            Get started for free
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-          </Button>
+        <Link href="/signup" className={buttonClasses({ size: "lg", className: "group mt-10" })}>
+          Get started for free
+          <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
 
         <div className="mt-20 flex flex-col items-center gap-3">

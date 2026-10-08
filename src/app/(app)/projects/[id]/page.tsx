@@ -147,7 +147,7 @@ export default function ProjectDetailPage() {
           {intel.summary.source === "ai" ? "Written by STACK AI from this project's real tasks and linked messages." : "Generated from this project's tasks and linked messages."}
         </p>
         <form onSubmit={(e) => { e.preventDefault(); ask(question); }} className="mt-4 flex items-center gap-2 rounded-xl border border-neutral-200 bg-white p-1.5 pl-3">
-          <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about this project..." className="flex-1 text-sm outline-none placeholder:text-neutral-400" />
+          <input value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask about this project..." aria-label="Ask about this project" className="flex-1 text-sm outline-none placeholder:text-neutral-400" />
           <button type="submit" className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40" disabled={!question.trim()}>Ask</button>
         </form>
         <div className="mt-2.5 flex flex-wrap gap-1.5">
