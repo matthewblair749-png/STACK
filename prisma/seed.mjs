@@ -47,7 +47,6 @@ const PROVIDER_MAP = {
   "monday-com": "monday",
   calendly: "calendly",
   zendesk: "zendesk",
-  canvas: "canvas",
   intercom: "intercom",
   vercel: "vercel",
   netlify: "netlify",

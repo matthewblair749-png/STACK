@@ -21,7 +21,6 @@ import { clickupProvider } from "./providers/clickup";
 import { mondayProvider } from "./providers/monday";
 import { calendlyProvider } from "./providers/calendly";
 import { zendeskProvider } from "./providers/zendesk";
-import { canvasProvider } from "./providers/canvas";
 import { intercomProvider } from "./providers/intercom";
 import { vercelProvider } from "./providers/vercel";
 import { netlifyProvider } from "./providers/netlify";
@@ -61,7 +60,6 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   monday: mondayProvider,
   calendly: calendlyProvider,
   zendesk: zendeskProvider,
-  canvas: canvasProvider,
   intercom: intercomProvider,
   vercel: vercelProvider,
   netlify: netlifyProvider,

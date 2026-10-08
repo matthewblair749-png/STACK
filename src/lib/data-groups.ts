@@ -13,7 +13,7 @@ export interface DataGroup {
 export const DATA_GROUPS: DataGroup[] = [
   { id: "email", label: "Email", blurb: "Email from your connected accounts, newest first.", noun: "emails", providers: ["google", "microsoft"] },
   { id: "chat", label: "Conversations", blurb: "Chat threads from your connected messaging apps.", noun: "conversations", providers: ["slack"] },
-  { id: "work", label: "Tasks & issues", blurb: "Tasks, cards and issues assigned to you, and code reviews waiting on you.", noun: "tasks and issues", providers: ["asana", "jira", "linear", "trello", "clickup", "monday", "github", "gitlab", "canvas"] },
+  { id: "work", label: "Tasks & issues", blurb: "Tasks, cards and issues assigned to you, and code reviews waiting on you.", noun: "tasks and issues", providers: ["asana", "jira", "linear", "trello", "clickup", "monday", "github", "gitlab"] },
   { id: "support", label: "Support", blurb: "Customer tickets and conversations that need a reply.", noun: "support items", providers: ["zendesk", "intercom", "gorgias", "servicenow"] },
   { id: "customers", label: "Customers & sales", blurb: "Deals, opportunities and marketing campaigns.", noun: "deals and campaigns", providers: ["hubspot", "salesforce", "mailchimp"] },
   { id: "money", label: "Money", blurb: "Payments, failed charges and unpaid invoices.", noun: "payments and invoices", providers: ["stripe", "quickbooks", "freshbooks"] },
