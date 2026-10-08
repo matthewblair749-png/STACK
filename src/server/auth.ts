@@ -6,6 +6,10 @@ import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./db";
 import { generateAppleClientSecret } from "./apple-client-secret";
+import { sanitizeProcessEnv } from "./env";
+
+// Before anything below reads a client ID or secret (see env.ts for why).
+sanitizeProcessEnv();
 
 const providers: NextAuthConfig["providers"] = [];
 
