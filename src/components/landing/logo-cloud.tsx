@@ -8,7 +8,6 @@ const tools = [
   { name: "Notion", id: "notion" },
   { name: "GitHub", id: "github" },
   { name: "Google Drive", id: "drive" },
-  { name: "Dropbox", id: "dropbox" },
   { name: "Google Calendar", id: "google-calendar" },
   { name: "Trello", id: "trello" },
   { name: "Asana", id: "asana" },

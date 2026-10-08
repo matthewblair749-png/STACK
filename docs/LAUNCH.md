@@ -197,7 +197,7 @@ pages show users a reference code (`digest`) that matches the server log entry.
    folders". Put the real 32-character client ID and the secret in `BOX_CLIENT_ID` / `BOX_CLIENT_SECRET`.
 8. **Slack:** api.slack.com/apps > STACK > Manage Distribution > activate public distribution.
 9. **Google OAuth verification** for the Gmail/Drive restricted scopes: [google-verification.md](google-verification.md).
-10. **Remaining OAuth apps** (Microsoft, Salesforce, QuickBooks, FreshBooks, ...): register each with the
+10. **Remaining OAuth apps** (Dropbox, Microsoft, Salesforce, QuickBooks, FreshBooks, ...): register each with the
     redirect URI from section 3, following [app-registration-kit.md](app-registration-kit.md).
 11. **GitHub:** consider branch protection on `main` that requires the CI check. Vercel deploys every push
     to `main`, including ones that fail CI.
