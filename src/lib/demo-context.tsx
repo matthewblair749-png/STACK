@@ -45,6 +45,9 @@ interface DemoState {
   deleteProject: (id: string) => void;
 
   people: Person[];
+  /** Parts of the workspace that failed to load (e.g. "tasks"); empty when everything loaded. */
+  loadErrors: string[];
+  reload: () => void;
   workspace: Workspace | null;
   setWorkspace: (workspace: Workspace) => void;
 
@@ -116,20 +119,30 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   const hydrated = useRef(false);
   const nextTabId = useRef(0);
 
-  // Load real workspace-scoped data once on mount.
-  useEffect(() => {
-    apiCall<{ tasks: Task[] }>("/api/tasks").then((d) => setTasks(d.tasks)).catch(() => {});
-    apiCall<{ projects: Project[] }>("/api/projects").then((d) => setProjects(d.projects)).catch(() => {});
-    apiCall<{ people: Person[] }>("/api/workspace/members").then((d) => setPeople(d.people)).catch(() => {});
-    apiCall<{ workspace: Workspace }>("/api/workspace").then((d) => setWorkspace(d.workspace)).catch(() => {});
-    apiCall<{ insights: Insight[] }>("/api/insights").then((d) => setInsights(d.insights)).catch(() => {});
-    apiCall<{ plan: string; configured: boolean }>("/api/billing/status")
-      .then((d) => {
+  // Load real workspace-scoped data. A failure is recorded (not swallowed) so the app can say so and offer a
+  // retry, instead of showing "Loading..." forever.
+  const [loadErrors, setLoadErrors] = useState<string[]>([]);
+  const load = useCallback(() => {
+    setLoadErrors([]);
+    const track = (part: string, p: Promise<unknown>) =>
+      p.catch(() => setLoadErrors((prev) => (prev.includes(part) ? prev : [...prev, part])));
+    track("tasks", apiCall<{ tasks: Task[] }>("/api/tasks").then((d) => setTasks(d.tasks)));
+    track("projects", apiCall<{ projects: Project[] }>("/api/projects").then((d) => setProjects(d.projects)));
+    track("team", apiCall<{ people: Person[] }>("/api/workspace/members").then((d) => setPeople(d.people)));
+    track("workspace", apiCall<{ workspace: Workspace }>("/api/workspace").then((d) => setWorkspace(d.workspace)));
+    track("insights", apiCall<{ insights: Insight[] }>("/api/insights").then((d) => setInsights(d.insights)));
+    track(
+      "plan",
+      apiCall<{ plan: string; configured: boolean }>("/api/billing/status").then((d) => {
         setPlan(PLAN_FROM_API[d.plan] ?? "free");
         setBillingConfigured(d.configured);
-      })
-      .catch(() => {});
+      }),
+    );
   }, []);
+
+  useEffect(() => {
+    queueMicrotask(load);
+  }, [load]);
 
   // Restore Open Tabs state from localStorage after mount (client-only, avoids
   // hydration mismatches since server-rendered markup has no tabs yet).
@@ -376,6 +389,8 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
       deleteProject,
 
       people,
+      loadErrors,
+      reload: load,
       workspace,
       setWorkspace,
 
@@ -415,6 +430,8 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
       updateProject,
       deleteProject,
       people,
+      loadErrors,
+      load,
       workspace,
       setWorkspace,
       insights,

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { DemoProvider } from "@/lib/demo-context";
+import { DemoProvider, useDemo } from "@/lib/demo-context";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { MobileTabBar } from "./mobile-tabbar";
@@ -54,6 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex min-w-0 flex-1 flex-col">
               <Topbar title={titleFor(pathname ?? "/home")} />
               <main id="main" tabIndex={-1} className="flex-1 overflow-y-auto pb-20 outline-none md:pb-0">
+                <LoadErrorBanner />
                 {children}
               </main>
             </div>
@@ -63,5 +64,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </WorkStateProvider>
       </DemoProvider>
     </ToastProvider>
+  );
+}
+
+/** Says plainly when part of the workspace didn't load, with a retry, instead of an endless "Loading...". */
+function LoadErrorBanner() {
+  const { loadErrors, reload } = useDemo();
+  if (loadErrors.length === 0) return null;
+  return (
+    <div role="alert" className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-red/30 bg-red-soft px-4 py-3 text-sm text-ink sm:mx-8">
+      <span>
+        Some of your workspace didn&apos;t load ({loadErrors.join(", ")}). Check your connection, then try again.
+      </span>
+      <button onClick={reload} className="rounded-lg border border-neutral-200 bg-paper px-3 py-1.5 text-sm font-medium text-ink hover:border-ink">
+        Try again
+      </button>
+    </div>
   );
 }
