@@ -1,4 +1,5 @@
 # Deploying STACK to https://stackunder.website
+> **Superseded by [LAUNCH.md](LAUNCH.md)** (2026-10-08): the project now deploys from GitHub automatically, and LAUNCH.md has the current env vars, redirect URIs and runbook. Kept for the original domain setup notes.
 
 The project is already linked to a Vercel project (`stack-app`, see `.vercel/project.json`). `next build` passes.
 

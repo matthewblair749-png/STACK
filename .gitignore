@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local tooling
 .claude/
+
+# The template is meant to be shared; it holds names and comments only, never values.
+!.env.example
