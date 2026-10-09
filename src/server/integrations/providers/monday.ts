@@ -18,10 +18,10 @@ export const mondayProvider = tokenOnlyProvider({
   tokenConnect: {
     label: "monday.com API token",
     placeholder: "eyJ...",
-    helpUrl: "https://monday.com/apps/manage/tokens",
+    helpUrl: "https://developer.monday.com/api-reference/docs/authentication",
     steps: [
-      "Open the link below (or your profile picture > Developers > My access tokens).",
-      "Click Show, then copy your personal API token.",
+      "In monday.com click your profile picture (top right) > Developers. The Developer Center opens in a new tab.",
+      "Click API token, then Show, and copy your personal API token. (Admins can also find it under Administration > Connections > Personal API token.)",
       "Paste it here. STACK reads items on your boards.",
     ],
     async validate(token) {

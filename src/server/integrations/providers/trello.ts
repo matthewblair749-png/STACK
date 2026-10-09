@@ -16,16 +16,17 @@ export const trelloProvider: IntegrationProvider = {
   tokenConnect: {
     label: "Trello token",
     placeholder: "Your Trello token",
-    helpUrl: "https://trello.com/app-key",
+    helpUrl: "https://trello.com/apps/admin",
     steps: [
-      "Open the link below. Your API key is shown at the top of the page - copy it.",
-      "On the same page click the Token link, click Allow, and copy the token it shows.",
+      "Open the link below (Trello's apps admin) and click New. Choose not to use Power-Up capabilities, name it STACK, pick your Workspace, fill in the email and author fields, and click Create.",
+      "Open the new app, go to its Trello Auth tab and click Generate a new API Key. Copy the API key.",
+      "Click the Token link next to the key, click Allow, and copy the token it shows.",
       "Paste the API key and the token below.",
     ],
-    fields: [{ name: "apiKey", label: "Trello API key", placeholder: "32-character key from trello.com/app-key" }],
+    fields: [{ name: "apiKey", label: "Trello API key", placeholder: "32-character key from your app's Trello Auth tab" }],
     async validate(token, fields) {
       const key = (fields.apiKey ?? "").trim();
-      if (!/^[a-f0-9]{32}$/i.test(key)) throw new Error("The API key is 32 letters and numbers, shown at the top of trello.com/app-key.");
+      if (!/^[a-f0-9]{32}$/i.test(key)) throw new Error("The API key is 32 letters and numbers, shown on your Trello app's Trello Auth tab (trello.com/apps/admin).");
       const me = await getJson("Trello token check", `https://api.trello.com/1/members/me?fields=username&key=${key}&token=${encodeURIComponent(token)}`, {});
       return { account: me.username, metadata: { apiKey: key } };
     },

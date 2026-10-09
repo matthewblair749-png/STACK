@@ -326,7 +326,7 @@ const professionCategories = {
     "Compliance Officer": ["LogicGate", "ServiceNow", "OneTrust"],
   },
   "Business & Management": {
-    "Project Manager": ["Asana", "Jira", "Monday.com", "ClickUp", "Linear"],
+    "Project Manager": ["Asana", "Jira", "Monday.com", "ClickUp", "Linear", "Trello"],
     "Operations Manager": ["Salesforce", "Monday.com", "NetSuite", "SAP"],
     "HR Specialist": ["Workday", "BambooHR", "ADP"],
     Recruiter: ["LinkedIn Recruiter", "Greenhouse", "Lever", "Workday"],
@@ -354,7 +354,7 @@ const professionCategories = {
     "Shipping Coordinator": ["ShipStation", "Shippo", "FedEx systems", "UPS systems"],
   },
   "Retail & E-commerce": {
-    "E-commerce Manager": ["Shopify", "Amazon Seller Central", "Klaviyo"],
+    "E-commerce Manager": ["Shopify", "Amazon Seller Central", "Klaviyo", "Stripe"],
     "Store Manager": ["Shopify POS", "Square", "Lightspeed"],
     "Inventory Manager": ["NetSuite", "Cin7", "Fishbowl"],
     Buyer: ["SAP", "NetSuite", "Shopify"],
