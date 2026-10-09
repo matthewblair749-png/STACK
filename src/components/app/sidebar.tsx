@@ -9,7 +9,7 @@ import {
   Home, CheckSquare, FolderKanban, Inbox, Calendar, Files, MessageSquare, Bell, Sparkles,
   AppWindow, Users, Plug, Settings, HelpCircle, ChevronsUpDown, PanelLeft, Check, LogOut, Plus, Video,
 } from "lucide-react";
-import { Logo, LogoMark } from "@/components/logo";
+import { Logo, LogoIcon } from "@/components/logo";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { useDemo } from "@/lib/demo-context";
 import { useMediaQuery } from "@/lib/use-media-query";
@@ -157,7 +157,7 @@ export function Sidebar({ onNavigate, expanded = false }: { onNavigate?: () => v
     >
       <div className={cn("flex shrink-0 items-center pt-6", collapsed ? "flex-col gap-3 px-0" : "justify-between px-5")}>
         <Link href="/home" onClick={onNavigate} aria-label="STACK home">
-          {collapsed ? <LogoMark size={22} /> : <Logo size={24} />}
+          {collapsed ? <LogoIcon size={22} /> : <Logo size={24} />}
         </Link>
         {isDesktop && (
           <button

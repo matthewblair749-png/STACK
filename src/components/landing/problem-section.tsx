@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Mail, Calendar, CheckSquare } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { BrandIcon } from "@/components/brand-icons";
 import { SectionHeader } from "./section-header";
 
@@ -58,7 +58,7 @@ export function ProblemSection() {
         transition={{ duration: 0.6 }}
         className="mx-auto mt-20 flex max-w-4xl flex-col items-center rounded-3xl bg-ink px-8 py-20 text-center sm:px-20"
       >
-        <LogoMark size={48} className="text-white" />
+        <LogoIcon size={48} className="text-white" />
         <h3 className="mt-7 text-4xl font-semibold tracking-tight text-paper sm:text-5xl">
           From scattered to connected.
         </h3>

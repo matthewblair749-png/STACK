@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, Check, ExternalLink, History, Loader2, Mic, MicOff, PanelRight, Paperclip, Plus, Sparkles, Trash2, X } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { SyncNowButton } from "@/components/app/sync-now-button";
 import { ActionCard, type PendingActionData } from "@/components/app/action-card";
@@ -347,7 +347,7 @@ function AIWorkspace() {
           <div className="mx-auto max-w-2xl py-6">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center py-12 text-center sm:py-20">
-                <LogoMark size={40} />
+                <LogoIcon size={40} />
                 <h1 className="mt-4 text-2xl font-semibold text-ink">Ask STACK about your work</h1>
                 <p className="mt-1.5 max-w-md text-neutral-500">STACK reads the apps you&apos;ve connected, works out what matters, and proposes the next step. It shows what it used, and asks before it changes anything.</p>
                 <div className="mt-7 grid w-full gap-2 sm:grid-cols-2">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckSquare, Video, MessageSquare } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { BrandIcon } from "@/components/brand-icons";
 
 const INTRO_KEY = "stack-seen-intro";
@@ -62,7 +62,7 @@ export function IntroSequence() {
           className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-6 bg-paper"
         >
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}>
-            <LogoMark size={44} />
+            <LogoIcon size={44} />
           </motion.div>
 
           <motion.div

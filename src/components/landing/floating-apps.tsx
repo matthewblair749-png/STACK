@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { BrandIcon } from "@/components/brand-icons";
 
 const apps = [
@@ -85,9 +85,9 @@ export function FloatingApps() {
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-ink shadow-[0_24px_70px_-20px_rgba(0,0,0,0.45)] sm:h-[88px] sm:w-[88px]"
+          className="relative flex items-center justify-center"
         >
-          <LogoMark size={44} className="text-white" />
+          <LogoIcon size={84} />
         </motion.div>
       </div>
 

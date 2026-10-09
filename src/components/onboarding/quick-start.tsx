@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { IntegrationLogo } from "@/components/brand-icons";
 
@@ -66,7 +66,7 @@ export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCu
 
   return (
     <div className="flex flex-col items-center text-center">
-      <LogoMark size={44} />
+      <LogoIcon size={44} />
       <h1 className="mt-6 text-3xl font-semibold tracking-tight text-ink">Let&apos;s build your day.</h1>
       <p className="mt-2 max-w-sm text-sm text-neutral-500">
         Connect the tools you use most and STACK will work out what needs you first. You choose what it can read, and you can disconnect anytime.

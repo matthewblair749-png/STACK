@@ -14,10 +14,12 @@ const separateOffsets = [-1.6, 0, 1.6];
 export function LogoMark({
   size = 28,
   animate = true,
+  strokeWidth = 2,
   className,
 }: {
   size?: number;
   animate?: boolean;
+  strokeWidth?: number;
   className?: string;
 }) {
   return (
@@ -27,10 +29,10 @@ export function LogoMark({
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("shrink-0 text-ink", className)}
+      className={cn("shrink-0 overflow-visible text-ink", className)}
     >
       {layerPaths.map((d, i) => (
         <motion.path
@@ -51,6 +53,11 @@ export function LogoMark({
   );
 }
 
+/** The app icon on a transparent background: the same bold layers as the browser-tab icon (src/app/icon.svg), in the theme's text color. */
+export function LogoIcon({ size = 28, animate = true, className }: { size?: number; animate?: boolean; className?: string }) {
+  return <LogoMark size={size} strokeWidth={2.4} animate={animate} className={className} />;
+}
+
 export function Logo({
   size = 28,
   animate = true,
@@ -66,7 +73,7 @@ export function Logo({
 }) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <LogoMark size={size} animate={animate} />
+      <LogoIcon size={size} animate={animate} />
       {showWordmark && (
         <span
           className={cn(

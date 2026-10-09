@@ -16,7 +16,7 @@ import {
 } from "react-icons/si";
 import { Calendar, type LucideIcon } from "lucide-react";
 import { MicrosoftIcon, GoogleIcon, AppleIcon } from "@/components/oauth-icons";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import {
   SlackColorIcon, OutlookIcon, TeamsIcon, OneDriveIcon, SalesforceIcon,
   GoogleDriveColorIcon, GoogleCalendarColorIcon, PaypalColorIcon,
@@ -180,7 +180,7 @@ export function BrandIcon({ id, size = 18, className }: { id: string; size?: num
   if (id === "microsoft") return <MicrosoftIcon size={size} />;
   if (id === "google" || id === "google-workspace") return <GoogleIcon size={size} />;
   if (id === "apple") return <AppleIcon size={size} />;
-  if (id === "stack") return <LogoMark size={size} animate={false} className={className} />;
+  if (id === "stack") return <LogoIcon size={size} animate={false} className={className} />;
   const entry = brandIcons[id];
   if (!entry) return <GenericAppIcon size={size} className={className ?? "text-neutral-400"} />;
   const { Icon, color } = entry;

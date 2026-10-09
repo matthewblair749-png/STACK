@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Search, ArrowRight, Monitor, Clock, Ban, AlertTriangle } from "lucide-react";
-import { Logo, LogoMark } from "@/components/logo";
+import { Logo, LogoIcon } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { QuickStart } from "@/components/onboarding/quick-start";
@@ -230,7 +230,7 @@ export default function OnboardingPage() {
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <LogoMark size={32} />
+        <LogoIcon size={32} />
       </div>
     );
   }
@@ -391,7 +391,7 @@ export default function OnboardingPage() {
 
           {step === 5 && (
             <div className="flex flex-col items-center text-center">
-              <LogoMark size={48} />
+              <LogoIcon size={48} />
               <h1 className="mt-6 text-2xl font-semibold text-ink">Your STACK is ready.</h1>
               <div className="mt-4 h-5">
                 <AnimatePresence mode="wait">

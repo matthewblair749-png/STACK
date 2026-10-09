@@ -6,7 +6,7 @@ import {
   Mail, Calendar, HardDrive, Video, GitBranch, ArrowRight,
   Sparkles, CheckCircle2, Circle,
 } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { SectionHeader } from "./section-header";
 import { cn } from "@/lib/utils";
 
@@ -102,9 +102,9 @@ export function ConnectsSection() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.4, delay: 0.5 }}
-              className="flex h-20 w-20 items-center justify-center rounded-2xl bg-ink shadow-[0_20px_44px_-18px_rgba(0,0,0,0.45)] sm:h-24 sm:w-24"
+              className="flex items-center justify-center"
             >
-              <LogoMark size={40} animate={false} className="text-white" />
+              <LogoIcon size={72} animate={false} />
             </motion.div>
           </div>
         </Visual>

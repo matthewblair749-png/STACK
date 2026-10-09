@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { LogoMark } from "@/components/logo";
+import { LogoIcon } from "@/components/logo";
 import { Modal } from "./dialogs";
 import type { CatalogApp } from "./types";
 
@@ -52,7 +52,7 @@ export function RevealDialog({ apps, onClose }: { apps: CatalogApp[]; onClose: (
   return (
     <Modal label="Your work is connected" onClose={onClose}>
       <div className="text-center">
-        <span className="inline-flex"><LogoMark size={36} /></span>
+        <span className="inline-flex"><LogoIcon size={36} /></span>
         <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Your work is connected</p>
         <p className="mt-1 text-lg font-semibold text-ink">{found.length ? "STACK found:" : "Connected - nothing has synced yet."}</p>
       </div>
