@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { ContentBlock, MessageParam, MessageCreateParamsNonStreaming, Tool } from "@anthropic-ai/sdk/resources/messages";
+import type { BetaContentBlock, BetaMessageParam, BetaTool } from "@anthropic-ai/sdk/resources/beta/messages";
+import type { Tool } from "@anthropic-ai/sdk/resources/messages";
 import type { PendingActionKind } from "@prisma/client";
 import { db } from "@/server/db";
 import { validateActionPayload } from "@/server/actions/types";
@@ -25,7 +26,8 @@ export interface AskResult {
   used: UsedSources;
 }
 
-export type AskEvent = { type: "step"; label: string } | { type: "context"; used: UsedSources };
+/** `partial` carries the whole answer so far (not a delta), so a dropped event never garbles the text. */
+export type AskEvent = { type: "step"; label: string } | { type: "context"; used: UsedSources } | { type: "partial"; text: string };
 
 /** Full (model-backed) AI answers per person per rolling 24 hours. Override with AI_DAILY_LIMIT. */
 const DEFAULT_DAILY_LIMIT = 50;
@@ -126,28 +128,111 @@ export class AiNotConfiguredError extends Error {}
 type Call = { id: string; name: string; input: Record<string, unknown> };
 type Turn = { text: string; calls: Call[] };
 interface Driver {
-  turn(): Promise<Turn>;
+  /** `onPartial` gets the answer text so far while the model is still writing it (drivers that can stream). */
+  turn(onPartial?: (text: string) => void): Promise<Turn>;
   addResults(results: { id: string; content: string }[]): void;
 }
 type Line = { role: "user" | "assistant"; text: string };
 
-/** Claude, through Anthropic's own API. */
+const ESCAPES: Record<string, string> = { n: "\n", t: "\t", r: "\r", b: "\b", f: "\f" };
+
+/** A string field's value from JSON that is still being written, including a string that isn't closed yet. */
+export function partialStringField(raw: string, key: string): string | undefined {
+  const start = new RegExp(`"${key}"\\s*:\\s*"`).exec(raw);
+  if (!start) return undefined;
+  let out = "";
+  for (let i = start.index + start[0].length; i < raw.length; i++) {
+    const c = raw[i];
+    if (c === '"') return out;
+    if (c !== "\\") {
+      out += c;
+      continue;
+    }
+    const next = raw[i + 1];
+    if (next === undefined) return out; // the escape itself is cut off
+    if (next === "u") {
+      const hex = raw.slice(i + 2, i + 6);
+      if (hex.length < 4) return out;
+      out += String.fromCharCode(parseInt(hex, 16));
+      i += 5;
+      continue;
+    }
+    out += ESCAPES[next] ?? next;
+    i++;
+  }
+  return out;
+}
+
+/** The Claude model for every AI feature; ANTHROPIC_MODEL overrides it. */
+export const claudeModel = () => process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
+
+/** What the user sees when Claude declines; the turn's content is not used. */
+const REFUSED = "STACK AI can't help with that request. Try asking about your work in a different way.";
+/** The answer hit max_tokens: any tool call in it may be cut off, so none of them run. */
+const TOO_LONG = "That answer ran too long to finish. Try asking about something narrower.";
+
+/**
+ * Claude, through Anthropic's own API, streamed. Thinking is adaptive (the default); `effort` sets how much.
+ * present_answer streams its input as it is written, so the headline reaches the user word by word. The
+ * server doesn't validate eagerly streamed input, which is fine here: every field is checked before use.
+ * `fallbacks: "default"` lets Anthropic retry a policy decline on its fallback model; the assistant turn is
+ * echoed back verbatim, which that requires.
+ */
 function claudeDriver(system: string, lines: Line[]): Driver {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
-  const conversation: MessageParam[] = lines.map((l) => ({ role: l.role, content: l.text }));
-  let last: ContentBlock[] = [];
+  const model = claudeModel();
+  const effort = (["low", "medium", "high", "xhigh", "max"] as const).find((e) => e === process.env.ANTHROPIC_EFFORT) ?? "medium";
+  const tools: BetaTool[] = TOOLS.map((t) => (t.name === "present_answer" ? { ...t, eager_input_streaming: true } : t));
+  const conversation: BetaMessageParam[] = lines.map((l) => ({ role: l.role, content: l.text }));
+  let last: BetaContentBlock[] = [];
   return {
-    async turn() {
-      const params: MessageCreateParamsNonStreaming = { model, max_tokens: 1200, system, tools: TOOLS, messages: conversation };
-      const message = await client.messages.create(params);
-      last = message.content;
-      const text = message.content.map((c) => (c.type === "text" ? c.text : "")).join("\n").trim();
-      const calls: Call[] = [];
-      if (message.stop_reason === "tool_use") {
-        for (const c of message.content) if (c.type === "tool_use") calls.push({ id: c.id, name: c.name, input: c.input as Record<string, unknown> });
+    async turn(onPartial) {
+      for (let attempt = 0; ; attempt++) {
+        const stream = client.beta.messages.stream({
+          model,
+          max_tokens: 16000,
+          system,
+          tools,
+          messages: conversation,
+          output_config: { effort },
+          // Caches the prompt (system + work context + tools + history) across this answer's tool-loop turns.
+          cache_control: { type: "ephemeral" },
+          fallbacks: "default",
+          betas: ["server-side-fallback-2026-07-01"],
+        });
+        if (onPartial) {
+          // The SDK's parsed snapshot of a tool input leaves out a string until it is closed, so the headline
+          // is read from the raw JSON instead, unfinished string included.
+          const raw = new Map<number, string>();
+          stream.on("streamEvent", (event, snapshot) => {
+            if (event.type !== "content_block_delta") return;
+            const block = snapshot.content[event.index];
+            if (block?.type === "text") onPartial(block.text);
+            else if (block?.type === "tool_use" && block.name === "present_answer" && event.delta.type === "input_json_delta") {
+              const json = (raw.get(event.index) ?? "") + event.delta.partial_json;
+              raw.set(event.index, json);
+              const headline = partialStringField(json, "headline");
+              if (headline) onPartial(headline);
+            }
+          });
+        }
+        let message;
+        try {
+          message = await stream.finalMessage();
+        } catch (err) {
+          // A tool input that streamed as unparseable JSON rejects here; re-ask (twice at most). API errors go up.
+          if (err instanceof Anthropic.APIError || attempt >= 2) throw err;
+          console.warn("Claude tool input wasn't valid JSON, asking again");
+          continue;
+        }
+        last = message.content;
+        if (message.stop_reason === "refusal") return { text: REFUSED, calls: [] };
+        const text = message.content.map((c) => (c.type === "text" ? c.text : "")).join("\n").trim();
+        const toolUses = message.content.filter((c) => c.type === "tool_use");
+        if (message.stop_reason === "max_tokens" && toolUses.length) return { text: text || TOO_LONG, calls: [] };
+        const calls: Call[] = message.stop_reason === "tool_use" ? toolUses.map((c) => ({ id: c.id, name: c.name, input: (c.input ?? {}) as Record<string, unknown> })) : [];
+        return { text, calls };
       }
-      return { text, calls };
     },
     addResults(results) {
       conversation.push({ role: "assistant", content: last });
@@ -233,6 +318,8 @@ function unavailableReason(err: unknown): string | undefined {
   if (/credit balance/i.test(err.message)) return "your Anthropic account is out of credits";
   if (err.status === 401 || err.status === 403) return "Anthropic rejected the API key";
   if (err.status === 429 || err.status === 529 || (err.status ?? 0) >= 500) return "Anthropic is busy or rate-limiting";
+  // A request setting Claude won't take (a model the account can't use, say): the next model still answers.
+  if (err.status === 400 || err.status === 404) return "Claude didn't accept STACK's request";
   return undefined;
 }
 
@@ -331,8 +418,18 @@ async function runModelAsk(opts: AskOpts, kind: "claude" | "compat"): Promise<As
   type Presented = { headline?: string; findings?: { title?: string; detail?: string; ref?: string }[]; nextStep?: string; links?: { label?: string; ref?: string }[] };
   let presented = null as Presented | null;
 
+  let shown = "";
+  const onPartial = emit
+    ? (text: string) => {
+        const t = text.trim();
+        if (!t || t === shown) return;
+        shown = t;
+        emit({ type: "partial", text: t });
+      }
+    : undefined;
+
   for (let iteration = 0; iteration < 5 && !presented; iteration++) {
-    const turn = await driver.turn();
+    const turn = await driver.turn(onPartial);
     if (turn.text) plainText = turn.text;
     if (turn.calls.length === 0) break;
 

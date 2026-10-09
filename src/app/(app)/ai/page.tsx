@@ -124,6 +124,10 @@ function AIWorkspace() {
             const ev = JSON.parse(line);
             if (ev.type === "step") patch((m) => ({ ...m, steps: [...(m.steps ?? []), ev.label] }));
             else if (ev.type === "context") patch((m) => ({ ...m, used: ev.used }));
+            else if (ev.type === "partial") {
+              patch((m) => (m.streaming ? { ...m, text: ev.text } : m));
+              scrollDown();
+            }
             else if (ev.type === "answer") {
               patch((m) => ({ ...m, streaming: false, text: ev.answer, structured: ev.structured ?? undefined, pendingActions: ev.pendingActions, used: ev.used ?? m.used }));
               if (ev.conversationId) {
@@ -365,13 +369,21 @@ function AIWorkspace() {
                     )}
                     <div className={cn("min-w-0 rounded-2xl px-4 py-3 text-sm", m.role === "user" ? "max-w-md bg-ink text-white" : cn("max-w-full flex-1 bg-white ring-1 ring-neutral-100", selected?.id === m.id && "ring-neutral-200"))}>
                       {m.streaming ? (
-                        <ul className="space-y-1.5" aria-label="STACK is working">
-                          {(m.steps?.length ? m.steps : ["Reading your work"]).map((s, i, arr) => (
-                            <li key={`${s}${i}`} className={cn("flex items-center gap-2 text-sm", i === arr.length - 1 ? "text-ink" : "text-neutral-400")}>
-                              {i === arr.length - 1 ? <Loader2 size={13} className="animate-spin text-blue" /> : <Check size={13} className="text-green" />} {s}
-                            </li>
-                          ))}
-                        </ul>
+                        <>
+                          <ul className="space-y-1.5" aria-label="STACK is working">
+                            {(m.steps?.length ? m.steps : ["Reading your work"]).map((s, i, arr) => (
+                              <li key={`${s}${i}`} className={cn("flex items-center gap-2 text-sm", i === arr.length - 1 ? "text-ink" : "text-neutral-400")}>
+                                {i === arr.length - 1 ? <Loader2 size={13} className="animate-spin text-blue" /> : <Check size={13} className="text-green" />} {s}
+                              </li>
+                            ))}
+                          </ul>
+                          {m.text && (
+                            <p className="mt-3 whitespace-pre-wrap text-ink">
+                              {m.text}
+                              <span aria-hidden className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-neutral-300" />
+                            </p>
+                          )}
+                        </>
                       ) : m.structured ? (
                         <AiAnswer answer={m.structured} />
                       ) : (

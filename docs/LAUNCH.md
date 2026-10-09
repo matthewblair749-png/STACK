@@ -29,7 +29,7 @@ A change takes effect on the next deployment.
 | Variable(s) | Without it |
 | --- | --- |
 | `RESEND_API_KEY`, `EMAIL_FROM` | No email sign-in. In production it also stays off while `EMAIL_FROM` is a `@resend.dev` address. |
-| `ANTHROPIC_API_KEY` (+ `ANTHROPIC_MODEL`, default `claude-sonnet-5`) | AI falls back to the `LLM_*` provider, then to answers built from synced data only - the UI says which. |
+| `ANTHROPIC_API_KEY` (+ `ANTHROPIC_MODEL`, default `claude-sonnet-5-5`; `ANTHROPIC_EFFORT`, default `medium`) | AI falls back to the `LLM_*` provider, then to answers built from synced data only - the UI says which. |
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | No fallback model when Claude is unavailable. |
 | `AI_DAILY_LIMIT` | Default 50 full AI answers per person per rolling 24h. |
 | `NEXT_PUBLIC_SENTRY_DSN` | No error monitoring; errors only in Vercel logs. |

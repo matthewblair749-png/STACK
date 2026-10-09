@@ -5,7 +5,7 @@ import { requireSessionAndWorkspace } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
 import { buildWorkContext } from "@/server/work/context";
 import { PROJECT_SUMMARY_PREFIX } from "@/server/work/memory";
-import { aiAllowance } from "@/server/ai/run";
+import { aiAllowance, claudeModel } from "@/server/ai/run";
 
 const STALE_MS = 12 * 60 * 60 * 1000;
 const STATUS_TEXT: Record<string, string> = { OnTrack: "on track", AtRisk: "at risk", Behind: "behind schedule", Completed: "completed" };
@@ -84,14 +84,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const context = await buildWorkContext(workspaceId, session.user.id, id);
         const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const res = await client.messages.create({
-          model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
-          max_tokens: 300,
+          model: claudeModel(),
+          // Thinking counts toward max_tokens; low effort keeps it short, the room keeps the summary from being cut off.
+          max_tokens: 4000,
+          output_config: { effort: "low" },
           system:
             "Write a 2-4 sentence overview of this project for the person who owns it. State whether it is progressing, what is blocking it, what recently changed, and the single recommended next step. Use ONLY the data given; never invent details. Plain text, no markdown.\n\n" +
             context.text,
           messages: [{ role: "user", content: "Summarize this project." }],
         });
-        const text = res.content.map((c) => (c.type === "text" ? c.text : "")).join("").trim();
+        // A declined or cut-off summary isn't cached; the data-only overview shows instead.
+        const text = res.stop_reason === "end_turn" ? res.content.map((c) => (c.type === "text" ? c.text : "")).join("").trim() : "";
         if (text) {
           await db.memoryItem.upsert({ where: cacheKey, create: { ...cacheKey.workspaceId_userId_key, value: { text } }, update: { value: { text } } });
           summary = { text, source: "ai", updatedAt: now.toISOString() };
