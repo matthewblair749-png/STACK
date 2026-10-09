@@ -251,42 +251,124 @@ export class CompatError extends Error {
 /** True when LLM_BASE_URL and LLM_MODEL are set: any OpenAI-compatible provider (Groq, Gemini, OpenRouter, a local Ollama...). */
 export const compatConfigured = () => !!process.env.LLM_BASE_URL && !!process.env.LLM_MODEL;
 
-/** Any provider that speaks the OpenAI chat-completions protocol, including tool calling. */
+type CompatToolCall = { id?: string; type?: string; function?: { name?: string; arguments?: string }; [extra: string]: unknown };
+type CompatMessage = { content?: unknown; tool_calls?: CompatToolCall[] };
+
+/**
+ * Reads an OpenAI-style streamed chat completion into one message. Tool calls are kept whole, including any
+ * extra fields the provider adds (Gemini puts the thought signature it requires back on the next turn in one),
+ * so the assistant turn can be echoed back exactly.
+ */
+async function readCompatStream(res: Response, onPartial?: (text: string) => void): Promise<{ message: CompatMessage; finish?: string }> {
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+  let finish: string | undefined;
+  const calls: CompatToolCall[] = [];
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let nl: number;
+    while ((nl = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (!line.startsWith("data:")) continue;
+      const data = line.slice(5).trim();
+      if (!data || data === "[DONE]") continue;
+      let chunk;
+      try {
+        chunk = JSON.parse(data);
+      } catch {
+        continue;
+      }
+      if (chunk.error) throw new CompatError(502, JSON.stringify(chunk.error).slice(0, 300));
+      const choice = chunk.choices?.[0];
+      if (!choice) continue;
+      if (choice.finish_reason) finish = choice.finish_reason;
+      const delta = choice.delta ?? {};
+      if (typeof delta.content === "string" && delta.content) {
+        content += delta.content;
+        onPartial?.(content);
+      }
+      for (const part of (delta.tool_calls ?? []) as (CompatToolCall & { index?: number })[]) {
+        const { index, function: fn, ...rest } = part;
+        const at = typeof index === "number" ? index : part.id && !calls.some((c) => c.id === part.id) ? calls.length : Math.max(calls.length - 1, 0);
+        const call = (calls[at] ??= { id: "", type: "function", function: { name: "", arguments: "" } });
+        for (const [k, v] of Object.entries(rest)) if (v !== undefined && v !== null && v !== "") call[k] = v;
+        if (fn?.name) call.function!.name = fn.name;
+        if (fn?.arguments) call.function!.arguments += fn.arguments;
+        if (call.function!.name === "present_answer") {
+          const headline = partialStringField(call.function!.arguments ?? "", "headline");
+          if (headline) onPartial?.(headline);
+        }
+      }
+    }
+  }
+  const toolCalls = calls.filter(Boolean).map((c, i) => ({ ...c, id: c.id || `call_${i}` }));
+  return { message: { content: content || null, ...(toolCalls.length ? { tool_calls: toolCalls } : {}) }, finish };
+}
+
+/**
+ * Any provider that speaks the OpenAI chat-completions protocol, including tool calling (Gemini, OpenAI, Groq,
+ * OpenRouter, a local Ollama...). Streams when the provider allows it; one that refuses streaming with tools
+ * (a 400) is asked again without streaming for the rest of this answer.
+ */
 function compatDriver(system: string, lines: Line[]): Driver {
   const base = process.env.LLM_BASE_URL!.replace(/\/+$/, "");
   const key = process.env.LLM_API_KEY;
   const model = process.env.LLM_MODEL!;
+  const maxTokens = Number(process.env.LLM_MAX_TOKENS) > 0 ? Number(process.env.LLM_MAX_TOKENS) : 8192;
+  const effort = process.env.LLM_REASONING_EFFORT;
   const messages: Record<string, unknown>[] = [{ role: "system", content: system }, ...lines.map((l) => ({ role: l.role, content: l.text }))];
   const tools = TOOLS.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.input_schema } }));
-  let assistant: { content?: unknown; tool_calls?: unknown } = {};
+  let assistant: CompatMessage = {};
+  let stream = true;
+  const post = async () => {
+    try {
+      return await fetch(`${base}/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(key ? { Authorization: `Bearer ${key}` } : {}) },
+        body: JSON.stringify({ model, messages, tools, max_tokens: maxTokens, ...(effort ? { reasoning_effort: effort } : {}), ...(stream ? { stream: true } : {}) }),
+      });
+    } catch {
+      throw new CompatError(0, `Couldn't reach ${base}`);
+    }
+  };
   return {
-    async turn() {
-      let res: Response;
-      try {
-        res = await fetch(`${base}/chat/completions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(key ? { Authorization: `Bearer ${key}` } : {}) },
-          body: JSON.stringify({ model, messages, tools, max_tokens: 1200 }),
-        });
-      } catch {
-        throw new CompatError(0, `Couldn't reach ${base}`);
+    async turn(onPartial) {
+      let res = await post();
+      if (stream && res.status === 400) {
+        stream = false;
+        res = await post();
       }
       if (!res.ok) throw new CompatError(res.status, (await res.text()).slice(0, 300));
-      const data = await res.json();
-      const msg = data.choices?.[0]?.message ?? {};
-      assistant = msg;
-      const calls: Call[] = ((msg.tool_calls ?? []) as { id: string; function?: { name?: string; arguments?: string } }[])
-        .filter((c) => c.function?.name)
-        .map((c) => {
-          let input: Record<string, unknown> = {};
-          try {
-            input = JSON.parse(c.function?.arguments || "{}");
-          } catch {
-            // A model that emits broken arguments just gets an empty call, which the tool handlers reject.
-          }
-          return { id: c.id, name: c.function!.name!, input };
-        });
-      return { text: typeof msg.content === "string" ? msg.content.trim() : "", calls };
+      let finish: string | undefined;
+      if (stream && res.body) {
+        ({ message: assistant, finish } = await readCompatStream(res, onPartial));
+      } else {
+        const choice = (await res.json()).choices?.[0];
+        assistant = choice?.message ?? {};
+        finish = choice?.finish_reason;
+      }
+      // Every call needs an id for its result to point at; give one to any the provider left without.
+      if (assistant.tool_calls?.length) assistant.tool_calls = assistant.tool_calls.map((c, i) => ({ ...c, id: c.id || `call_${i}` }));
+      else delete assistant.tool_calls;
+      const text = typeof assistant.content === "string" ? assistant.content.trim() : "";
+      const named = (assistant.tool_calls ?? []).filter((c) => c.function?.name);
+      // A reply cut off at the token limit may hold a half-written tool call: run none of them.
+      if (finish === "length" && named.length) return { text: text || TOO_LONG, calls: [] };
+      const calls: Call[] = named.map((c) => {
+        let input: Record<string, unknown> = {};
+        try {
+          input = JSON.parse(c.function?.arguments || "{}");
+        } catch {
+          // A model that emits broken arguments just gets an empty call, which the tool handlers reject.
+        }
+        return { id: c.id!, name: c.function!.name!, input };
+      });
+      return { text, calls };
     },
     addResults(results) {
       messages.push({ role: "assistant", content: assistant.content ?? null, tool_calls: assistant.tool_calls });

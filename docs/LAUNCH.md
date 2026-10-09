@@ -30,7 +30,7 @@ A change takes effect on the next deployment.
 | --- | --- |
 | `RESEND_API_KEY`, `EMAIL_FROM` | No email sign-in. In production it also stays off while `EMAIL_FROM` is a `@resend.dev` address. |
 | `ANTHROPIC_API_KEY` (+ `ANTHROPIC_MODEL`, default `claude-sonnet-5-5`; `ANTHROPIC_EFFORT`, default `medium`) | AI falls back to the `LLM_*` provider, then to answers built from synced data only - the UI says which. |
-| `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` | No fallback model when Claude is unavailable. |
+| `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (+ `LLM_MAX_TOKENS`, default 8192; `LLM_REASONING_EFFORT`) | No fallback model when Claude is unavailable. Any OpenAI-compatible API, e.g. Gemini: `https://generativelanguage.googleapis.com/v1beta/openai`, `gemini-3.8-flash`. |
 | `AI_DAILY_LIMIT` | Default 50 full AI answers per person per rolling 24h. |
 | `NEXT_PUBLIC_SENTRY_DSN` | No error monitoring; errors only in Vercel logs. |
 | `<APP>_CLIENT_ID` / `<APP>_CLIENT_SECRET` (Slack, GitHub, Linear, Figma, Clio, Notion, Dropbox, Box, GitLab, Jira, Asana, HubSpot, Salesforce, QuickBooks, FreshBooks, Shopify), `TRELLO_API_KEY`, `STRIPE_CONNECT_CLIENT_ID`, `MICROSOFT_*`, `GOOGLE_*` | That app shows "Not available yet", or offers its paste-a-token option where one exists. |

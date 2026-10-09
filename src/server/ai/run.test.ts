@@ -155,3 +155,71 @@ describe("STACK AI on Claude", () => {
     expect(toolResult.content[0]).toMatchObject({ type: "tool_result", tool_use_id: "tu_0" });
   });
 });
+
+/** A fake OpenAI-style streamed chat completion, one `data:` line per chunk. */
+function chatStream(chunks: unknown[]) {
+  const body = chunks.map((c) => `data: ${JSON.stringify(c)}\n\n`).join("") + "data: [DONE]\n\n";
+  return new Response(body, { status: 200, headers: { "Content-Type": "text/event-stream" } });
+}
+const toolDelta = (call: Record<string, unknown>, finish: string | null = null) => ({ choices: [{ index: 0, delta: { tool_calls: [{ index: 0, ...call }] }, finish_reason: finish }] });
+
+describe("STACK AI on an OpenAI-compatible provider (Gemini)", () => {
+  beforeEach(() => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    vi.stubEnv("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/");
+    vi.stubEnv("LLM_MODEL", "gemini-3.8-flash");
+    vi.stubEnv("LLM_API_KEY", "gemini-test-key");
+  });
+
+  it("streams the headline and sends a streaming request with room for a long answer", async () => {
+    const fetchMock = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(async () =>
+      chatStream([
+        toolDelta({ id: "call_a", type: "function", function: { name: "present_answer", arguments: '{"headline": "One task' } }),
+        toolDelta({ function: { arguments: ' is due today."}' } }, "tool_calls"),
+      ]),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const events: AskEvent[] = [];
+    const result = await ask((e) => events.push(e));
+
+    expect(events.filter((e) => e.type === "partial").map((e) => (e as { text: string }).text)).toEqual(["One task", "One task is due today."]);
+    expect(result.answer).toBe("One task is due today.");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions");
+    expect(new Headers(init.headers).get("Authorization")).toBe("Bearer gemini-test-key");
+    expect(JSON.parse(String(init.body))).toMatchObject({ model: "gemini-3.8-flash", stream: true, max_tokens: 8192 });
+  });
+
+  it("echoes a tool call back with the provider's extra fields, such as Gemini's thought signature", async () => {
+    const signature = { google: { thought_signature: "sig-123" } };
+    const fetchMock = vi
+      .fn<(url: string, init: RequestInit) => Promise<Response>>()
+      .mockResolvedValueOnce(chatStream([toolDelta({ id: "call_a", type: "function", extra_content: signature, function: { name: "propose_create_task", arguments: '{"title": "Email the client"}' } }, "tool_calls")]))
+      .mockResolvedValueOnce(chatStream([toolDelta({ id: "call_b", type: "function", function: { name: "present_answer", arguments: '{"headline": "Proposed."}' } }, "tool_calls")]));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await ask();
+
+    expect(result.pendingActions).toHaveLength(1);
+    const second = JSON.parse(String(fetchMock.mock.calls[1][1].body));
+    const assistant = second.messages.find((m: { role: string }) => m.role === "assistant");
+    expect(assistant.tool_calls).toEqual([{ id: "call_a", type: "function", extra_content: signature, function: { name: "propose_create_task", arguments: '{"title": "Email the client"}' } }]);
+    expect(second.messages.at(-1)).toMatchObject({ role: "tool", tool_call_id: "call_a" });
+  });
+
+  it("never runs a tool call cut off by the token limit", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => chatStream([toolDelta({ id: "call_a", function: { name: "propose_create_task", arguments: '{"title": "Email' } }, "length")])));
+    const result = await ask();
+    expect(created.actions).toEqual([]);
+    expect(result.answer).toMatch(/ran too long/);
+  });
+
+  it("asks again without streaming when the provider refuses streaming with tools", async () => {
+    const fetchMock = vi
+      .fn<(url: string, init: RequestInit) => Promise<Response>>()
+      .mockResolvedValueOnce(new Response('{"error":{"message":"streaming with tools not supported"}}', { status: 400 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content: "Nothing is due today." }, finish_reason: "stop" }] }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect((await ask()).answer).toBe("Nothing is due today.");
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1].body)).stream).toBeUndefined();
+  });
+});
