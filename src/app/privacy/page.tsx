@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy Policy - STACK" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="October 7, 2026">
+    <LegalPage title="Privacy Policy" updated="October 9, 2026">
       <p>STACK helps you understand, prioritize and act on your work by connecting the apps you already use. This policy explains what STACK collects, why, who it is shared with, and the control you have. We only access an app after you sign in to it and approve access yourself.</p>
 
       <h2>What we collect</h2>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>AI processing</h2>
-      <p>When you ask STACK AI a question, the relevant parts of your synced work (for example a few message previews or task titles) are sent to an AI model provider to produce the answer. We use Anthropic (Claude) and, as a fallback when Claude is unavailable, Groq. This data is sent only to answer your request. Both providers&apos; API terms say they don&apos;t use it to train their models. Each person has a daily limit on AI answers.</p>
+      <p>When you ask STACK AI a question, the relevant parts of your synced work (for example a few message previews or task titles) are sent to an AI model provider to produce the answer. We use Anthropic (Claude) and, when Claude is unavailable, Google (the paid Gemini API) or Groq. This data is sent only to answer your request. We use only these providers&apos; paid API services, whose terms say they don&apos;t use it to train their models. Each person has a daily limit on AI answers.</p>
 
       <h2>How we protect it</h2>
       <ul>
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
       <ul>
         <li><strong>Vercel</strong> - hosts the website and app.</li>
         <li><strong>Neon</strong> - our database, where your account, imported data and encrypted credentials are stored.</li>
-        <li><strong>Anthropic</strong> and <strong>Groq</strong> - AI answers, as described above.</li>
+        <li><strong>Anthropic</strong>, <strong>Google</strong> (Gemini API) and <strong>Groq</strong> - AI answers, as described above.</li>
         <li><strong>Resend</strong> - delivers sign-in emails, when you sign in by email.</li>
         <li><strong>Stripe</strong> - payments, if paid plans are offered. STACK never sees or stores your card number.</li>
         <li><strong>Sentry</strong> - error reports, if enabled. Reports describe what broke in the app and are configured not to include your IP address, cookies or message content.</li>

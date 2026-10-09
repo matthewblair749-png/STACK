@@ -1,7 +1,7 @@
 # STACK launch guide
 
 Everything needed to run STACK in production, what only the owner can do, and how to recover when
-something breaks. Last checked 2026-10-08 against https://www.stackunder.website.
+something breaks. Last checked 2026-10-09 against https://www.stackunder.website.
 
 Related: [app-registration-kit.md](app-registration-kit.md) (per-app OAuth setup),
 [google-verification.md](google-verification.md) (Google review pack).
@@ -164,7 +164,7 @@ by workspace), so re-sending is safe.
 `prisma migrate deploy` against production (section 2), then redeploy.
 
 **AI answers say "from your synced data only".** Either the person hit the daily limit (resets on a rolling
-24h basis) or both model providers failed. Check the Anthropic/Groq status pages and the logs for
+24h basis) or both model providers failed. Check the Anthropic/Gemini/Groq status pages and the logs for
 `AI model unavailable`.
 
 **Too many sign-in emails / 429s.** Expected rate limiting (RateLimit table). Counters clear themselves
@@ -180,6 +180,11 @@ pages show users a reference code (`digest`) that matches the server log entry.
 
 ## 7. Needs you - only the owner can do these (in order)
 
+0. **Google sign-in for everyone.** Sign-in uses the same Google OAuth client as the Gmail/Drive connection. While
+   that client's consent screen is in **Testing**, only its listed test users can sign in to STACK at all - and Google
+   is the only sign-in option until email sign-in (step 4) is set up. Before launch, either publish the consent screen
+   (Google Cloud > Google Auth Platform > Audience > Publish app; sign-in scopes need no review) or create a second
+   OAuth client in a separate project used only for sign-in, and set up email sign-in as a second way in.
 1. **Separate development from production.** Neon > create a branch named `dev` from `main`, copy its
    connection string, and put it in `.env.local` as `DATABASE_URL`. Production keeps the current database.
    While in Neon, check how many days of history your plan keeps for restores; the free plan's window is short.
@@ -192,6 +197,9 @@ pages show users a reference code (`digest`) that matches the server log entry.
    in Vercel > redeploy. In the Sentry project, open Settings > Security & Privacy and turn on **Prevent
    Storing of IP Addresses** (the privacy policy promises this).
 6. **Groq:** console.groq.com > Settings > Data Controls > enable **Zero Data Retention**.
+   **Gemini (if `LLM_*` points at Google):** the key's Google Cloud project must have billing on (AI Studio shows
+   "Paid tier"). On the free tier Google may use prompts to improve its products, which breaks the privacy policy's
+   no-training promise and Google's API user-data policy for Gmail/Drive data.
 7. **Box:** create a Box app (developer.box.com > My Apps > Custom App > User Authentication (OAuth 2.0)),
    redirect URI `https://www.stackunder.website/api/integrations/box/callback`, scope "Read all files and
    folders". Put the real 32-character client ID and the secret in `BOX_CLIENT_ID` / `BOX_CLIENT_SECRET`.
