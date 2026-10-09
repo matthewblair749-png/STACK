@@ -96,6 +96,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers,
   pages: {
     signIn: "/login",
+    // Failed sign-ins land back on the login page with a plain explanation, not Auth.js's generic error page.
+    error: "/login",
   },
   callbacks: {
     async session({ session, user }) {
