@@ -86,12 +86,18 @@ export const slackProvider: IntegrationProvider = {
   tokenConnect: {
     label: "Slack User OAuth Token",
     placeholder: "xoxp-...",
-    helpUrl: "https://api.slack.com/apps?new_app=1",
+    // Slack's "create from manifest" link pre-fills a private app with exactly the read-only user scopes STACK
+    // needs and no bot user - so there's nothing to tick by hand and no bot token to paste by mistake.
+    helpUrl: `https://api.slack.com/apps?new_app=1&manifest_json=${encodeURIComponent(
+      JSON.stringify({
+        display_information: { name: "STACK", description: "Reads your channels and DMs so STACK can show what needs you. Read-only." },
+        oauth_config: { scopes: { user: USER_SCOPES.split(",") } },
+      }),
+    )}`,
     steps: [
-      "Open the link below and create an app From scratch, in the workspace you want STACK to read.",
-      `Open OAuth & Permissions and, under User Token Scopes (not Bot Token Scopes), add: ${USER_SCOPES.split(",").join(", ")}.`,
-      "Click Install to Workspace at the top of that page and allow access. If you changed scopes after installing, click Reinstall.",
-      "Copy the User OAuth Token (starts with xoxp-, not the Bot token xoxb-) and paste it here.",
+      "Click the button below. Slack opens with STACK's read-only settings already filled in - pick your workspace, then click Next and Create.",
+      "On the app page, open Install App (left menu), click Install to Workspace, then Allow.",
+      "Copy the User OAuth Token shown there (it starts with xoxp-) and paste it on the next screen.",
     ],
     async validate(token) {
       if (token.startsWith("xoxb-")) {

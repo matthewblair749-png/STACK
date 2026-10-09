@@ -500,6 +500,16 @@ export function ConnectionCenter() {
             setPerm(null);
             goAuthorize(target.app, target.values);
           }}
+          onUseToken={
+            perm.app.tokenConnect
+              ? () => {
+                  const target = perm.app;
+                  setPerm(null);
+                  setTokenError(null);
+                  setTokenApp(target);
+                }
+              : undefined
+          }
         />
       )}
       {fieldsApp && (

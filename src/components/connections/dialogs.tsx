@@ -41,7 +41,7 @@ const primary = "rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white di
 const ghost = "rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100";
 
 /** Shown before every authorization: exactly what STACK will and won't do, in plain words. */
-export function PermissionSheet({ app, onCancel, onContinue }: { app: CatalogApp; onCancel: () => void; onContinue: () => void }) {
+export function PermissionSheet({ app, onCancel, onContinue, onUseToken }: { app: CatalogApp; onCancel: () => void; onContinue: () => void; onUseToken?: () => void }) {
   const meta = app.meta;
   const provider = app.oauthProviderId ? providerLabel(app.oauthProviderId) : app.name;
   return (
@@ -86,9 +86,18 @@ export function PermissionSheet({ app, onCancel, onContinue }: { app: CatalogApp
       )}
 
       <p className="mt-4 text-xs text-neutral-500">You&apos;ll approve this on {provider}&apos;s own page. You can disconnect at any time.</p>
-      <div className="mt-4 flex justify-end gap-2">
-        <button className={ghost} onClick={onCancel}>Cancel</button>
-        <button className={primary} onClick={onContinue}>Continue to {app.name}</button>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        {onUseToken ? (
+          <button className="text-xs font-medium text-neutral-500 underline hover:text-ink" onClick={onUseToken}>
+            Sign-in not working? Connect with a token instead
+          </button>
+        ) : (
+          <span />
+        )}
+        <div className="flex gap-2">
+          <button className={ghost} onClick={onCancel}>Cancel</button>
+          <button className={primary} onClick={onContinue}>Continue to {app.name}</button>
+        </div>
       </div>
     </Modal>
   );
@@ -182,6 +191,27 @@ export function SetupDialog({ app, busy, error, onCancel, onSave }: { app: Catal
 }
 
 /**
+ * Common wrong pastes, caught the moment they happen - before anything is sent. Each is a token that looks
+ * right (and would even pass a basic check) but can't read the person's own data.
+ */
+const WRONG_TOKEN: Record<string, { test: RegExp; message: string }[]> = {
+  slack: [
+    { test: /^xoxb-/, message: "That's the Bot token (xoxb-). Copy the User OAuth Token instead - it starts with xoxp-." },
+    { test: /^xapp-/, message: "That's an App-level token (xapp-). Copy the User OAuth Token instead - it starts with xoxp-." },
+    { test: /^(?!xoxp-)/, message: "Slack user tokens start with xoxp-. Copy the User OAuth Token from the app's Install App page." },
+  ],
+  stripe: [
+    { test: /^pk_/, message: "That's a publishable key (pk_), which can't read data. Create a restricted key (rk_) instead." },
+  ],
+};
+
+function wrongTokenMessage(providerId: string | null | undefined, value: string): string | null {
+  const v = value.trim();
+  if (!providerId || v.length < 6) return null;
+  return WRONG_TOKEN[providerId]?.find((w) => w.test.test(v))?.message ?? null;
+}
+
+/**
  * Step-by-step walkthrough for connecting with an access token the user creates in the app - no developer app of
  * ours needed. One instruction per screen, a button that opens the right page, and the paste box last.
  */
@@ -194,7 +224,10 @@ export function TokenDialog({ app, busy, error, onCancel, onSubmit }: { app: Cat
   const onPasteScreen = step === total - 1;
   const opened = useRef(false);
 
-  const submit = () => onSubmit(token.trim(), extra);
+  const wrong = wrongTokenMessage(app.oauthProviderId, token);
+  const submit = () => {
+    if (!wrong) onSubmit(token.trim(), extra);
+  };
 
   return (
     <Modal label={`Connect ${app.name}`} onClose={onCancel}>
@@ -263,7 +296,7 @@ export function TokenDialog({ app, busy, error, onCancel, onSubmit }: { app: Cat
                 onPaste={(e) => {
                   // Nothing else to fill in? Pasting the token is the last step, so connect right away.
                   const pasted = e.clipboardData.getData("text").trim();
-                  if (!t.fields?.length && pasted.length >= 20 && !/\s/.test(pasted) && !busy) {
+                  if (!t.fields?.length && pasted.length >= 20 && !/\s/.test(pasted) && !busy && !wrongTokenMessage(app.oauthProviderId, pasted)) {
                     e.preventDefault();
                     setToken(pasted);
                     onSubmit(pasted, {});
@@ -277,7 +310,8 @@ export function TokenDialog({ app, busy, error, onCancel, onSubmit }: { app: Cat
               </button>
             </div>
           </label>
-          {error && <p className="mt-3 text-sm text-red">{error}</p>}
+          {wrong && <p role="alert" className="mt-3 text-sm text-red">{wrong}</p>}
+          {error && !wrong && <p className="mt-3 text-sm text-red">{error}</p>}
           <p className="mt-3 text-xs text-neutral-500">Stored encrypted and never shown again. Disconnecting deletes it.</p>
           <button type="submit" hidden />
         </form>
@@ -296,7 +330,7 @@ export function TokenDialog({ app, busy, error, onCancel, onSubmit }: { app: Cat
             </button>
           )}
           {onPasteScreen ? (
-            <button type="button" disabled={busy || token.length < 20} className={primary} onClick={submit}>{busy ? "Checking..." : "Connect"}</button>
+            <button type="button" disabled={busy || token.length < 20 || !!wrong} className={primary} onClick={submit}>{busy ? "Checking..." : "Connect"}</button>
           ) : (
             <button type="button" className={primary} onClick={() => setStep((s) => s + 1)}>{step === total - 2 ? "I have my token" : "Next"}</button>
           )}
