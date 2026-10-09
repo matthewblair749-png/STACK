@@ -51,6 +51,7 @@ const PROVIDER_MAP = {
   vercel: "vercel",
   netlify: "netlify",
   mailchimp: "mailchimp",
+  greenhouse: "greenhouse",
   lever: "lever",
   gorgias: "gorgias",
   shipstation: "shipstation",

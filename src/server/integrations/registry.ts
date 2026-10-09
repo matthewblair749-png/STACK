@@ -25,6 +25,7 @@ import { intercomProvider } from "./providers/intercom";
 import { vercelProvider } from "./providers/vercel";
 import { netlifyProvider } from "./providers/netlify";
 import { mailchimpProvider } from "./providers/mailchimp";
+import { greenhouseProvider } from "./providers/greenhouse";
 import { leverProvider } from "./providers/lever";
 import { gorgiasProvider } from "./providers/gorgias";
 import { shipstationProvider } from "./providers/shipstation";
@@ -63,6 +64,7 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   vercel: vercelProvider,
   netlify: netlifyProvider,
   mailchimp: mailchimpProvider,
+  greenhouse: greenhouseProvider,
   lever: leverProvider,
   gorgias: gorgiasProvider,
   shipstation: shipstationProvider,
