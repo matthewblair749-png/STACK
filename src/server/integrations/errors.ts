@@ -16,6 +16,13 @@ export function friendlyProviderError(appLabel: string, err: unknown, phase: "sy
       ? `${appLabel} didn't accept the sign-in. Try connecting again.`
       : `${appLabel} no longer accepts STACK's access. Reconnect ${appLabel} in Connected Apps.`;
   }
+  if (/bot_token_not_supported/.test(raw)) {
+    return `${appLabel} is connected with a bot token, which can't read your messages. Reconnect ${appLabel} and paste the User OAuth Token (starts with xoxp-) instead.`;
+  }
+  // A token or app that lacks one of the read permissions STACK needs (Slack: missing_scope).
+  if (/missing_scope|insufficient_scope/i.test(raw)) {
+    return `${appLabel} is missing a read permission STACK needs. Reconnect ${appLabel} and include every permission listed in the connect steps.`;
+  }
   // Signed in, but without permission to read this.
   if (/\b403\b|insufficient|missing_scope|forbidden|access_denied|permission/i.test(raw)) {
     return phase === "connect"

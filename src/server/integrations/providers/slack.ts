@@ -13,8 +13,36 @@ const USER_SCOPES = [
   "groups:read",
   "im:history",
   "im:read",
+  "mpim:history",
   "mpim:read",
 ].join(",");
+
+/** Each conversation type STACK reads, and the user-token scope that lets conversations.list return it. */
+const CONVERSATION_TYPES = [
+  { type: "public_channel", scope: "channels:read", label: "public channels" },
+  { type: "private_channel", scope: "groups:read", label: "private channels" },
+  { type: "im", scope: "im:read", label: "direct messages" },
+  { type: "mpim", scope: "mpim:read", label: "group DMs" },
+] as const;
+type ConversationType = (typeof CONVERSATION_TYPES)[number]["type"];
+
+async function listConversations(token: string, types: string, limit: number) {
+  const res = await fetch(`https://slack.com/api/conversations.list?types=${types}&limit=${limit}&exclude_archived=true`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return (await res.json()) as { ok: boolean; error?: string; channels?: { id: string; name?: string; is_im?: boolean; user?: string }[] };
+}
+
+/**
+ * Which conversation types this token can actually list. Checked one type at a time, because a single missing
+ * scope makes a combined request fail with missing_scope and return nothing at all.
+ */
+async function readableTypes(token: string): Promise<{ ok: ConversationType[]; missing: (typeof CONVERSATION_TYPES)[number][] }> {
+  const results = await Promise.all(CONVERSATION_TYPES.map(async (t) => ({ t, res: await listConversations(token, t.type, 1) })));
+  const bad = results.find((r) => !r.res.ok && r.res.error !== "missing_scope");
+  if (bad) throw new Error(`Slack conversations.list failed: ${bad.res.error ?? "unknown_error"}`);
+  return { ok: results.filter((r) => r.res.ok).map((r) => r.t.type), missing: results.filter((r) => !r.res.ok).map((r) => r.t) };
+}
 
 function envVars() {
   return ["SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET"];
@@ -61,15 +89,27 @@ export const slackProvider: IntegrationProvider = {
     helpUrl: "https://api.slack.com/apps?new_app=1",
     steps: [
       "Open the link below and create an app From scratch, in the workspace you want STACK to read.",
-      `Open OAuth & Permissions and add these User Token Scopes: ${USER_SCOPES.split(",").join(", ")}.`,
-      "Click Install to Workspace at the top of that page and allow access.",
-      "Copy the User OAuth Token (starts with xoxp-) and paste it here.",
+      `Open OAuth & Permissions and, under User Token Scopes (not Bot Token Scopes), add: ${USER_SCOPES.split(",").join(", ")}.`,
+      "Click Install to Workspace at the top of that page and allow access. If you changed scopes after installing, click Reinstall.",
+      "Copy the User OAuth Token (starts with xoxp-, not the Bot token xoxb-) and paste it here.",
     ],
     async validate(token) {
+      if (token.startsWith("xoxb-")) {
+        throw new Error("That's the Bot User OAuth Token (xoxb-). STACK reads your own channels and DMs, so paste the User OAuth Token (xoxp-) from the same OAuth & Permissions page. If there isn't one, add the scopes under User Token Scopes and reinstall.");
+      }
       const res = await fetch("https://slack.com/api/auth.test", { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
-      if (data.ok !== true) throw new Error(`Slack rejected that token: ${data.error ?? "unknown_error"}`);
-      return { account: data.user && data.team ? `${data.user} - ${data.team}` : (data.team ?? data.user) };
+      if (data.ok !== true) throw new Error(`Slack rejected that token (${data.error ?? "unknown_error"}). Copy the User OAuth Token again and paste it here.`);
+      // Prove the token can actually read conversations now, instead of failing on every sync later.
+      const { ok, missing } = await readableTypes(token);
+      if (ok.length === 0) {
+        throw new Error(`That token can't read any conversations. In your Slack app's OAuth & Permissions page, add these User Token Scopes: ${USER_SCOPES.split(",").join(", ")}. Then click Reinstall to Workspace and paste the new token.`);
+      }
+      return {
+        account: data.user && data.team ? `${data.user} - ${data.team}` : (data.team ?? data.user),
+        // Sync reads only what the token allows; anything missing is named so the person can add it later.
+        metadata: { teamId: data.team_id, conversationTypes: ok, missingScopes: missing.map((m) => m.scope) },
+      };
     },
   },
 
@@ -123,12 +163,19 @@ export const slackProvider: IntegrationProvider = {
 
   async getMessages(tokens): Promise<MailMessage[]> {
     const headers = { Authorization: `Bearer ${tokens.accessToken}` };
-    const listRes = await fetch(
-      "https://slack.com/api/conversations.list?types=public_channel,private_channel,mpim,im&limit=20&exclude_archived=true",
-      { headers }
-    );
-    const listData = await listRes.json();
-    if (listData.ok !== true) {
+    // A bot token only sees the bot's own DMs - syncing that would look like data but isn't the person's Slack.
+    if (tokens.accessToken.startsWith("xoxb-")) throw new Error("Slack bot_token_not_supported");
+    // Ask only for the conversation types this token was confirmed to read (older connections didn't record
+    // them, so they're worked out on the fly). One missing scope must not stop everything else from syncing.
+    const known = Array.isArray(tokens.metadata?.conversationTypes) ? (tokens.metadata!.conversationTypes as string[]) : null;
+    let types = known?.length ? known : CONVERSATION_TYPES.map((t) => t.type as string);
+    let listData = await listConversations(tokens.accessToken, types.join(","), 20);
+    if (!listData.ok && listData.error === "missing_scope") {
+      types = (await readableTypes(tokens.accessToken)).ok;
+      if (types.length === 0) throw new Error("Slack conversations.list failed: missing_scope (the token has no channel or DM read scopes)");
+      listData = await listConversations(tokens.accessToken, types.join(","), 20);
+    }
+    if (!listData.ok) {
       throw new Error(`Slack conversations.list failed: ${listData.error ?? "unknown_error"}`);
     }
     type Channel = { id: string; name?: string; is_im?: boolean; user?: string };

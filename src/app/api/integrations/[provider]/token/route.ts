@@ -6,6 +6,8 @@ import { getProvider } from "@/server/integrations/registry";
 import { requireSessionAndWorkspace, UnauthorizedError, ForbiddenError } from "@/server/workspace";
 import { audit } from "@/server/audit";
 import { rateLimit, tooManyRequests } from "@/server/rate-limit";
+import { friendlyProviderError } from "@/server/integrations/errors";
+import type { ConnectedTokens } from "@/server/integrations/provider";
 
 /**
  * Connects an app with an access token the user created in that app. The token is checked against the app
@@ -43,10 +45,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     } catch (err) {
       const raw = err instanceof Error ? err.message : "";
       // A readable message thrown on purpose (e.g. an invalid store address) is shown as-is.
-      if (err instanceof Error && !/\b\d{3}\b/.test(raw) && raw.length < 160) return NextResponse.json({ error: raw }, { status: 400 });
+      if (err instanceof Error && !/\b\d{3}\b/.test(raw) && raw.length < 400) return NextResponse.json({ error: raw }, { status: 400 });
       const status = raw.match(/\b(\d{3})\b/)?.[1];
       const reason = status === "401" || status === "403" ? "the app rejected it. Check it was copied fully and hasn't expired." : "it couldn't be checked. Try again in a moment.";
       return NextResponse.json({ error: `That token didn't work: ${reason}` }, { status: 400 });
+    }
+
+    // A token can be genuine yet unable to read anything (wrong token type, missing scopes). Do one real read
+    // now, so a bad paste is caught here with the reason - not on every sync afterwards.
+    const trialTokens = { accessToken: token, scopes: [] as string[], metadata: { ...extra, method: "token" } };
+    const trialRead: ((t: ConnectedTokens) => Promise<unknown>) | undefined = provider.getMessages ?? provider.getFiles ?? provider.getCalendarEvents;
+    if (trialRead) {
+      try {
+        await trialRead.call(provider, trialTokens);
+      } catch (err) {
+        console.warn(`token connect trial read for ${id} failed:`, err instanceof Error ? err.message.replace(/\s+/g, " ").slice(0, 300) : err);
+        return NextResponse.json({ error: `The token works, but STACK couldn't read anything with it. ${friendlyProviderError(provider.label, err, "connect")}` }, { status: 400 });
+      }
     }
 
     const metadata = { ...extra, account, method: "token" } as Prisma.InputJsonValue;
