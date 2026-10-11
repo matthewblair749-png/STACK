@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { requireSessionAndWorkspace, ForbiddenError } from "@/server/workspace";
 import { handleApiError } from "@/server/api-error";
+import { audit } from "@/server/audit";
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,6 +24,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "This action was already handled." }, { status: 409 });
     }
     const action = await db.pendingAction.findUniqueOrThrow({ where: { id } });
+    await audit({ workspaceId, userId: session.user.id, action: "action.rejected", target: id, detail: { kind: action.kind } });
     return NextResponse.json({ action });
   } catch (err) {
     return handleApiError(err, "POST /api/actions/[id]/reject failed");

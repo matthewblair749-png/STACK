@@ -200,6 +200,13 @@ by workspace), so re-sending is safe.
 `lastError` explains why (5 failed attempts, or revoked access). Vercel > Project > Settings > Cron Jobs shows
 whether the daily run happened; a 401 there means `CRON_SECRET` isn't set. "Sync now" queues a fresh job.
 
+**An AI action says "Not confirmed".** STACK sent the write (email, Slack message, meeting) but got no
+confirmation back - a dropped connection or a 5xx from the app - so it may or may not have happened. The action is
+final (`PendingAction.status = Failed`) so it can't be re-sent by accident; the person checks the app. A row stuck in
+`Approved` means the server stopped mid-write: same meaning. Definite refusals (permission, bad channel) go back to
+`Pending` with `errorMessage` and can be approved again. Every approve/execute/fail/reject is in `AuditEvent`
+(`action.*`, kind and result ids only). Creating a meeting is safe to retry: each action uses a fixed Google event id.
+
 **Production returns P2022 "column does not exist".** Code shipped before its migration. Run
 `prisma migrate deploy` against production (section 2), then redeploy.
 
