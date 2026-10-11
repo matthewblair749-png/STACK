@@ -9,9 +9,19 @@ import { cn } from "@/lib/utils";
 import { AppDrawer, AppTile, primaryAction, QueuePanel } from "./parts";
 import { DisconnectDialog, FieldsDialog, Modal, PermissionSheet, SetupDialog, TokenDialog } from "./dialogs";
 import { RevealDialog } from "./reveal";
+import { ManageDetails } from "./manage-details";
 import { QUEUE_KEY, type CatalogApp, type CatalogResponse, type QueueItem, type SyncOutcome } from "./types";
 
 const REVEAL_SEEN = "stack-reveal-seen";
+
+/** The core work apps, grouped the way people think about them. Each still shows its real status - apps STACK can't read yet say so. */
+const CORE_GROUPS: { title: string; slugs: string[] }[] = [
+  { title: "Communication", slugs: ["gmail", "outlook", "slack", "microsoft-teams", "zoom"] },
+  { title: "Files and knowledge", slugs: ["google-drive", "onedrive", "sharepoint", "dropbox", "notion"] },
+  { title: "Calendar and productivity", slugs: ["google-calendar", "outlook-calendar", "asana", "trello", "linear", "jira"] },
+  { title: "Development", slugs: ["github", "gitlab"] },
+];
+const CORE_SLUGS = new Set(CORE_GROUPS.flatMap((g) => g.slugs));
 
 const readQueue = (): QueueItem[] => {
   try {
@@ -347,6 +357,7 @@ export function ConnectionCenter() {
   const batchTargets = [...new Map(connectable.filter((a) => a.oauthProviderId).map((a) => [a.oauthProviderId!, a])).values()];
   const recommended = apps.filter((a) => a.recommended && a.supported && !a.connected);
   const connectedApps = apps.filter((a) => a.connected);
+  const coreGroups = CORE_GROUPS.map((g) => ({ title: g.title, list: g.slugs.map((s) => bySlug.get(s)).filter((a): a is CatalogApp => !!a) })).filter((g) => g.list.length);
   const categories = useMemo(() => [...new Set(apps.map((a) => a.category))].sort(), [apps]);
   const nextBest = recommended.find((a) => a.meta?.unlocks.length) ?? apps.find((a) => a.supported && !a.connected && a.isUniversal && a.meta);
   const searching = q.trim().length > 0;
@@ -449,21 +460,24 @@ export function ConnectionCenter() {
 
       {!loading && !searching && filter === "all" && (
         <>
-          {connectedApps.length > 0 && (<>{heading("Connected")}{grid(connectedApps)}</>)}
-          {recommended.length > 0 && (
+          {coreGroups.map((g) => (
+            <div key={g.title}>{heading(g.title)}{grid(g.list)}</div>
+          ))}
+          {connectedApps.some((a) => !CORE_SLUGS.has(a.slug)) && (<>{heading("Also connected")}{grid(connectedApps.filter((a) => !CORE_SLUGS.has(a.slug)))}</>)}
+          {recommended.some((a) => !CORE_SLUGS.has(a.slug)) && (
             <>
               {heading(profession ? `Recommended for ${profession.name}` : "Recommended for you", batchTargets.length >= 2 ? <button onClick={() => setBatchConfirm(true)} className="rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white">Connect all recommended ({batchTargets.length})</button> : undefined)}
-              {grid(recommended, profession ? `Recommended because you selected ${profession.name}` : undefined)}
+              {grid(recommended.filter((a) => !CORE_SLUGS.has(a.slug)), profession ? `Recommended because you selected ${profession.name}` : undefined)}
             </>
           )}
-          {groupByCategory(apps.filter((a) => a.supported && !a.connected && !a.recommended)).map(([cat, list]) => (
-            <div key={cat}>{heading(cat)}{grid(list)}</div>
+          {groupByCategory(apps.filter((a) => a.supported && !a.connected && !a.recommended && !CORE_SLUGS.has(a.slug))).map(([cat, list]) => (
+            <div key={cat}>{heading(`More: ${cat}`)}{grid(list)}</div>
           ))}
-          {apps.some((a) => !a.supported) && (
+          {apps.some((a) => !a.supported && !CORE_SLUGS.has(a.slug)) && (
             <details className="mt-10 rounded-2xl border border-neutral-100 bg-white p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-ink">Coming soon ({apps.filter((a) => !a.supported).length})</summary>
+              <summary className="cursor-pointer text-sm font-semibold text-ink">Coming soon ({apps.filter((a) => !a.supported && !CORE_SLUGS.has(a.slug)).length})</summary>
               <p className="mt-1 text-xs text-neutral-500">Real apps STACK can&apos;t connect to yet. They&apos;re listed so you know what&apos;s planned - none pretend to connect.</p>
-              {groupByCategory(apps.filter((a) => !a.supported)).map(([cat, list]) => (<div key={cat}>{heading(cat)}{grid(list)}</div>))}
+              {groupByCategory(apps.filter((a) => !a.supported && !CORE_SLUGS.has(a.slug))).map(([cat, list]) => (<div key={cat}>{heading(cat)}{grid(list)}</div>))}
             </details>
           )}
         </>
@@ -483,11 +497,23 @@ export function ConnectionCenter() {
         <AppDrawer
           app={openApp}
           syncing={isSyncing(openApp)}
-          siblings={apps.filter((a) => a.oauthProviderId === openApp.oauthProviderId && a.slug !== openApp.slug).map((a) => a.name)}
+          siblings={apps.filter((a) => a.supported && a.oauthProviderId === openApp.oauthProviderId && a.slug !== openApp.slug).map((a) => a.name)}
           onClose={() => setOpenSlug(null)}
           onAction={() => beginConnect(openApp)}
           onSync={() => syncOne(openApp)}
           onDisconnect={() => setDisconnectApp(openApp)}
+          extra={
+            openApp.oauthProviderId ? (
+              <ManageDetails
+                key={openApp.oauthProviderId}
+                app={openApp}
+                onDataDeleted={(message) => {
+                  toast({ title: "Synced data deleted", description: message });
+                  reload();
+                }}
+              />
+            ) : undefined
+          }
         />
       )}
 

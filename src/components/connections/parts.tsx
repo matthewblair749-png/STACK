@@ -90,6 +90,7 @@ export function AppDrawer({
   onAction,
   onSync,
   onDisconnect,
+  extra,
 }: {
   app: CatalogApp;
   syncing: boolean;
@@ -99,6 +100,8 @@ export function AppDrawer({
   onAction: () => void;
   onSync: () => void;
   onDisconnect: () => void;
+  /** Connection management (permissions, sync history, data) shown for connected apps. */
+  extra?: React.ReactNode;
 }) {
   const action = primaryAction(app);
   const msg = healthMessage(app);
@@ -176,6 +179,7 @@ export function AppDrawer({
         ) : (
           <p className="mt-5 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-600">{action.reason}</p>
         )}
+        {app.connected && extra}
 
         <div className="mt-6 flex flex-wrap gap-2">
           {action.kind !== "none" && !(app.connected && app.health !== "expired") && (

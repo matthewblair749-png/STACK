@@ -10,6 +10,14 @@ import { SETUP_GUIDES } from "@/server/integrations/setup-guides";
 /** Real connection health, from what the last sync actually did - never assumed. */
 export type Health = "connected" | "pending" | "needs_attention" | "expired";
 
+/**
+ * Catalog apps that share a sign-in with a provider STACK supports, but whose own data that provider does not read
+ * yet. They stay "Coming soon" - connecting Microsoft must not make Teams look connected when no chats sync.
+ */
+const NOT_YET_READ: Record<string, string> = {
+  "microsoft-teams": "Microsoft",
+};
+
 const words = (s: string) => s.toLowerCase().split(/[^a-z0-9/+.]+/).filter((w) => w.length > 1);
 
 /**
@@ -51,9 +59,9 @@ export async function GET(req: NextRequest) {
     for (const t of terms) for (const extra of CATEGORY_SYNONYMS[t] ?? []) expanded.add(extra);
 
     const result = apps.map((app) => {
-      const provider = app.oauthProviderId ? getProvider(app.oauthProviderId) : undefined;
+      const provider = app.oauthProviderId && !NOT_YET_READ[app.slug] ? getProvider(app.oauthProviderId) : undefined;
       const configured = provider ? provider.isConfigured() : false;
-      const row = app.oauthProviderId ? connByProvider.get(app.oauthProviderId) : undefined;
+      const row = provider ? connByProvider.get(provider.id) : undefined;
       const connected = !!row;
       const meta = appMeta(app.oauthProviderId);
       // An app that can be connected with the user's own token is connectable even before OAuth is set up.
@@ -95,7 +103,7 @@ export async function GET(req: NextRequest) {
         lastSyncAt: row?.lastSyncAt?.toISOString() ?? null,
         lastSyncError: row?.syncError ?? row?.lastSyncError ?? null,
         account,
-        counts: app.oauthProviderId ? { messages: messages.get(app.oauthProviderId) ?? 0, events: events.get(app.oauthProviderId) ?? 0, files: files.get(app.oauthProviderId) ?? 0 } : null,
+        counts: provider ? { messages: messages.get(provider.id) ?? 0, events: events.get(provider.id) ?? 0, files: files.get(provider.id) ?? 0 } : null,
         meta: provider ? { understands: meta.understands, read: meta.read, act: meta.act, actNote: meta.actNote, wont: meta.wont, unlocks: meta.unlocks } : null,
         recommended: recommendedSlugs.has(app.slug),
         _synonyms: meta.synonyms,
