@@ -90,3 +90,75 @@ describe("Linear issues", () => {
     expect(r.complete).toBe(false);
   });
 });
+
+describe("Trello cards", () => {
+  it("maps due date and completion, and keeps the card link", async () => {
+    const { trelloProvider } = await import("./trello");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json([{ id: "c1", name: "Draft deck", due: "2026-10-09T17:00:00.000Z", dueComplete: false, dateLastActivity: "2026-10-05T10:00:00Z", url: "https://trello.com/c/1" }])),
+    );
+    const { tasks, complete } = await trelloProvider.getTasks!({ accessToken: "t", scopes: [], metadata: { apiKey: "k" } });
+    expect(complete).toBe(true);
+    expect(tasks[0]).toMatchObject({ id: "c1", title: "Draft deck", due: "2026-10-09T17:00:00.000Z", isDone: false, permalink: "https://trello.com/c/1" });
+  });
+});
+
+describe("ClickUp tasks", () => {
+  it("maps millisecond due dates, status and priority", async () => {
+    const { clickupProvider } = await import("./clickup");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (u: string) => {
+        const s = String(u);
+        if (s.endsWith("/user")) return json({ user: { id: 7 } });
+        if (s.endsWith("/team")) return json({ teams: [{ id: "t1" }] });
+        return json({ tasks: [{ id: "x1", name: "QA", status: { status: "in progress", type: "custom" }, due_date: "1760000000000", priority: { priority: "high" }, list: { name: "Sprint" }, url: "https://app.clickup.com/t/x1", date_updated: "1759900000000" }] });
+      }),
+    );
+    const { tasks, complete } = await clickupProvider.getTasks!({ accessToken: "pk_x", scopes: [] });
+    expect(complete).toBe(true);
+    expect(tasks[0]).toMatchObject({ id: "x1", status: "in progress", isDone: false, due: new Date(1760000000000).toISOString(), priority: "high", container: "Sprint" });
+  });
+});
+
+describe("GitHub tasks", () => {
+  it("combines assigned issues/PRs and direct review requests with distinct ids", async () => {
+    const { githubProvider } = await import("./github");
+    const calls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (u: string) => {
+        calls.push(String(u));
+        if (String(u).includes("/search/issues")) return json({ total_count: 1, incomplete_results: false, items: [{ id: 9, number: 4, title: "Add cache", html_url: "https://github.com/o/r/pull/4", repository_url: "https://api.github.com/repos/o/r", updated_at: "2026-10-05T10:00:00Z", pull_request: {} }] });
+        return json([{ id: 9, number: 4, title: "Add cache", html_url: "https://github.com/o/r/pull/4", repository: { full_name: "o/r" }, updated_at: "2026-10-05T10:00:00Z", pull_request: {} }]);
+      }),
+    );
+    const { tasks, complete } = await githubProvider.getTasks!({ accessToken: "t", scopes: [] });
+    expect(calls.some((c) => decodeURIComponent(c).includes("user-review-requested:@me"))).toBe(true);
+    expect(complete).toBe(true);
+    // The same PR assigned to you and awaiting your review is two different to-dos.
+    expect(tasks.map((t) => [t.id, t.status, t.title])).toEqual([
+      ["assigned:9", "Pull request assigned", "o/r#4: Add cache"],
+      ["review:9", "Review requested", "o/r#4: Add cache"],
+    ]);
+  });
+});
+
+describe("GitLab tasks", () => {
+  it("maps assigned issues with due dates and merge requests to review", async () => {
+    const { gitlabProvider } = await import("./gitlab");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (u: string) =>
+        String(u).includes("/issues")
+          ? json([{ id: 1, iid: 6, title: "Fix CI", due_date: "2026-10-15", references: { full: "grp/proj#6" }, web_url: "https://gitlab.com/grp/proj/-/issues/6", updated_at: "2026-10-05T10:00:00Z" }])
+          : json([{ id: 2, iid: 3, title: "Refactor", references: { full: "grp/proj!3" }, web_url: "https://gitlab.com/grp/proj/-/merge_requests/3", updated_at: "2026-10-05T10:00:00Z" }]),
+      ),
+    );
+    const { tasks, complete } = await gitlabProvider.getTasks!({ accessToken: "t", scopes: [] });
+    expect(complete).toBe(true);
+    expect(tasks[0]).toMatchObject({ id: "issue:1", title: "grp/proj#6: Fix CI", due: "2026-10-15", container: "grp/proj" });
+    expect(tasks[1]).toMatchObject({ id: "mr:2", status: "Review requested", container: "grp/proj" });
+  });
+});

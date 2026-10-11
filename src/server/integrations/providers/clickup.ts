@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { MailMessage } from "../provider";
+import type { ProviderTask, TaskList } from "../provider";
 import { getJson } from "../oauth-util";
 import { tokenOnlyProvider } from "./token-only";
 
@@ -11,7 +11,7 @@ const h = (token: string) => ({ Authorization: token });
 export const clickupProvider = tokenOnlyProvider({
   id: "clickup",
   label: "ClickUp",
-  capabilities: ["issues", "messages", "search"],
+  capabilities: ["issues", "search"],
   tokenConnect: {
     label: "ClickUp personal API token",
     placeholder: "pk_...",
@@ -26,29 +26,35 @@ export const clickupProvider = tokenOnlyProvider({
       return { account: data.user?.email ?? data.user?.username };
     },
   },
-  async getMessages(tokens): Promise<MailMessage[]> {
+  async getTasks(tokens): Promise<TaskList> {
     const headers = h(tokens.accessToken);
     const me = await getJson("ClickUp user", `${API}/user`, { headers });
-    const teams = await getJson("ClickUp teams", `${API}/team`, { headers });
+    const teams = ((await getJson("ClickUp teams", `${API}/team`, { headers })).teams ?? []) as { id: string }[];
+    // ClickUp returns at most 100 tasks per page; a full page (or more than three workspaces) means the list is partial.
+    let complete = teams.length <= 3;
     const perTeam = await Promise.all(
-      ((teams.teams ?? []) as { id: string }[]).slice(0, 3).map(async (t) => {
-        const data = await getJson("ClickUp tasks", `${API}/team/${t.id}/task?assignees%5B%5D=${me.user.id}&order_by=updated&reverse=true&subtasks=true`, { headers });
-        return (data.tasks ?? []) as Record<string, any>[];
+      teams.slice(0, 3).map(async (t) => {
+        const data = await getJson("ClickUp tasks", `${API}/team/${t.id}/task?assignees%5B%5D=${me.user.id}&order_by=updated&reverse=true&subtasks=true&page=0`, { headers });
+        const tasks = (data.tasks ?? []) as Record<string, any>[];
+        if (tasks.length >= 100) complete = false;
+        return tasks;
       }),
     );
-    const now = Date.now();
-    return perTeam.flat().slice(0, 40).map((x) => {
-      const due = x.due_date ? Number(x.due_date) : null;
-      const overdue = due !== null && due < now;
-      return {
-        id: String(x.id),
-        subject: x.name,
-        from: x.list?.name ?? x.space?.name ?? "ClickUp",
-        snippet: `${x.status?.status ?? "Open"}${due ? `, ${overdue ? "overdue since" : "due"} ${new Date(due).toISOString().slice(0, 10)}` : ""} - assigned to you`,
-        receivedAt: new Date(Number(x.date_updated) || now).toISOString(),
-        isUnread: overdue,
-        permalink: x.url,
-      };
-    });
+    return {
+      tasks: perTeam.flat().map(
+        (x): ProviderTask => ({
+          id: String(x.id),
+          title: x.name,
+          status: x.status?.status,
+          isDone: x.status?.type === "closed" || x.status?.type === "done",
+          due: x.due_date ? new Date(Number(x.due_date)).toISOString() : undefined,
+          priority: x.priority?.priority ?? undefined,
+          container: x.list?.name ?? x.space?.name,
+          permalink: x.url,
+          updatedAt: new Date(Number(x.date_updated) || Date.now()).toISOString(),
+        }),
+      ),
+      complete,
+    };
   },
 });

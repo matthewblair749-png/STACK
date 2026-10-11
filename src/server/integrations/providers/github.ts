@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { IntegrationProvider, MailMessage } from "../provider";
+import type { IntegrationProvider, MailMessage, ProviderTask, TaskList } from "../provider";
 import { envPair, getJson, tokenRequest } from "../oauth-util";
 
 const SCOPES = ["read:user", "notifications", "repo"];
@@ -51,6 +51,33 @@ export const githubProvider: IntegrationProvider = {
       { body: new URLSearchParams({ client_id: env.id(), client_secret: env.secret(), code, redirect_uri: redirectUri }).toString() },
       { scopes: SCOPES },
     );
+  },
+
+  async getTasks(tokens): Promise<TaskList> {
+    const headers = { Authorization: `Bearer ${tokens.accessToken}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    const [assigned, reviews] = await Promise.all([
+      // Open issues and pull requests assigned to you, across every repository you can see.
+      getJson("GitHub assigned issues", "https://api.github.com/issues?filter=assigned&state=open&per_page=100&sort=updated", { headers }) as Promise<Record<string, any>[]>,
+      // Pull requests where you were asked directly for a review.
+      getJson("GitHub review requests", `https://api.github.com/search/issues?q=${encodeURIComponent("is:open is:pr user-review-requested:@me")}&per_page=50&sort=updated`, { headers }),
+    ]);
+    const toTask = (i: Record<string, any>, status: string): ProviderTask => {
+      const repo = i.repository?.full_name ?? String(i.repository_url ?? "").split("/repos/")[1] ?? "GitHub";
+      return {
+        id: `${status === "Review requested" ? "review" : "assigned"}:${i.id}`,
+        title: `${repo}#${i.number}: ${i.title}`,
+        status,
+        isDone: false,
+        container: repo,
+        permalink: i.html_url,
+        updatedAt: i.updated_at,
+      };
+    };
+    const reviewItems = (reviews.items ?? []) as Record<string, any>[];
+    return {
+      tasks: [...assigned.map((i) => toTask(i, i.pull_request ? "Pull request assigned" : "Issue assigned")), ...reviewItems.map((i) => toTask(i, "Review requested"))],
+      complete: assigned.length < 100 && !reviews.incomplete_results && (reviews.total_count ?? 0) <= reviewItems.length,
+    };
   },
 
   async getMessages(tokens): Promise<MailMessage[]> {

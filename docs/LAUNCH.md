@@ -158,11 +158,13 @@ Google URLs on that one client.
   advance after the data they cover is saved. Other apps read their recent items each run.
 - **What's downloaded.** Metadata and snippets only: subject, sender, snippet, labels; file names and links;
   event titles, times and attendees. Never message bodies, attachments or file contents.
-- **Tasks (Asana, Jira, Linear).** Open tasks/issues assigned to the person are stored as `SyncedTask` rows with
+- **Tasks (Asana, Jira, Linear, Trello, ClickUp, GitHub, GitLab).** Open tasks/issues assigned to the person are stored as `SyncedTask` rows with
   the app's own status, due date (whole-day or exact time), priority and project/team, up to 100 per read. When
   the app says the list is complete, tasks no longer open or assigned are removed; a partial list only adds and
   updates. They appear in My Work, search, and the AI's context (cited as `extask:<id>`, with overdue marked),
-  and are capped at 1,000 per connection. Trello, ClickUp, Monday, GitHub and GitLab still sync as summaries.
+  and are capped at 1,000 per connection. GitHub and GitLab tasks are issues assigned to you plus pull/merge requests
+  waiting on your review; their notifications and to-dos still sync as activity under Updates > Code & deploys.
+  Monday still syncs recently updated board items as summaries (not assignments).
 - **Slack real-time.** Slack's Events API calls `/api/webhooks/slack`. Each request is checked against
   `SLACK_SIGNING_SECRET` (HMAC-SHA256 over the raw body, rejected if more than 5 minutes old), answered within
   Slack's 3-second limit, and de-duplicated by `event_id` (`WebhookDelivery`), so Slack's retries never run

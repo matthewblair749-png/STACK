@@ -11,9 +11,9 @@ export function tokenOnlyProvider(
     label: string;
     capabilities: IntegrationCapability[];
     tokenConnect: TokenConnect;
-  } & Pick<IntegrationProvider, "getMessages" | "getCalendarEvents" | "getFiles">,
+  } & Pick<IntegrationProvider, "getMessages" | "getCalendarEvents" | "getFiles" | "getTasks">,
 ): IntegrationProvider {
-  const { id, label, capabilities, tokenConnect, getMessages, getCalendarEvents, getFiles } = opts;
+  const { id, label, capabilities, tokenConnect, getMessages, getCalendarEvents, getFiles, getTasks } = opts;
   const unsupported = () => {
     throw new Error(`${label} connects with your own token, not a sign-in flow.`);
   };
@@ -29,6 +29,7 @@ export function tokenOnlyProvider(
     getMessages,
     getCalendarEvents,
     getFiles,
+    getTasks,
   };
 }
 

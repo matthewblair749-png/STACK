@@ -25,10 +25,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ kind
     if (kind === "messages") {
       const group = sp.get("group");
       if (group && !isDataGroupId(group)) return NextResponse.json({ error: "Unknown group." }, { status: 400 });
+      // Optional narrower filter: specific apps by id ("monday" or "github,gitlab").
+      const providers = sp.get("provider")?.split(",").filter((p) => /^[a-z0-9-]{1,40}$/.test(p)).slice(0, 20);
       const rows = await db.syncedMessage.findMany({
         where: {
           ...base,
-          ...(group ? { provider: { in: GROUP_BY_ID[group as DataGroupId].providers } } : {}),
+          ...(group || providers?.length
+            ? { provider: { in: (group ? GROUP_BY_ID[group as DataGroupId].providers : providers!).filter((p) => !providers?.length || providers.includes(p)) } }
+            : {}),
           ...(q ? { OR: [{ subject: { contains: q, mode: "insensitive" } }, { snippet: { contains: q, mode: "insensitive" } }, { fromName: { contains: q, mode: "insensitive" } }, { fromAddress: { contains: q, mode: "insensitive" } }] } : {}),
         },
         orderBy: { receivedAt: "desc" },

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { IntegrationProvider, MailMessage } from "../provider";
+import type { IntegrationProvider, ProviderTask, TaskList } from "../provider";
 import { getJson } from "../oauth-util";
 
 const apiKey = () => process.env.TRELLO_API_KEY ?? "";
@@ -12,7 +12,7 @@ const apiKey = () => process.env.TRELLO_API_KEY ?? "";
 export const trelloProvider: IntegrationProvider = {
   id: "trello",
   label: "Trello",
-  capabilities: ["issues", "messages", "search"],
+  capabilities: ["issues", "search"],
   tokenConnect: {
     label: "Trello token",
     placeholder: "Your Trello token",
@@ -53,29 +53,30 @@ export const trelloProvider: IntegrationProvider = {
     return { accessToken: token, scopes: ["read"] };
   },
 
-  async getMessages(tokens): Promise<MailMessage[]> {
+  async getTasks(tokens): Promise<TaskList> {
     // A connection made with the person's own key carries that key; the app-wide key is only for the OAuth-style flow.
     const key = typeof tokens.metadata?.apiKey === "string" ? tokens.metadata.apiKey : apiKey();
-    const data = await getJson(
+    const data = (await getJson(
       "Trello cards",
-      `https://api.trello.com/1/members/me/cards?filter=open&fields=name,due,dueComplete,dateLastActivity,url,idBoard&key=${key}&token=${encodeURIComponent(tokens.accessToken)}`,
+      `https://api.trello.com/1/members/me/cards?filter=open&fields=name,due,dueComplete,dateLastActivity,url&key=${key}&token=${encodeURIComponent(tokens.accessToken)}`,
       {},
-    );
-    const now = Date.now();
-    return (data as Record<string, any>[])
-      .sort((a, b) => Date.parse(b.dateLastActivity) - Date.parse(a.dateLastActivity))
-      .slice(0, 40)
-      .map((c) => {
-        const overdue = !!c.due && !c.dueComplete && Date.parse(c.due) < now;
-        return {
+    )) as Record<string, any>[];
+    const recent = data.sort((a, b) => Date.parse(b.dateLastActivity) - Date.parse(a.dateLastActivity)).slice(0, 100);
+    return {
+      tasks: recent.map(
+        (c): ProviderTask => ({
           id: c.id,
-          subject: c.name,
-          from: "Trello card",
-          snippet: c.due ? `${overdue ? "Overdue since" : "Due"} ${String(c.due).slice(0, 10)} - assigned to you` : "Assigned to you",
-          receivedAt: c.dateLastActivity,
-          isUnread: overdue,
+          title: c.name,
+          status: c.dueComplete ? "Due date complete" : "Open",
+          isDone: !!c.dueComplete,
+          due: c.due ?? undefined,
+          container: "Trello",
           permalink: c.url,
-        };
-      });
+          updatedAt: c.dateLastActivity,
+        }),
+      ),
+      // Every open card on you comes back in one read; only a list cut at 100 is partial.
+      complete: data.length <= 100,
+    };
   },
 };

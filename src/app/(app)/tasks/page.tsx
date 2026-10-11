@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useDemo } from "@/lib/demo-context";
 import { useSyncedList } from "@/lib/use-synced-list";
+import { WORK_SUMMARY_PROVIDERS } from "@/lib/data-groups";
 import { externalToTask, syncedTaskToTask, type SyncedTaskItem, type SyncedWorkItem } from "@/lib/external-tasks";
 import { providerLabel } from "@/lib/providers-meta";
 import { IntegrationLogo } from "@/components/brand-icons";
@@ -32,6 +33,7 @@ function formatDueDate(dueDate?: string) {
 }
 
 const NO_PARAMS = {};
+const SUMMARY_PARAMS = { provider: WORK_SUMMARY_PROVIDERS.join(",") };
 
 type View = "list" | "board" | "timeline" | "calendar";
 
@@ -39,8 +41,8 @@ const priorityOrder: Record<Priority, number> = { urgent: 0, important: 1, norma
 
 export default function TasksPage() {
   const { tasks: ownTasks, toggleTask: toggleOwn, addTask, updateTask: updateOwn, deleteTask, projects, people } = useDemo();
-  const external = useSyncedList<SyncedWorkItem>("messages", { group: "work" });
-  // Asana, Jira and Linear sync as real tasks (status, due date); other task apps still arrive as summaries.
+  const external = useSyncedList<SyncedWorkItem>("messages", SUMMARY_PARAMS);
+  // Most task apps sync as real tasks (status, due date); the few in WORK_SUMMARY_PROVIDERS still arrive as summaries.
   const appTasks = useSyncedList<SyncedTaskItem>("tasks", NO_PARAMS);
   const externalTasks = useMemo(() => [...appTasks.items.map((t) => syncedTaskToTask(t)), ...external.items.map(externalToTask)], [appTasks.items, external.items]);
   const tasks = useMemo(() => [...ownTasks, ...externalTasks], [ownTasks, externalTasks]);

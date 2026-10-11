@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { IntegrationProvider, MailMessage } from "../provider";
+import type { IntegrationProvider, MailMessage, ProviderTask, TaskList } from "../provider";
 import { envPair, getJson, tokenRequest } from "../oauth-util";
 
 const env = envPair("GITLAB");
@@ -54,6 +54,43 @@ export const gitlabProvider: IntegrationProvider = {
   refreshAccessToken(refreshToken) {
     env.require("GitLab");
     return tokenCall({ grant_type: "refresh_token", refresh_token: refreshToken }, refreshToken);
+  },
+
+  async getTasks(tokens): Promise<TaskList> {
+    const headers = { Authorization: `Bearer ${tokens.accessToken}` };
+    const [issues, mrs] = (await Promise.all([
+      getJson("GitLab assigned issues", "https://gitlab.com/api/v4/issues?scope=assigned_to_me&state=opened&per_page=100&order_by=updated_at", { headers }),
+      getJson("GitLab reviews", "https://gitlab.com/api/v4/merge_requests?scope=reviews_for_me&state=opened&per_page=100&order_by=updated_at", { headers }),
+    ])) as Record<string, any>[][];
+    const project = (i: Record<string, any>) => String(i.references?.full ?? "").replace(/[#!]\d+$/, "") || "GitLab";
+    return {
+      tasks: [
+        ...issues.map(
+          (i): ProviderTask => ({
+            id: `issue:${i.id}`,
+            title: `${i.references?.full ?? `#${i.iid}`}: ${i.title}`,
+            status: "Issue assigned",
+            isDone: false,
+            due: i.due_date ?? undefined,
+            container: project(i),
+            permalink: i.web_url,
+            updatedAt: i.updated_at,
+          }),
+        ),
+        ...mrs.map(
+          (m): ProviderTask => ({
+            id: `mr:${m.id}`,
+            title: `${m.references?.full ?? `!${m.iid}`}: ${m.title}`,
+            status: "Review requested",
+            isDone: false,
+            container: project(m),
+            permalink: m.web_url,
+            updatedAt: m.updated_at,
+          }),
+        ),
+      ],
+      complete: issues.length < 100 && mrs.length < 100,
+    };
   },
 
   async getMessages(tokens): Promise<MailMessage[]> {

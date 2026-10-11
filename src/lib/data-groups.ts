@@ -18,7 +18,7 @@ export const DATA_GROUPS: DataGroup[] = [
   { id: "customers", label: "Customers & sales", blurb: "Deals, opportunities and marketing campaigns.", noun: "deals and campaigns", providers: ["hubspot", "salesforce", "mailchimp"] },
   { id: "money", label: "Money", blurb: "Payments, failed charges and unpaid invoices.", noun: "payments and invoices", providers: ["stripe", "quickbooks", "freshbooks"] },
   { id: "orders", label: "Orders & shipping", blurb: "Orders waiting to ship and their status.", noun: "orders", providers: ["shopify", "shipstation", "shippo", "cin7"] },
-  { id: "dev", label: "Deploys", blurb: "Recent deployments, including failed ones.", noun: "deploys", providers: ["vercel", "netlify"] },
+  { id: "dev", label: "Code & deploys", blurb: "Code activity (mentions, comments, to-dos) and recent deployments, including failed ones.", noun: "code updates and deploys", providers: ["github", "gitlab", "vercel", "netlify"] },
   { id: "people", label: "People & hiring", blurb: "Candidates in your pipeline and time-off requests.", noun: "candidates and requests", providers: ["greenhouse", "lever", "bamboohr"] },
   { id: "other", label: "Other updates", blurb: "Activity from other connected apps.", noun: "updates", providers: ["benchling", "clio"] },
 ];
@@ -35,6 +35,9 @@ export function groupFor(providerId: string): DataGroup | undefined {
 }
 
 /** The groups that appear in the Updates tab (email, chat and tasks have their own tabs). */
+/** Task apps that still sync work items as summaries, not real tasks - My Work reads these from the message feed. */
+export const WORK_SUMMARY_PROVIDERS = ["monday"];
+
 export const UPDATE_GROUPS = DATA_GROUPS.filter((g) => g.id !== "email" && g.id !== "chat" && g.id !== "work");
 
 // Calendar and Files aren't DATA_GROUPS (those pages show every connected provider generically,
