@@ -114,7 +114,7 @@ export const slackProvider: IntegrationProvider = {
       return {
         account: data.user && data.team ? `${data.user} - ${data.team}` : (data.team ?? data.user),
         // Sync reads only what the token allows; anything missing is named so the person can add it later.
-        metadata: { teamId: data.team_id, conversationTypes: ok, missingScopes: missing.map((m) => m.scope) },
+        metadata: { teamId: data.team_id, slackUserId: data.user_id, conversationTypes: ok, missingScopes: missing.map((m) => m.scope) },
       };
     },
   },
@@ -138,7 +138,8 @@ export const slackProvider: IntegrationProvider = {
       refreshToken: authedUser.refresh_token,
       expiresAt: authedUser.expires_in ? new Date(Date.now() + authedUser.expires_in * 1000) : undefined,
       scopes: typeof authedUser.scope === "string" ? authedUser.scope.split(",") : USER_SCOPES.split(","),
-      metadata: { teamId: data.team?.id, teamName: data.team?.name },
+      // The Slack user id lets a tokens_revoked event find exactly this connection.
+      metadata: { teamId: data.team?.id, teamName: data.team?.name, slackUserId: authedUser.id },
     };
   },
 

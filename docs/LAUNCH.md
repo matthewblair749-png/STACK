@@ -32,6 +32,7 @@ A change takes effect on the next deployment.
 | `ANTHROPIC_API_KEY` (+ `ANTHROPIC_MODEL`, default `claude-sonnet-5-5`; `ANTHROPIC_EFFORT`, default `medium`) | AI falls back to the `LLM_*` provider, then to answers built from synced data only - the UI says which. |
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (+ `LLM_MAX_TOKENS`, default 8192; `LLM_REASONING_EFFORT`) | No fallback model when Claude is unavailable. Any OpenAI-compatible API, e.g. Gemini: `https://generativelanguage.googleapis.com/v1beta/openai`, `gemini-3.8-flash`. |
 | `AI_DAILY_LIMIT` | Default 50 full AI answers per person per rolling 24h. |
+| `SLACK_SIGNING_SECRET` | No real-time Slack updates: `/api/webhooks/slack` answers 503 with `x-slack-no-retry`, and Slack syncs only on connect, "Sync now", page visits and the daily run. From api.slack.com/apps > STACK > Basic Information > App Credentials > Signing Secret. |
 | `CRON_SECRET` | The daily background sync (`/api/cron/sync`, scheduled in `vercel.json`) refuses to run, so apps only sync on connect, on "Sync now", and when someone opens STACK. Vercel sends it automatically as `Authorization: Bearer <CRON_SECRET>`. Generate: `openssl rand -hex 32`. |
 | `NEXT_PUBLIC_SENTRY_DSN` | No error monitoring; errors only in Vercel logs. |
 | `<APP>_CLIENT_ID` / `<APP>_CLIENT_SECRET` (Slack, GitHub, Linear, Figma, Clio, Notion, Dropbox, Box, GitLab, Jira, Asana, HubSpot, Salesforce, QuickBooks, FreshBooks, Shopify), `TRELLO_API_KEY`, `STRIPE_CONNECT_CLIENT_ID`, `MICROSOFT_*`, `GOOGLE_*` | That app shows "Not available yet", or offers its paste-a-token option where one exists. |
@@ -157,6 +158,13 @@ Google URLs on that one client.
   advance after the data they cover is saved. Other apps read their recent items each run.
 - **What's downloaded.** Metadata and snippets only: subject, sender, snippet, labels; file names and links;
   event titles, times and attendees. Never message bodies, attachments or file contents.
+- **Slack real-time.** Slack's Events API calls `/api/webhooks/slack`. Each request is checked against
+  `SLACK_SIGNING_SECRET` (HMAC-SHA256 over the raw body, rejected if more than 5 minutes old), answered within
+  Slack's 3-second limit, and de-duplicated by `event_id` (`WebhookDelivery`), so Slack's retries never run
+  twice. A message event queues a sync, 30 seconds later, for each STACK connection in that Slack workspace;
+  messages arriving in the meantime join the same job. Slack names only one of the people who can see an
+  event, so every connection in the team is queued; each sync reads only what that person's token can see.
+  `tokens_revoked` / `app_uninstalled` mark the affected connections "Reconnect" straight away.
 - **Retention.** Synced copies are working context, not an archive: mail older than 90 days, and anything past
   1,000 messages or 1,000 files per connection, is deleted from STACK (never from the source app).
   Disconnecting deletes everything synced from that app, plus its cursors.
@@ -231,6 +239,13 @@ pages show users a reference code (`digest`) that matches the server log entry.
    redirect URI `https://www.stackunder.website/api/integrations/box/callback`, scope "Read all files and
    folders". Put the real 32-character client ID and the secret in `BOX_CLIENT_ID` / `BOX_CLIENT_SECRET`.
 8. **Slack:** api.slack.com/apps > STACK > Manage Distribution > activate public distribution.
+   **Real-time updates:** same app > **Event Subscriptions** > Enable Events. First set `SLACK_SIGNING_SECRET`
+   in Vercel (Basic Information > Signing Secret) and redeploy, then set Request URL to
+   `https://www.stackunder.website/api/webhooks/slack` (Slack checks it immediately; it must say Verified).
+   Under **Subscribe to events on behalf of users** add `message.channels`, `message.groups`, `message.im`,
+   `message.mpim`; also add `tokens_revoked` and `app_uninstalled`. Save, then **Reinstall** the app if Slack asks.
+   Only connections made with "Connect" (STACK's Slack app) get real-time updates; pasted-token connections use
+   the person's own Slack app, which can't send events to STACK, so they keep syncing on the normal schedule.
 9. **Google OAuth verification** for the Gmail/Drive restricted scopes: [google-verification.md](google-verification.md).
 10. **Remaining OAuth apps** (Dropbox, Microsoft, Salesforce, QuickBooks, FreshBooks, ...): register each with the
     redirect URI from section 3, following [app-registration-kit.md](app-registration-kit.md).

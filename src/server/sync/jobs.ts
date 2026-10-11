@@ -35,10 +35,10 @@ export async function enqueueSync(workspaceId: string, userId: string, provider:
   const waiting = await db.syncJob.findFirst({ where: { workspaceId, userId, provider, status: "Queued" }, select: { id: true, runAfter: true } });
   if (waiting) {
     if (waiting.runAfter > runAfter) await db.syncJob.update({ where: { id: waiting.id }, data: { runAfter } });
-    return waiting.id;
+    return { id: waiting.id, created: false };
   }
   const job = await db.syncJob.create({ data: { workspaceId, userId, provider, reason, runAfter }, select: { id: true } });
-  return job.id;
+  return { id: job.id, created: true };
 }
 
 /**
