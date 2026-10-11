@@ -39,8 +39,10 @@ export const microsoftProvider: IntegrationProvider = {
   capabilities: ["calendar", "mail", "files"],
   isConfigured,
   missingSetup: () => (isConfigured() ? [] : [`set ${envVars().join(" and ")}`]),
+  // The Microsoft identity platform recommends PKCE for every authorization-code flow, including web apps.
+  pkce: true,
 
-  getAuthUrl(state, redirectUri) {
+  getAuthUrl(state, redirectUri, opts) {
     requireConfigured();
     const url = new URL(`https://login.microsoftonline.com/${tenant()}/oauth2/v2.0/authorize`);
     url.searchParams.set("client_id", process.env.MICROSOFT_CLIENT_ID!);
@@ -49,10 +51,14 @@ export const microsoftProvider: IntegrationProvider = {
     url.searchParams.set("response_mode", "query");
     url.searchParams.set("scope", SCOPES);
     url.searchParams.set("state", state);
+    if (opts?.codeChallenge) {
+      url.searchParams.set("code_challenge", opts.codeChallenge);
+      url.searchParams.set("code_challenge_method", "S256");
+    }
     return url.toString();
   },
 
-  async exchangeCode(code, redirectUri): Promise<ConnectedTokens> {
+  async exchangeCode(code, redirectUri, ctx): Promise<ConnectedTokens> {
     requireConfigured();
     const data = await tokenRequest(
       new URLSearchParams({
@@ -62,6 +68,7 @@ export const microsoftProvider: IntegrationProvider = {
         redirect_uri: redirectUri,
         grant_type: "authorization_code",
         scope: SCOPES,
+        ...(ctx?.codeVerifier ? { code_verifier: ctx.codeVerifier } : {}),
       })
     );
     return {

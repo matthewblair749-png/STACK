@@ -1,8 +1,8 @@
-import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getProvider } from "@/server/integrations/registry";
 import { redirectBase } from "@/server/integrations/redirect";
 import { requireSessionAndWorkspace, UnauthorizedError, ForbiddenError } from "@/server/workspace";
+import { createOAuthState, oauthCookieName, OAUTH_STATE_MAX_AGE_SEC, safeReturnPath } from "@/server/integrations/oauth-state";
 
 export async function GET(
   req: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
   const integrationsUrl = new URL("/integrations", req.nextUrl.origin);
 
   try {
-    const { workspaceId } = await requireSessionAndWorkspace();
+    const { session, workspaceId } = await requireSessionAndWorkspace();
 
     const provider = getProvider(providerId);
     if (!provider) {
@@ -35,20 +35,28 @@ export async function GET(
       fields[f.name] = value;
     }
 
-    // Where to land after authorizing (e.g. back in onboarding). Same-site paths only, so this can't be used to redirect elsewhere.
-    const wanted = req.nextUrl.searchParams.get("returnTo") ?? "";
-    const returnTo = /^\/[a-z0-9\-_/]*$/i.test(wanted) && !wanted.startsWith("//") ? wanted : "";
+    // Where to land after authorizing (e.g. back in onboarding).
+    const returnTo = safeReturnPath(req.nextUrl.searchParams.get("returnTo"));
 
-    const state = randomBytes(16).toString("hex");
+    // Everything the callback needs rides in a signed, httpOnly cookie - including the PKCE verifier, which
+    // never reaches the browser or the provider (only its hash does).
+    const { state, codeChallenge, cookieValue } = createOAuthState({
+      provider: provider.id,
+      workspaceId,
+      userId: session.user.id,
+      fields,
+      returnTo,
+      pkce: !!provider.pkce,
+    });
     const redirectUri = new URL(`/api/integrations/${provider.id}/callback`, redirectBase(provider.id, req.nextUrl.origin)).toString();
-    const authUrl = provider.getAuthUrl(state, redirectUri, { write: req.nextUrl.searchParams.get("write") === "1", fields });
+    const authUrl = provider.getAuthUrl(state, redirectUri, { write: req.nextUrl.searchParams.get("write") === "1", fields, codeChallenge });
 
     const res = NextResponse.redirect(authUrl);
-    res.cookies.set(`stack_oauth_state_${provider.id}`, `${state}:${workspaceId}:${Buffer.from(JSON.stringify(fields)).toString("base64url")}:${Buffer.from(returnTo).toString("base64url")}`, {
+    res.cookies.set(oauthCookieName(provider.id), cookieValue, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 600,
+      maxAge: OAUTH_STATE_MAX_AGE_SEC,
       path: "/",
     });
     return res;

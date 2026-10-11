@@ -34,6 +34,8 @@ export const googleProvider: IntegrationProvider = {
   capabilities: ["calendar", "mail", "files"],
   isConfigured,
   missingSetup: () => (isConfigured() ? [] : [`set ${envVars().join(" and ")}`]),
+  // Google supports PKCE for web-server clients alongside the client secret.
+  pkce: true,
 
   getAuthUrl(state, redirectUri, opts) {
     requireConfigured();
@@ -46,10 +48,14 @@ export const googleProvider: IntegrationProvider = {
     url.searchParams.set("access_type", "offline");
     url.searchParams.set("prompt", "consent");
     url.searchParams.set("state", state);
+    if (opts?.codeChallenge) {
+      url.searchParams.set("code_challenge", opts.codeChallenge);
+      url.searchParams.set("code_challenge_method", "S256");
+    }
     return url.toString();
   },
 
-  async exchangeCode(code, redirectUri): Promise<ConnectedTokens> {
+  async exchangeCode(code, redirectUri, ctx): Promise<ConnectedTokens> {
     requireConfigured();
     const res = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -60,6 +66,7 @@ export const googleProvider: IntegrationProvider = {
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         redirect_uri: redirectUri,
         grant_type: "authorization_code",
+        ...(ctx?.codeVerifier ? { code_verifier: ctx.codeVerifier } : {}),
       }),
     });
     if (!res.ok) {

@@ -64,6 +64,8 @@ export interface ConnectField {
 export interface ConnectContext {
   query: URLSearchParams;
   fields: Record<string, string>;
+  /** The PKCE verifier for this sign-in, when the provider uses PKCE. */
+  codeVerifier?: string;
 }
 
 /**
@@ -99,8 +101,11 @@ export interface IntegrationProvider {
   /** Details the user must give before sign-in can start (e.g. a Shopify store address). */
   connectFields?: ConnectField[];
 
+  /** True when the provider supports PKCE (RFC 7636) for confidential web clients; the connect flow then always uses it. */
+  pkce?: boolean;
+
   /** `write: true` additionally asks for permission to send/change things (used only when the user wants that). */
-  getAuthUrl(state: string, redirectUri: string, opts?: { write?: boolean; fields?: Record<string, string> }): string;
+  getAuthUrl(state: string, redirectUri: string, opts?: { write?: boolean; fields?: Record<string, string>; codeChallenge?: string }): string;
   exchangeCode(code: string, redirectUri: string, ctx?: ConnectContext): Promise<ConnectedTokens>;
   refreshAccessToken?(refreshToken: string): Promise<ConnectedTokens>;
 

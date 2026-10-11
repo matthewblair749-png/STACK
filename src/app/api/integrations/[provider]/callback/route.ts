@@ -7,6 +7,7 @@ import { friendlyProviderError } from "@/server/integrations/errors";
 import { redirectBase, relayTarget } from "@/server/integrations/redirect";
 import { audit } from "@/server/audit";
 import { requireSessionAndWorkspace } from "@/server/workspace";
+import { oauthCookieName, safeReturnPath, verifyOAuthState } from "@/server/integrations/oauth-state";
 
 export async function GET(
   req: NextRequest,
@@ -27,12 +28,15 @@ export async function GET(
 
   const fail = (message: string) => {
     integrationsUrl.searchParams.set("error", message);
-    return NextResponse.redirect(integrationsUrl);
+    const res = NextResponse.redirect(integrationsUrl);
+    // A sign-in state is single-use, whether or not it worked.
+    res.cookies.delete(oauthCookieName(provider.id));
+    return res;
   };
 
   const code = req.nextUrl.searchParams.get("code");
   const state = req.nextUrl.searchParams.get("state");
-  const cookieName = `stack_oauth_state_${provider.id}`;
+  const cookieName = oauthCookieName(provider.id);
   const cookieValue = req.cookies.get(cookieName)?.value;
 
   if (req.nextUrl.searchParams.get("error")) {
@@ -43,32 +47,25 @@ export async function GET(
     if (errCode === "access_denied") return fail(`You cancelled connecting ${provider.label}. Connect again whenever you're ready.`);
     return fail(friendlyProviderError(provider.label, new Error(reason ?? ""), "connect"));
   }
-  if (!code || !state || !cookieValue) {
-    return fail(`${provider.label} sign-in response was invalid. Try connecting again.`);
-  }
+  if (!code) return fail(`${provider.label} sign-in response was invalid. Try connecting again.`);
 
-  const [expectedState, workspaceId, encodedFields, encodedReturn] = cookieValue.split(":");
-  try {
-    const back = encodedReturn ? Buffer.from(encodedReturn, "base64url").toString() : "";
-    // Re-validated here: the cookie is ours, but a landing path must never be an outside address.
-    if (/^\/[a-z0-9\-_/]*$/i.test(back) && !back.startsWith("//")) integrationsUrl = new URL(back, req.nextUrl.origin);
-  } catch {
-    // Keep the default landing page.
+  // CSRF / mix-up protection: the cookie must be ours (signed), fresh, for this provider, and match the state
+  // the provider sent back.
+  const check = verifyOAuthState(cookieValue, state, provider.id);
+  if (!check.ok) {
+    console.warn(`${provider.label} callback rejected: ${check.reason}`);
+    return fail(check.reason === "expired" ? `${provider.label} sign-in took too long. Try connecting again.` : `${provider.label} sign-in couldn't be verified. Try connecting again.`);
   }
-  let fields: Record<string, string> = {};
-  try {
-    if (encodedFields) fields = JSON.parse(Buffer.from(encodedFields, "base64url").toString());
-  } catch {
-    fields = {};
-  }
-  if (state !== expectedState || !workspaceId) {
-    return fail(`${provider.label} sign-in couldn't be verified. Try connecting again.`);
-  }
+  const { workspaceId, userId: startedBy, fields, returnTo, codeVerifier } = check.payload;
+  const back = safeReturnPath(returnTo);
+  if (back) integrationsUrl = new URL(back, req.nextUrl.origin);
 
   try {
     const { session } = await requireSessionAndWorkspace(workspaceId);
+    // A sign-in started by one person can't be completed into someone else's account.
+    if (session.user.id !== startedBy) return fail(`${provider.label} sign-in was started by a different account. Try connecting again.`);
     const redirectUri = new URL(`/api/integrations/${provider.id}/callback`, redirectBase(provider.id, req.nextUrl.origin)).toString();
-    const tokens = await provider.exchangeCode(code, redirectUri, { query: req.nextUrl.searchParams, fields });
+    const tokens = await provider.exchangeCode(code, redirectUri, { query: req.nextUrl.searchParams, fields, codeVerifier });
 
     await db.integration.upsert({
       where: {
