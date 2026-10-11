@@ -57,7 +57,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     // A token can be genuine yet unable to read anything (wrong token type, missing scopes). Do one real read
     // now, so a bad paste is caught here with the reason - not on every sync afterwards.
     const trialTokens = { accessToken: token, scopes: [] as string[], metadata: { ...extra, method: "token" } };
-    const trialRead: ((t: ConnectedTokens) => Promise<unknown>) | undefined = provider.getMessages ?? provider.getFiles ?? provider.getCalendarEvents;
+    const trialRead: ((t: ConnectedTokens) => Promise<unknown>) | undefined = provider.getMessages ?? provider.getFiles ?? provider.getCalendarEvents ?? provider.getTasks;
     if (trialRead) {
       try {
         await trialRead.call(provider, trialTokens);

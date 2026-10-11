@@ -28,7 +28,7 @@ export async function searchWorkspace(workspaceId: string, userId: string, rawQu
   if (q.length < 2) return { query, ask, results: [] };
 
   const like = { contains: query, mode: "insensitive" as const };
-  const [tasks, projects, members, messages, files, events, domainMessages] = await Promise.all([
+  const [tasks, projects, members, messages, files, events, domainMessages, appTasks] = await Promise.all([
     db.task.findMany({ where: { workspaceId, title: like }, take: PER_TYPE * 2, select: { id: true, title: true, status: true, dueDate: true } }),
     db.project.findMany({ where: { workspaceId, name: like }, take: PER_TYPE, select: { id: true, name: true, status: true } }),
     db.workspaceMember.findMany({
@@ -45,12 +45,22 @@ export async function searchWorkspace(workspaceId: string, userId: string, rawQu
     db.syncedFile.findMany({ where: { workspaceId, userId, name: like }, orderBy: { modifiedAt: "desc" }, take: PER_TYPE, select: { id: true, provider: true, name: true, webUrl: true, ownerName: true } }),
     db.syncedEvent.findMany({ where: { workspaceId, userId, OR: [{ title: like }, { description: like }] }, orderBy: { startAt: "desc" }, take: PER_TYPE, select: { id: true, provider: true, title: true, startAt: true, permalink: true } }),
     db.syncedMessage.findMany({ where: { workspaceId, userId, fromAddress: like }, take: 60, select: { fromAddress: true, fromName: true } }),
+    db.syncedTask.findMany({
+      where: { workspaceId, userId, isDone: false, OR: [{ title: like }, { container: like }] },
+      orderBy: { sourceUpdatedAt: "desc" },
+      take: PER_TYPE,
+      select: { id: true, provider: true, title: true, status: true, dueAt: true, container: true, permalink: true },
+    }),
   ]);
 
   const results: SearchResult[] = [];
 
   for (const t of tasks.sort((a, b) => rank(a.title, q) - rank(b.title, q)).slice(0, PER_TYPE)) {
     results.push({ id: t.id, type: "task", title: t.title, subtitle: `Task - ${t.status === "InProgress" ? "in progress" : t.status.toLowerCase()}${t.dueDate ? ` - due ${t.dueDate.toLocaleDateString()}` : ""}`, href: "/tasks" });
+  }
+  for (const t of appTasks) {
+    const due = t.dueAt ? ` - due ${t.dueAt.toLocaleDateString()}` : "";
+    results.push({ id: t.id, type: "task", title: t.title, subtitle: `${t.container ?? "Task"}${t.status ? ` - ${t.status}` : ""}${due}`, appId: t.provider, href: t.permalink ?? "/tasks", external: !!t.permalink });
   }
   for (const p of projects) {
     results.push({ id: p.id, type: "project", title: p.name, subtitle: `Project - ${p.status}`, href: `/projects/${p.id}` });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { IntegrationProvider, MailMessage } from "../provider";
+import type { IntegrationProvider, ProviderTask, TaskList } from "../provider";
 import { envPair, getJson, tokenRequest } from "../oauth-util";
 
 const env = envPair("LINEAR");
@@ -15,14 +15,14 @@ const tokenCall = (params: Record<string, string>, refreshToken?: string) =>
 /** Personal API keys (lin_api_...) go in the header as-is; OAuth tokens use Bearer. */
 const authHeader = (token: string) => (token.startsWith("lin_api_") ? token : `Bearer ${token}`);
 
-const QUERY = `{ viewer { assignedIssues(first: 30, orderBy: updatedAt, filter: { state: { type: { nin: ["completed", "canceled"] } } }) {
-  nodes { id identifier title url updatedAt priorityLabel state { name } team { name } } } } }`;
+const QUERY = `{ viewer { assignedIssues(first: 100, orderBy: updatedAt, filter: { state: { type: { nin: ["completed", "canceled"] } } }) {
+  nodes { id identifier title url updatedAt dueDate priorityLabel state { name type } team { name } } pageInfo { hasNextPage } } } }`;
 
-/** Open Linear issues assigned to you become messages. */
+/** Open Linear issues assigned to you, with their real status and due date. */
 export const linearProvider: IntegrationProvider = {
   id: "linear",
   label: "Linear",
-  capabilities: ["issues", "messages", "search"],
+  capabilities: ["issues", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
   tokenConnect: {
@@ -66,21 +66,29 @@ export const linearProvider: IntegrationProvider = {
     return tokenCall({ grant_type: "refresh_token", refresh_token: refreshToken }, refreshToken);
   },
 
-  async getMessages(tokens): Promise<MailMessage[]> {
+  async getTasks(tokens): Promise<TaskList> {
     const data = await getJson("Linear issues", "https://api.linear.app/graphql", {
       method: "POST",
       headers: { Authorization: authHeader(tokens.accessToken), "Content-Type": "application/json" },
       body: JSON.stringify({ query: QUERY }),
     });
     if (data.errors?.length) throw new Error(`Linear issues failed: 400 ${data.errors[0].message}`);
-    return ((data.data?.viewer?.assignedIssues?.nodes ?? []) as Record<string, any>[]).map((i) => ({
-      id: i.id,
-      subject: `${i.identifier}: ${i.title}`,
-      from: i.team?.name ?? "Linear",
-      snippet: [i.state?.name, i.priorityLabel && i.priorityLabel !== "No priority" ? i.priorityLabel : null, "assigned to you"].filter(Boolean).join(" - "),
-      receivedAt: i.updatedAt,
-      isUnread: false,
-      permalink: i.url,
-    }));
+    const conn = data.data?.viewer?.assignedIssues;
+    return {
+      tasks: ((conn?.nodes ?? []) as Record<string, any>[]).map(
+        (i): ProviderTask => ({
+          id: i.id,
+          title: `${i.identifier}: ${i.title}`,
+          status: i.state?.name,
+          isDone: i.state?.type === "completed" || i.state?.type === "canceled",
+          due: i.dueDate ?? undefined,
+          priority: i.priorityLabel && i.priorityLabel !== "No priority" ? i.priorityLabel : undefined,
+          container: i.team?.name,
+          permalink: i.url,
+          updatedAt: i.updatedAt,
+        }),
+      ),
+      complete: !conn?.pageInfo?.hasNextPage,
+    };
   },
 };

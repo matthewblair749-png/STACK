@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { IntegrationProvider, MailMessage } from "../provider";
+import type { IntegrationProvider, ProviderTask, TaskList } from "../provider";
 import { envPair, getJson, tokenRequest } from "../oauth-util";
 
 const env = envPair("ASANA");
@@ -16,7 +16,7 @@ const tokenCall = (params: Record<string, string>, refreshToken?: string) =>
 export const asanaProvider: IntegrationProvider = {
   id: "asana",
   label: "Asana",
-  capabilities: ["issues", "messages", "search"],
+  capabilities: ["issues", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
   tokenConnect: {
@@ -54,28 +54,34 @@ export const asanaProvider: IntegrationProvider = {
     return tokenCall({ grant_type: "refresh_token", refresh_token: refreshToken }, refreshToken);
   },
 
-  async getMessages(tokens): Promise<MailMessage[]> {
+  async getTasks(tokens): Promise<TaskList> {
     const headers = { Authorization: `Bearer ${tokens.accessToken}` };
     const me = await getJson("Asana user", "https://app.asana.com/api/1.0/users/me?opt_fields=workspaces.gid", { headers });
     const workspaces = (me.data?.workspaces ?? []) as { gid: string }[];
+    let complete = true;
     const perWorkspace = await Promise.all(
       workspaces.map(async (w) => {
+        // completed_since=now returns only tasks that aren't complete.
         const data = await getJson(
           "Asana tasks",
-          `https://app.asana.com/api/1.0/tasks?assignee=me&workspace=${w.gid}&completed_since=now&limit=30&opt_fields=name,due_on,modified_at,permalink_url,projects.name`,
+          `https://app.asana.com/api/1.0/tasks?assignee=me&workspace=${w.gid}&completed_since=now&limit=100&opt_fields=name,completed,due_on,due_at,modified_at,permalink_url,projects.name`,
           { headers },
         );
-        return ((data.data ?? []) as Record<string, any>[]).map((t) => ({
-          id: t.gid,
-          subject: t.name || "(untitled task)",
-          from: t.projects?.[0]?.name ?? "Asana",
-          snippet: t.due_on ? `Due ${t.due_on} - assigned to you` : "Assigned to you",
-          receivedAt: t.modified_at,
-          isUnread: false,
-          permalink: t.permalink_url,
-        }));
+        if (data.next_page) complete = false;
+        return ((data.data ?? []) as Record<string, any>[]).map(
+          (t): ProviderTask => ({
+            id: t.gid,
+            title: t.name || "(untitled task)",
+            status: t.completed ? "Completed" : "Open",
+            isDone: !!t.completed,
+            due: t.due_at ?? t.due_on ?? undefined,
+            container: t.projects?.[0]?.name,
+            permalink: t.permalink_url,
+            updatedAt: t.modified_at,
+          }),
+        );
       }),
     );
-    return perWorkspace.flat();
+    return { tasks: perWorkspace.flat(), complete };
   },
 };

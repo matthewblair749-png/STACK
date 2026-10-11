@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- third-party API responses are untyped JSON */
-import type { IntegrationProvider, MailMessage } from "../provider";
+import type { IntegrationProvider, ProviderTask, TaskList } from "../provider";
 import { envPair, getJson, tokenRequest } from "../oauth-util";
 
 const basic = (email: string, token: string) => `Basic ${Buffer.from(`${email}:${token}`).toString("base64")}`;
@@ -25,11 +25,11 @@ function normalizeSite(input: string): string {
 
 const ISSUE_JQL = encodeURIComponent("assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC");
 
-/** Open Jira issues assigned to you (across every Atlassian site you granted) become messages. */
+/** Open Jira issues assigned to you (across every Atlassian site you granted), with real status and due date. */
 export const jiraProvider: IntegrationProvider = {
   id: "jira",
   label: "Jira",
-  capabilities: ["issues", "messages", "search"],
+  capabilities: ["issues", "search"],
   isConfigured: env.isConfigured,
   missingSetup: env.missing,
   tokenConnect: {
@@ -77,45 +77,41 @@ export const jiraProvider: IntegrationProvider = {
     return tokenCall({ grant_type: "refresh_token", refresh_token: refreshToken }, refreshToken);
   },
 
-  async getMessages(tokens): Promise<MailMessage[]> {
+  async getTasks(tokens): Promise<TaskList> {
+    const FIELDS = "summary,status,updated,project,duedate,priority";
+    const toTask = (i: Record<string, any>, idPrefix: string, browseBase: string, fallbackContainer?: string): ProviderTask => ({
+      id: `${idPrefix}:${i.key}`,
+      title: `${i.key}: ${i.fields?.summary ?? ""}`,
+      status: i.fields?.status?.name,
+      isDone: i.fields?.status?.statusCategory?.key === "done",
+      due: i.fields?.duedate ?? undefined,
+      priority: i.fields?.priority?.name,
+      container: i.fields?.project?.name ?? fallbackContainer,
+      permalink: `${browseBase}/browse/${i.key}`,
+      updatedAt: i.fields?.updated,
+    });
+    // More issues than one read returns: the list is a sample, so missing ones mustn't be treated as resolved.
+    const isComplete = (data: Record<string, any>) => data.isLast !== false && !data.nextPageToken;
+
     // Connected with an API token: talk to the site directly with the account's email and token.
     const site = tokens.metadata?.site;
     const email = tokens.metadata?.email;
     if (tokens.metadata?.method === "token" && typeof site === "string" && typeof email === "string") {
-      const data = await getJson("Jira issues", `https://${site}/rest/api/3/search/jql?jql=${ISSUE_JQL}&fields=summary,status,updated,project&maxResults=30`, {
+      const data = await getJson("Jira issues", `https://${site}/rest/api/3/search/jql?jql=${ISSUE_JQL}&fields=${FIELDS}&maxResults=100`, {
         headers: { Authorization: basic(email, tokens.accessToken), Accept: "application/json" },
       });
-      return ((data.issues ?? []) as Record<string, any>[]).map((i) => ({
-        id: `${site}:${i.key}`,
-        subject: `${i.key}: ${i.fields?.summary ?? ""}`,
-        from: i.fields?.project?.name ?? "Jira",
-        snippet: `${i.fields?.status?.name ?? "Open"} - assigned to you`,
-        receivedAt: i.fields?.updated,
-        isUnread: false,
-        permalink: `https://${site}/browse/${i.key}`,
-      }));
+      return { tasks: ((data.issues ?? []) as Record<string, any>[]).map((i) => toTask(i, site, `https://${site}`)), complete: isComplete(data) };
     }
     const headers = { Authorization: `Bearer ${tokens.accessToken}`, Accept: "application/json" };
     const sites = (await getJson("Jira sites", "https://api.atlassian.com/oauth/token/accessible-resources", { headers })) as Record<string, any>[];
+    let complete = true;
     const perSite = await Promise.all(
-      sites.map(async (site) => {
-        const jql = encodeURIComponent("assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC");
-        const data = await getJson(
-          "Jira issues",
-          `https://api.atlassian.com/ex/jira/${site.id}/rest/api/3/search/jql?jql=${jql}&fields=summary,status,updated,project&maxResults=30`,
-          { headers },
-        );
-        return ((data.issues ?? []) as Record<string, any>[]).map((i) => ({
-          id: `${site.id}:${i.key}`,
-          subject: `${i.key}: ${i.fields?.summary ?? ""}`,
-          from: i.fields?.project?.name ?? site.name ?? "Jira",
-          snippet: `${i.fields?.status?.name ?? "Open"} - assigned to you`,
-          receivedAt: i.fields?.updated,
-          isUnread: false,
-          permalink: `${site.url}/browse/${i.key}`,
-        }));
+      sites.map(async (s) => {
+        const data = await getJson("Jira issues", `https://api.atlassian.com/ex/jira/${s.id}/rest/api/3/search/jql?jql=${ISSUE_JQL}&fields=${FIELDS}&maxResults=100`, { headers });
+        if (!isComplete(data)) complete = false;
+        return ((data.issues ?? []) as Record<string, any>[]).map((i) => toTask(i, s.id, s.url, s.name));
       }),
     );
-    return perSite.flat();
+    return { tasks: perSite.flat(), complete };
   },
 };

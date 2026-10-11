@@ -25,9 +25,9 @@ const REASON: Record<string, string> = { connect: "After connecting", manual: "S
 const Title = ({ children }: { children: React.ReactNode }) => <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400">{children}</p>;
 
 function removedText(detail: Record<string, unknown>) {
-  const r = detail.removed as { messages?: number; events?: number; files?: number } | undefined;
+  const r = detail.removed as { messages?: number; events?: number; files?: number; tasks?: number } | undefined;
   if (!r) return "";
-  const n = (r.messages ?? 0) + (r.events ?? 0) + (r.files ?? 0);
+  const n = (r.messages ?? 0) + (r.events ?? 0) + (r.files ?? 0) + (r.tasks ?? 0);
   return ` - ${n} item${n === 1 ? "" : "s"} removed`;
 }
 
@@ -86,7 +86,7 @@ export function ManageDetails({ app, onDataDeleted }: { app: CatalogApp; onDataD
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error ?? "Couldn't delete the synced data. Try again.");
       const r = body.removed ?? {};
-      const n = (r.messages ?? 0) + (r.events ?? 0) + (r.files ?? 0);
+      const n = (r.messages ?? 0) + (r.events ?? 0) + (r.files ?? 0) + (r.tasks ?? 0);
       setConfirming(false);
       onDataDeleted(`${n} synced item${n === 1 ? "" : "s"} deleted from STACK. ${app.name} stays connected.`);
       reload();

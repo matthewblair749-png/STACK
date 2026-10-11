@@ -40,7 +40,7 @@ const writeQueue = (items: QueueItem[]) => {
 };
 
 const describe = (o: SyncOutcome) =>
-  [o.messages ? `${o.messages} messages` : null, o.events ? `${o.events} events` : null, o.files ? `${o.files} files` : null].filter(Boolean).join(", ") || "connected, nothing to import yet";
+  [o.tasks ? `${o.tasks} open tasks` : null, o.messages ? `${o.messages} messages` : null, o.events ? `${o.events} events` : null, o.files ? `${o.files} files` : null].filter(Boolean).join(", ") || "connected, nothing to import yet";
 
 export function ConnectionCenter() {
   const toast = useToast();

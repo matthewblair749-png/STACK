@@ -35,6 +35,7 @@ model User {
   syncedMessages  SyncedMessage[]
   syncedEvents    SyncedEvent[]
   syncedFiles     SyncedFile[]
+  syncedTasks     SyncedTask[]
   insights        Insight[]
   pendingActions  PendingAction[]
   memoryItems     MemoryItem[]
@@ -107,6 +108,7 @@ model Workspace {
   syncedMessages SyncedMessage[]
   syncedEvents   SyncedEvent[]
   syncedFiles    SyncedFile[]
+  syncedTasks    SyncedTask[]
   insights       Insight[]
   pendingActions PendingAction[]
   memoryItems    MemoryItem[]
@@ -346,6 +348,37 @@ model SyncedFile {
 
   @@unique([workspaceId, provider, externalId])
   @@index([workspaceId, modifiedAt])
+}
+
+/// A task or issue assigned to the person in a connected task app (Asana, Jira, Linear). A read-only copy with
+/// the app's own id, status and due date - STACK never changes it.
+model SyncedTask {
+  id              String    @id @default(cuid())
+  workspaceId     String
+  userId          String
+  provider        String
+  externalId      String
+  title           String
+  /// The app's own status name ("In Progress", "Todo").
+  status          String?
+  isDone          Boolean   @default(false)
+  dueAt           DateTime?
+  /// True when the app gives a due date without a time, so it means the whole day.
+  dueIsDate       Boolean   @default(false)
+  priority        String?
+  /// Project, team or board the task belongs to in the app.
+  container       String?
+  permalink       String?
+  sourceUpdatedAt DateTime
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider, externalId])
+  @@index([workspaceId, userId, dueAt])
 }
 
 /// The kinds of entities the context graph and insight engine can point at.

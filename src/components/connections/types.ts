@@ -35,7 +35,7 @@ export interface CatalogApp {
   lastSyncAt: string | null;
   lastSyncError: string | null;
   account?: string;
-  counts: { messages: number; events: number; files: number } | null;
+  counts: { messages: number; events: number; files: number; tasks?: number } | null;
   meta: { understands: string[]; read: string[]; act: string[]; actNote?: string; wont: string[]; unlocks: string[] } | null;
   recommended: boolean;
 }
@@ -61,6 +61,7 @@ export interface SyncOutcome {
   messages?: number;
   events?: number;
   files?: number;
+  tasks?: number;
   error?: string;
 }
 

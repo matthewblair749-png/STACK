@@ -46,6 +46,27 @@ export interface ProviderFile {
   ownerName?: string;
 }
 
+/** A task or issue assigned to the person, with the app's own fields - never inferred from text. */
+export interface ProviderTask {
+  id: string;
+  title: string;
+  status?: string;
+  isDone: boolean;
+  /** ISO date-time, or a plain YYYY-MM-DD when the app only has a date. */
+  due?: string;
+  priority?: string;
+  /** Project, team or board name. */
+  container?: string;
+  permalink?: string;
+  updatedAt: string;
+}
+
+/** `complete: false` when the app had more than one read returns, so missing tasks mustn't be treated as gone. */
+export interface TaskList {
+  tasks: ProviderTask[];
+  complete: boolean;
+}
+
 export interface SearchResult {
   id: string;
   title: string;
@@ -134,6 +155,8 @@ export interface IntegrationProvider {
   getCalendarEvents?(tokens: ConnectedTokens): Promise<CalendarEvent[]>;
   getMessages?(tokens: ConnectedTokens): Promise<MailMessage[]>;
   getFiles?(tokens: ConnectedTokens): Promise<ProviderFile[]>;
+  /** Open tasks/issues assigned to the person (Asana, Jira, Linear). */
+  getTasks?(tokens: ConnectedTokens): Promise<TaskList>;
 
   /**
    * Fetches only what changed since `cursors` (stored per resource), falling back to a bounded full read when there

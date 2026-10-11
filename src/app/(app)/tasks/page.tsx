@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useDemo } from "@/lib/demo-context";
 import { useSyncedList } from "@/lib/use-synced-list";
-import { externalToTask, type SyncedWorkItem } from "@/lib/external-tasks";
+import { externalToTask, syncedTaskToTask, type SyncedTaskItem, type SyncedWorkItem } from "@/lib/external-tasks";
 import { providerLabel } from "@/lib/providers-meta";
 import { IntegrationLogo } from "@/components/brand-icons";
 import type { Priority, Task } from "@/lib/types";
@@ -31,6 +31,8 @@ function formatDueDate(dueDate?: string) {
   return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
+const NO_PARAMS = {};
+
 type View = "list" | "board" | "timeline" | "calendar";
 
 const priorityOrder: Record<Priority, number> = { urgent: 0, important: 1, normal: 2 };
@@ -38,7 +40,9 @@ const priorityOrder: Record<Priority, number> = { urgent: 0, important: 1, norma
 export default function TasksPage() {
   const { tasks: ownTasks, toggleTask: toggleOwn, addTask, updateTask: updateOwn, deleteTask, projects, people } = useDemo();
   const external = useSyncedList<SyncedWorkItem>("messages", { group: "work" });
-  const externalTasks = useMemo(() => external.items.map(externalToTask), [external.items]);
+  // Asana, Jira and Linear sync as real tasks (status, due date); other task apps still arrive as summaries.
+  const appTasks = useSyncedList<SyncedTaskItem>("tasks", NO_PARAMS);
+  const externalTasks = useMemo(() => [...appTasks.items.map((t) => syncedTaskToTask(t)), ...external.items.map(externalToTask)], [appTasks.items, external.items]);
   const tasks = useMemo(() => [...ownTasks, ...externalTasks], [ownTasks, externalTasks]);
   const toggleTask = (id: string) => {
     if (!id.startsWith("ext:")) toggleOwn(id);

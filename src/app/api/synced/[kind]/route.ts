@@ -9,7 +9,7 @@ const PAGE = 40;
 
 /**
  * Cursor-paged browsing of what the user's connected apps have actually synced. Powers Inbox
- * (email), Conversations (chat), Calendar and Files. Always scoped to workspace + user.
+ * (email), Conversations (chat), Calendar, Files and My Work (tasks). Always scoped to workspace + user.
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ kind: string }> }) {
   const { kind } = await params;
@@ -58,6 +58,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ kind
       });
       items = rows.map((f) => ({
         id: f.id, provider: f.provider, name: f.name, mimeType: f.mimeType, webUrl: f.webUrl, ownerName: f.ownerName, modifiedAt: f.modifiedAt.toISOString(),
+      }));
+    } else if (kind === "tasks") {
+      // Open tasks first by due date (undated last), then most recently changed.
+      const rows = await db.syncedTask.findMany({
+        where: { ...base, isDone: false, ...(q ? { OR: [{ title: { contains: q, mode: "insensitive" } }, { container: { contains: q, mode: "insensitive" } }] } : {}) },
+        orderBy: [{ dueAt: { sort: "asc", nulls: "last" } }, { sourceUpdatedAt: "desc" }],
+        ...page,
+      });
+      items = rows.map((t) => ({
+        id: t.id, provider: t.provider, title: t.title, status: t.status, isDone: t.isDone, priority: t.priority, container: t.container,
+        dueAt: t.dueAt?.toISOString() ?? null, dueIsDate: t.dueIsDate, permalink: t.permalink, updatedAt: t.sourceUpdatedAt.toISOString(),
       }));
     } else {
       return NextResponse.json({ error: "Unknown collection." }, { status: 404 });

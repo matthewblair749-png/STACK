@@ -41,17 +41,19 @@ export async function GET(req: NextRequest) {
 
     const providerIds = [...new Set(apps.map((a) => a.oauthProviderId).filter((id): id is string => !!id))];
     const where = { workspaceId, userId, provider: { in: providerIds } };
-    const [connections, msgCounts, eventCounts, fileCounts] = await Promise.all([
+    const [connections, msgCounts, eventCounts, fileCounts, taskCounts] = await Promise.all([
       db.integration.findMany({ where }),
       db.syncedMessage.groupBy({ by: ["provider"], where, _count: { _all: true } }),
       db.syncedEvent.groupBy({ by: ["provider"], where, _count: { _all: true } }),
       db.syncedFile.groupBy({ by: ["provider"], where, _count: { _all: true } }),
+      db.syncedTask.groupBy({ by: ["provider"], where: { ...where, isDone: false }, _count: { _all: true } }),
     ]);
     const connByProvider = new Map(connections.map((c) => [c.provider, c]));
     const countOf = (rows: { provider: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.provider, r._count._all]));
     const messages = countOf(msgCounts);
     const events = countOf(eventCounts);
     const files = countOf(fileCounts);
+    const openTasks = countOf(taskCounts);
 
     // Expand what the person typed into related terms ("accounting" -> quickbooks, xero, invoices...).
     const terms = words(query);
@@ -103,7 +105,7 @@ export async function GET(req: NextRequest) {
         lastSyncAt: row?.lastSyncAt?.toISOString() ?? null,
         lastSyncError: row?.syncError ?? row?.lastSyncError ?? null,
         account,
-        counts: provider ? { messages: messages.get(provider.id) ?? 0, events: events.get(provider.id) ?? 0, files: files.get(provider.id) ?? 0 } : null,
+        counts: provider ? { messages: messages.get(provider.id) ?? 0, events: events.get(provider.id) ?? 0, files: files.get(provider.id) ?? 0, tasks: openTasks.get(provider.id) ?? 0 } : null,
         meta: provider ? { understands: meta.understands, read: meta.read, act: meta.act, actNote: meta.actNote, wont: meta.wont, unlocks: meta.unlocks } : null,
         recommended: recommendedSlugs.has(app.slug),
         _synonyms: meta.synonyms,

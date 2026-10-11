@@ -21,14 +21,14 @@ const short = (s: string | null | undefined, n = 140) => (s ?? "").replace(/\s+/
  * The structured contextual layer: instead of dumping raw rows at the model, present the work as
  * relationships - projects with their tasks and the messages/meetings/files the context graph
  * linked to them - plus the computed priorities and any remembered facts. Each item carries an id
- * (`task:`, `project:`, `message:`, `event:`, `file:`) so answers can cite real sources.
+ * (`task:`, `project:`, `message:`, `event:`, `file:`, `extask:` for tasks in connected apps) so answers can cite real sources.
  */
 export async function buildWorkContext(workspaceId: string, userId: string, focusProjectId?: string): Promise<WorkContext> {
   const refs = new Map<string, ContextRef>();
   const lines: string[] = [];
   const now = new Date();
 
-  const [state, projects, tasks, members, messages, events, files, links, memory, integrations] = await Promise.all([
+  const [state, projects, tasks, members, messages, events, files, links, memory, integrations, appTasks] = await Promise.all([
     computeWorkState(workspaceId, userId),
     db.project.findMany({
       where: { workspaceId, ...(focusProjectId ? { id: focusProjectId } : {}) },
@@ -68,6 +68,12 @@ export async function buildWorkContext(workspaceId: string, userId: string, focu
     }),
     db.memoryItem.findMany({ where: { workspaceId, userId, ...VISIBLE_MEMORY }, orderBy: { updatedAt: "desc" }, take: 20, select: { key: true, value: true } }),
     db.integration.findMany({ where: { workspaceId, userId }, select: { provider: true, syncError: true } }),
+    db.syncedTask.findMany({
+      where: { workspaceId, userId, isDone: false },
+      orderBy: [{ dueAt: { sort: "asc", nulls: "last" } }, { sourceUpdatedAt: "desc" }],
+      take: 40,
+      select: { id: true, provider: true, title: true, status: true, dueAt: true, dueIsDate: true, priority: true, container: true, permalink: true },
+    }),
   ]);
 
   const nameOf = (id?: string | null) => {
@@ -151,6 +157,16 @@ export async function buildWorkContext(workspaceId: string, userId: string, focu
   }
 
   if (!focusProjectId) {
+    lines.push("", "TASKS ASSIGNED TO YOU IN CONNECTED APPS (open; status and due dates come from the app itself):");
+    if (appTasks.length === 0) lines.push("- none");
+    const today = now.toISOString().slice(0, 10);
+    for (const t of appTasks) {
+      const dueDay = t.dueAt ? t.dueAt.toISOString().slice(0, 10) : null;
+      const overdue = t.dueAt ? (t.dueIsDate ? dueDay! < today : t.dueAt < now) : false;
+      const due = t.dueAt ? ` due ${t.dueIsDate ? dueDay : t.dueAt.toISOString()}${overdue ? " (OVERDUE)" : ""}` : " no due date";
+      lines.push(`- [${reg(`extask:${t.id}`, t.title, t.permalink)}] ${t.provider}${t.container ? ` / ${t.container}` : ""}: "${short(t.title, 120)}" ${t.status ?? "open"}${due}${t.priority ? `, priority ${t.priority}` : ""}`);
+    }
+
     lines.push("", "OTHER RECENT MESSAGES (not linked to a project):");
     const others = messages.filter((m) => !linkedIds.has(m.id)).slice(0, 15);
     if (others.length === 0) lines.push("- none");

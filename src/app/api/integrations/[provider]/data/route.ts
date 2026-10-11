@@ -18,12 +18,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const userId = session.user.id;
     const where = { workspaceId, userId, provider };
 
-    const [messages, events, files] = await db.$transaction([
+    const [messages, events, files, tasks] = await db.$transaction([
       db.syncedMessage.deleteMany({ where }),
       db.syncedEvent.deleteMany({ where }),
       db.syncedFile.deleteMany({ where }),
+      db.syncedTask.deleteMany({ where }),
     ]);
-    const removed = { messages: messages.count, events: events.count, files: files.count };
+    const removed = { messages: messages.count, events: events.count, files: files.count, tasks: tasks.count };
 
     // Links and insights pointed at the deleted content; rebuild so nothing dangles.
     await buildContextGraph(workspaceId).catch((e) => console.error("graph rebuild after data deletion failed", e));

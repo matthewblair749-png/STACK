@@ -36,19 +36,20 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     }
 
     const where = { workspaceId, userId, provider };
-    const [messages, events, files] = await db.$transaction([
+    const [messages, events, files, tasks] = await db.$transaction([
       db.syncedMessage.deleteMany({ where }),
       db.syncedEvent.deleteMany({ where }),
       db.syncedFile.deleteMany({ where }),
+      db.syncedTask.deleteMany({ where }),
       db.integration.deleteMany({ where }),
     ]);
 
     // Links and derived signals pointed at the removed content; rebuild so nothing dangles.
     await buildContextGraph(workspaceId).catch((e) => console.error("graph rebuild after disconnect failed", e));
     invalidateWorkState(workspaceId, userId);
-    await audit({ workspaceId, userId, action: "integration.disconnected", target: provider, detail: { revoked: revoke.revoked, removed: { messages: messages.count, events: events.count, files: files.count } } });
+    await audit({ workspaceId, userId, action: "integration.disconnected", target: provider, detail: { revoked: revoke.revoked, removed: { messages: messages.count, events: events.count, files: files.count, tasks: tasks.count } } });
 
-    return NextResponse.json({ ok: true, revoked: revoke.revoked, note: revoke.note, removed: { messages: messages.count, events: events.count, files: files.count } });
+    return NextResponse.json({ ok: true, revoked: revoke.revoked, note: revoke.note, removed: { messages: messages.count, events: events.count, files: files.count, tasks: tasks.count } });
   } catch (err) {
     if (err instanceof UnauthorizedError) return NextResponse.json({ error: err.message }, { status: 401 });
     if (err instanceof ForbiddenError) return NextResponse.json({ error: err.message }, { status: 403 });

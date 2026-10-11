@@ -169,9 +169,9 @@ export function AppDrawer({
             {app.connected && app.counts && (
               <Section title="Data">
                 <p className="mt-2 text-sm text-ink">
-                  {app.counts.messages + app.counts.events + app.counts.files === 0
+                  {app.counts.messages + app.counts.events + app.counts.files + (app.counts.tasks ?? 0) === 0
                     ? "Nothing imported yet."
-                    : [app.counts.messages && `${app.counts.messages} messages`, app.counts.events && `${app.counts.events} events`, app.counts.files && `${app.counts.files} files`].filter(Boolean).join(" - ")}
+                    : [app.counts.tasks && `${app.counts.tasks} open tasks`, app.counts.messages && `${app.counts.messages} messages`, app.counts.events && `${app.counts.events} events`, app.counts.files && `${app.counts.files} files`].filter(Boolean).join(" - ")}
                 </p>
               </Section>
             )}

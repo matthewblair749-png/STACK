@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/server/db";
 import { getProvider } from "@/server/integrations/registry";
 import { getFreshTokens, IntegrationAuthError } from "@/server/integrations/tokens";
-import type { CalendarEvent, ConnectedTokens, MailMessage, ProviderFile, SyncDelta } from "@/server/integrations/provider";
+import type { CalendarEvent, ConnectedTokens, MailMessage, ProviderFile, ProviderTask, SyncDelta } from "@/server/integrations/provider";
 import { buildContextGraph } from "./context-graph";
 import { computeInsights } from "@/server/insights/compute";
 import { refreshMemory } from "@/server/work/memory";
@@ -13,6 +13,7 @@ export interface ProviderSyncResult {
   messages?: number;
   events?: number;
   files?: number;
+  tasks?: number;
   error?: string;
   /** The failure won't fix itself by retrying (revoked access, app no longer supported) - the person must act. */
   permanent?: boolean;
@@ -22,7 +23,7 @@ export interface ProviderSyncResult {
  * How long synced copies are kept. STACK keeps recent working context, not an archive: older mail and anything
  * past these caps is deleted from STACK (never from the source app), and disconnecting deletes all of it.
  */
-export const RETENTION = { messageDays: 90, maxMessagesPerConnection: 1000, maxFilesPerConnection: 1000 };
+export const RETENTION = { messageDays: 90, maxMessagesPerConnection: 1000, maxFilesPerConnection: 1000, maxTasksPerConnection: 1000 };
 
 /**
  * Turns provider API failures into something a person can act on. The common one: the API isn't
@@ -136,17 +137,58 @@ async function applyFiles(key: Key, delta: SyncDelta<ProviderFile>) {
   return rows.length;
 }
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A due value from an app: a whole-day date ("2026-10-12") or an exact date-time. */
+export function parseDue(due: string | undefined): { dueAt: Date | null; dueIsDate: boolean } {
+  if (!due) return { dueAt: null, dueIsDate: false };
+  if (DATE_ONLY.test(due)) return { dueAt: new Date(`${due}T00:00:00.000Z`), dueIsDate: true };
+  const d = new Date(due);
+  return Number.isNaN(d.getTime()) ? { dueAt: null, dueIsDate: false } : { dueAt: d, dueIsDate: false };
+}
+
+async function applyTasks(key: Key, delta: SyncDelta<ProviderTask>) {
+  const rows: Prisma.SyncedTaskCreateManyInput[] = delta.upserts.map((t) => ({
+    ...key,
+    externalId: t.id,
+    title: t.title,
+    status: t.status ?? null,
+    isDone: t.isDone,
+    ...parseDue(t.due),
+    priority: t.priority ?? null,
+    container: t.container ?? null,
+    permalink: t.permalink ?? null,
+    sourceUpdatedAt: new Date(t.updatedAt),
+  }));
+  const same = (a: Date | null | undefined, b: Date | string | null | undefined) => (a ? a.getTime() : null) === (b ? new Date(b).getTime() : null);
+  await saveBatch({
+    rows,
+    findExisting: (ids) =>
+      db.syncedTask.findMany({ where: { ...key, externalId: { in: ids } }, select: { id: true, externalId: true, title: true, status: true, isDone: true, dueAt: true, priority: true, container: true, sourceUpdatedAt: true } }),
+    createMany: (r) => db.syncedTask.createMany({ data: r, skipDuplicates: true }),
+    update: (id, r) =>
+      db.syncedTask.update({ where: { id }, data: { title: r.title, status: r.status, isDone: r.isDone, dueAt: r.dueAt, dueIsDate: r.dueIsDate, priority: r.priority, container: r.container, permalink: r.permalink, sourceUpdatedAt: r.sourceUpdatedAt } }),
+    changed: (e, r) =>
+      e.title !== r.title || e.status !== r.status || e.isDone !== r.isDone || !same(e.dueAt, r.dueAt as Date | null) || e.priority !== r.priority || e.container !== r.container || !same(e.sourceUpdatedAt, r.sourceUpdatedAt as Date),
+  });
+  const where = removalWhere(key, delta);
+  if (where) await db.syncedTask.deleteMany({ where });
+  return rows.length;
+}
+
 /** Enforces RETENTION for one connection. Bounded: only ever looks past the cap, never scans everything. */
 async function applyRetention(key: Key) {
   const cutoff = new Date(Date.now() - RETENTION.messageDays * 86_400_000);
-  const [overMessages, overFiles] = await Promise.all([
+  const [overMessages, overFiles, overTasks] = await Promise.all([
     db.syncedMessage.findMany({ where: key, orderBy: { receivedAt: "desc" }, skip: RETENTION.maxMessagesPerConnection, select: { id: true }, take: 5000 }),
     db.syncedFile.findMany({ where: key, orderBy: { modifiedAt: "desc" }, skip: RETENTION.maxFilesPerConnection, select: { id: true }, take: 5000 }),
+    db.syncedTask.findMany({ where: key, orderBy: { sourceUpdatedAt: "desc" }, skip: RETENTION.maxTasksPerConnection, select: { id: true }, take: 5000 }),
   ]);
   await Promise.all([
     db.syncedMessage.deleteMany({ where: { ...key, receivedAt: { lt: cutoff } } }),
     overMessages.length ? db.syncedMessage.deleteMany({ where: { id: { in: overMessages.map((m) => m.id) } } }) : undefined,
     overFiles.length ? db.syncedFile.deleteMany({ where: { id: { in: overFiles.map((f) => f.id) } } }) : undefined,
+    overTasks.length ? db.syncedTask.deleteMany({ where: { id: { in: overTasks.map((t) => t.id) } } }) : undefined,
   ]);
 }
 
@@ -214,6 +256,18 @@ export async function syncOneProvider(workspaceId: string, userId: string, provi
       provider.getFiles ? provider.getFiles(tokens).then((items) => applyFiles(key, { upserts: items, deletedIds: [], full: false }).then((n) => (result.files = n))) : undefined,
     ]);
     errors.push(...reads.filter((r): r is PromiseRejectedResult => r.status === "rejected").map((r) => r.reason));
+  }
+
+  if (provider.getTasks) {
+    try {
+      const list = await provider.getTasks(tokens);
+      // A partial list (the app had more than one read returns) only adds and updates; it never removes.
+      result.tasks = await applyTasks(key, { upserts: list.tasks, deletedIds: [], full: list.complete });
+      // Task apps used to be stored as message summaries. Now that real task rows exist, drop those old copies.
+      if (!provider.getMessages) await db.syncedMessage.deleteMany({ where: key });
+    } catch (err) {
+      errors.push(err);
+    }
   }
 
   await applyRetention(key).catch((e) => console.error("retention prune failed", providerId, e));

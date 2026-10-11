@@ -12,6 +12,7 @@ vi.mock("@/server/db", () => ({
     syncedMessage: { deleteMany: del("message") },
     syncedEvent: { deleteMany: del("event") },
     syncedFile: { deleteMany: del("file") },
+    syncedTask: { deleteMany: del("task") },
     $transaction: (ops: Promise<unknown>[]) => Promise.all(ops),
   },
 }));
@@ -35,8 +36,8 @@ describe("delete synced data", () => {
   it("deletes only the caller's own copies from that one app, and records it", async () => {
     const res = await DELETE(new NextRequest("http://localhost/api/integrations/google/data", { method: "DELETE" }), { params: Promise.resolve({ provider: "google" }) });
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, removed: { messages: 2, events: 2, files: 2 } });
-    expect(deleted.map((d) => d.model).sort()).toEqual(["event", "file", "message"]);
+    expect(await res.json()).toEqual({ ok: true, removed: { messages: 2, events: 2, files: 2, tasks: 2 } });
+    expect(deleted.map((d) => d.model).sort()).toEqual(["event", "file", "message", "task"]);
     // Every delete is scoped to this workspace, this person, this app - never anyone else's data.
     for (const d of deleted) expect(d.where).toEqual({ workspaceId: "w1", userId: "u1", provider: "google" });
     expect(audit).toHaveBeenCalledWith(expect.objectContaining({ action: "integration.data_deleted", target: "google", userId: "u1" }));

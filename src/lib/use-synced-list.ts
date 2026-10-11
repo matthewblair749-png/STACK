@@ -19,7 +19,7 @@ interface Loaded<T> {
  * `loading` is derived (results for a different query aren't "ready" yet) so filter changes never
  * flash stale rows, and more pages load lazily as the list is scrolled.
  */
-export function useSyncedList<T>(kind: "messages" | "events" | "files", params: Record<string, string | undefined>) {
+export function useSyncedList<T>(kind: "messages" | "events" | "files" | "tasks", params: Record<string, string | undefined>) {
   const query = useMemo(() => {
     const sp = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) if (v) sp.set(k, v);
