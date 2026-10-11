@@ -1,5 +1,7 @@
 import type { CalendarEvent, ConnectedTokens, IntegrationProvider, MailMessage, ProviderFile } from "../provider";
 import { ProviderNotConfiguredError } from "../provider";
+import { fetchJson } from "../http";
+import { googleSyncIncremental, syncCalendar, syncGmail, toProviderFile } from "./google-sync";
 
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar.readonly",
@@ -107,86 +109,23 @@ export const googleProvider: IntegrationProvider = {
     };
   },
 
+  // One-off reads (a quick look without a stored cursor). The sync engine uses syncIncremental below.
   async getMessages(tokens): Promise<MailMessage[]> {
-    const headers = { Authorization: `Bearer ${tokens.accessToken}` };
-    const listRes = await fetch(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=20&labelIds=INBOX",
-      { headers }
-    );
-    if (!listRes.ok) throw new Error(`Gmail list failed: ${listRes.status} ${await listRes.text()}`);
-    const listData = await listRes.json();
-    const ids: string[] = (listData.messages ?? []).map((m: { id: string }) => m.id);
-
-    const messages = await Promise.all(
-      ids.map(async (id) => {
-        const res = await fetch(
-          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`,
-          { headers }
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        const headerList: { name: string; value: string }[] = data.payload?.headers ?? [];
-        const getHeader = (name: string) => headerList.find((h) => h.name === name)?.value ?? "";
-        const fromRaw = getHeader("From");
-        const fromMatch = fromRaw.match(/<([^>]+)>/);
-        const isUnread = (data.labelIds ?? []).includes("UNREAD");
-        const msg: MailMessage = {
-          id: data.id,
-          threadId: data.threadId,
-          subject: getHeader("Subject") || "(no subject)",
-          from: fromRaw.replace(/<[^>]+>/, "").trim() || fromRaw,
-          fromAddress: fromMatch ? fromMatch[1] : fromRaw,
-          snippet: data.snippet ?? "",
-          receivedAt: new Date(Number(data.internalDate)).toISOString(),
-          isUnread,
-          permalink: `https://mail.google.com/mail/u/0/#inbox/${data.id}`,
-        };
-        return msg;
-      })
-    );
-    return messages.filter((m): m is MailMessage => m !== null);
+    return (await syncGmail(tokens, undefined)).delta.upserts;
   },
 
   async getCalendarEvents(tokens): Promise<CalendarEvent[]> {
-    const headers = { Authorization: `Bearer ${tokens.accessToken}` };
-    const timeMin = new Date().toISOString();
-    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=20&singleEvents=true&orderBy=startTime`;
-    const res = await fetch(url, { headers });
-    if (!res.ok) throw new Error(`Google Calendar list failed: ${res.status} ${await res.text()}`);
-    const data = await res.json();
-    return (data.items ?? []).map((e: Record<string, unknown>) => {
-      const start = e.start as { dateTime?: string; date?: string };
-      const end = e.end as { dateTime?: string; date?: string };
-      const attendees = (e.attendees as { email?: string }[] | undefined) ?? [];
-      return {
-        id: e.id as string,
-        title: (e.summary as string) || "(no title)",
-        start: start.dateTime ?? start.date ?? new Date().toISOString(),
-        end: end.dateTime ?? end.date ?? new Date().toISOString(),
-        location: e.location as string | undefined,
-        organizer: (e.organizer as { email?: string } | undefined)?.email,
-        attendees: attendees.map((a) => a.email).filter((a): a is string => !!a),
-      } satisfies CalendarEvent;
-    });
+    return (await syncCalendar(tokens)).upserts;
   },
 
   async getFiles(tokens): Promise<ProviderFile[]> {
-    const headers = { Authorization: `Bearer ${tokens.accessToken}` };
-    const url =
-      "https://www.googleapis.com/drive/v3/files?pageSize=20&orderBy=modifiedTime desc&fields=files(id,name,webViewLink,modifiedTime,mimeType,owners)";
-    const res = await fetch(url, { headers });
-    if (!res.ok) throw new Error(`Google Drive list failed: ${res.status} ${await res.text()}`);
-    const data = await res.json();
-    return (data.files ?? []).map((f: Record<string, unknown>) => {
-      const owners = (f.owners as { displayName?: string }[] | undefined) ?? [];
-      return {
-        id: f.id as string,
-        name: f.name as string,
-        url: (f.webViewLink as string) ?? "",
-        modifiedAt: f.modifiedTime as string,
-        mimeType: f.mimeType as string | undefined,
-        ownerName: owners[0]?.displayName,
-      } satisfies ProviderFile;
-    });
+    const data = await fetchJson<{ files?: Record<string, unknown>[] }>(
+      "Google Drive list",
+      `https://www.googleapis.com/drive/v3/files?pageSize=20&orderBy=modifiedTime desc&q=trashed = false&fields=files(id,name,webViewLink,modifiedTime,mimeType,owners(displayName))`,
+      { headers: { Authorization: `Bearer ${tokens.accessToken}` } },
+    );
+    return (data.files ?? []).map(toProviderFile);
   },
+
+  syncIncremental: googleSyncIncremental,
 };

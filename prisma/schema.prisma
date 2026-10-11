@@ -263,6 +263,7 @@ model Integration {
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cursors   SyncCursor[]
 
   @@unique([workspaceId, userId, provider])
   @@index([workspaceId])
@@ -752,4 +753,63 @@ model RateLimit {
   key         String   @id
   count       Int
   windowStart DateTime
+}
+
+// ---------- Background sync: job queue, incremental cursors, webhook de-duplication ----------
+
+enum SyncJobStatus {
+  Queued
+  Running
+  Succeeded
+  Failed
+}
+
+/// One request to sync one connection. Picked up by the background worker (right after connecting, by the daily
+/// cron, or when a webhook says something changed) - never run as a long job inside someone's page request.
+model SyncJob {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  provider    String
+  /// Why it was queued: "connect" | "schedule" | "webhook" | "manual".
+  reason      String
+  status      SyncJobStatus @default(Queued)
+  attempts    Int           @default(0)
+  /// Not picked up before this time (used for retry backoff).
+  runAfter    DateTime      @default(now())
+  /// A worker owns the job until this time; after it, a crashed run can be picked up again.
+  lockedUntil DateTime?
+  lastError   String?       @db.Text
+  finishedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status, runAfter])
+  @@index([workspaceId, userId, provider])
+}
+
+/// Where incremental sync left off for one resource of one connection (a Gmail historyId, a Drive changes token).
+/// Deleted with the connection.
+model SyncCursor {
+  id            String   @id @default(cuid())
+  integrationId String
+  /// e.g. "gmail", "drive".
+  resource      String
+  cursor        String   @db.Text
+  updatedAt     DateTime @updatedAt
+
+  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, resource])
+}
+
+/// Webhook deliveries already handled, so a provider retrying the same event never processes it twice.
+model WebhookDelivery {
+  id         String   @id @default(cuid())
+  provider   String
+  deliveryId String
+  receivedAt DateTime @default(now())
+
+  @@unique([provider, deliveryId])
+  @@index([receivedAt])
 }

@@ -14,6 +14,11 @@ vi.mock("@/server/workspace", () => ({
   requireSessionAndWorkspace: async (workspaceId: string) => ({ session: { user: { id: sessionUser } }, workspaceId, role: "Owner" }),
 }));
 vi.mock("@/server/audit", () => ({ audit: vi.fn() }));
+const enqueueSync = vi.fn().mockResolvedValue("job1");
+vi.mock("@/server/sync/jobs", () => ({ enqueueSync: (...a: unknown[]) => enqueueSync(...a), processSyncJobs: vi.fn() }));
+// after() needs a live request scope; in tests just record that background work was scheduled.
+const afterCalls = vi.fn();
+vi.mock("next/server", async (orig) => ({ ...(await orig<typeof import("next/server")>()), after: (fn: unknown) => afterCalls(fn) }));
 
 const { GET } = await import("./route");
 
@@ -29,6 +34,8 @@ const started = () => createOAuthState({ provider: "google", workspaceId: "w1", 
 
 beforeEach(() => {
   upsert.mockClear();
+  enqueueSync.mockClear();
+  afterCalls.mockClear();
   sessionUser = "u1";
   vi.unstubAllGlobals();
 });
@@ -44,6 +51,9 @@ describe("OAuth callback", () => {
     const body = new URLSearchParams(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
     expect(body.get("code_verifier")).toBeTruthy();
     expect(upsert).toHaveBeenCalledOnce();
+    // The first sync is queued and started in the background, not run inside this request.
+    expect(enqueueSync).toHaveBeenCalledWith(expect.any(String), "u1", expect.any(String), "connect");
+    expect(afterCalls).toHaveBeenCalledOnce();
     const saved = JSON.stringify(upsert.mock.calls[0]);
     // Tokens are stored encrypted, never as plain text.
     expect(saved).not.toContain("ya29.secret");

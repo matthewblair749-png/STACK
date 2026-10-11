@@ -10,6 +10,11 @@ vi.mock("@/server/workspace", () => ({
 }));
 vi.mock("@/server/rate-limit", () => ({ rateLimit: async () => ({ ok: true, remaining: 9, retryAfterSec: 0 }), tooManyRequests: vi.fn() }));
 vi.mock("@/server/audit", () => ({ audit: vi.fn() }));
+const enqueueSync = vi.fn().mockResolvedValue("job1");
+vi.mock("@/server/sync/jobs", () => ({ enqueueSync: (...a: unknown[]) => enqueueSync(...a), processSyncJobs: vi.fn() }));
+// after() needs a live request scope; in tests just record that background work was scheduled.
+const afterCalls = vi.fn();
+vi.mock("next/server", async (orig) => ({ ...(await orig<typeof import("next/server")>()), after: (fn: unknown) => afterCalls(fn) }));
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
 
@@ -19,6 +24,8 @@ const call = (token: string) =>
 
 beforeEach(() => {
   upsert.mockClear();
+  enqueueSync.mockClear();
+  afterCalls.mockClear();
   vi.unstubAllGlobals();
 });
 
@@ -42,6 +49,9 @@ describe("paste-a-token connect", () => {
     const res = await call("xoxp-0000000000000000000000");
     expect(res.status).toBe(200);
     expect(upsert).toHaveBeenCalledOnce();
+    // The first sync is queued and started in the background, not run inside this request.
+    expect(enqueueSync).toHaveBeenCalledWith(expect.any(String), "u1", expect.any(String), "connect");
+    expect(afterCalls).toHaveBeenCalledOnce();
   });
 
   it("rejects a bot token with instructions", async () => {

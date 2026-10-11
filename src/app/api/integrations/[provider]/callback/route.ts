@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/server/db";
 import { encrypt } from "@/server/crypto";
@@ -8,6 +8,9 @@ import { redirectBase, relayTarget } from "@/server/integrations/redirect";
 import { audit } from "@/server/audit";
 import { requireSessionAndWorkspace } from "@/server/workspace";
 import { oauthCookieName, safeReturnPath, verifyOAuthState } from "@/server/integrations/oauth-state";
+import { enqueueSync, processSyncJobs } from "@/server/sync/jobs";
+
+export const maxDuration = 60;
 
 export async function GET(
   req: NextRequest,
@@ -92,6 +95,10 @@ export async function GET(
     });
 
     await audit({ workspaceId, userId: session.user.id, action: "integration.connected", target: provider.id, detail: { scopes: tokens.scopes } });
+    // The first sync runs in the background, after the person is already back in STACK.
+    await enqueueSync(workspaceId, session.user.id, provider.id, "connect");
+    const filter = { workspaceId, userId: session.user.id };
+    after(() => processSyncJobs({ budgetMs: 45_000, filter }).catch((e) => console.error("initial sync failed", e)));
     integrationsUrl.searchParams.set("connected", provider.id);
     const response = NextResponse.redirect(integrationsUrl);
     response.cookies.delete(cookieName);

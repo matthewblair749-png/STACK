@@ -32,6 +32,7 @@ A change takes effect on the next deployment.
 | `ANTHROPIC_API_KEY` (+ `ANTHROPIC_MODEL`, default `claude-sonnet-5-5`; `ANTHROPIC_EFFORT`, default `medium`) | AI falls back to the `LLM_*` provider, then to answers built from synced data only - the UI says which. |
 | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (+ `LLM_MAX_TOKENS`, default 8192; `LLM_REASONING_EFFORT`) | No fallback model when Claude is unavailable. Any OpenAI-compatible API, e.g. Gemini: `https://generativelanguage.googleapis.com/v1beta/openai`, `gemini-3.8-flash`. |
 | `AI_DAILY_LIMIT` | Default 50 full AI answers per person per rolling 24h. |
+| `CRON_SECRET` | The daily background sync (`/api/cron/sync`, scheduled in `vercel.json`) refuses to run, so apps only sync on connect, on "Sync now", and when someone opens STACK. Vercel sends it automatically as `Authorization: Bearer <CRON_SECRET>`. Generate: `openssl rand -hex 32`. |
 | `NEXT_PUBLIC_SENTRY_DSN` | No error monitoring; errors only in Vercel logs. |
 | `<APP>_CLIENT_ID` / `<APP>_CLIENT_SECRET` (Slack, GitHub, Linear, Figma, Clio, Notion, Dropbox, Box, GitLab, Jira, Asana, HubSpot, Salesforce, QuickBooks, FreshBooks, Shopify), `TRELLO_API_KEY`, `STRIPE_CONNECT_CLIENT_ID`, `MICROSOFT_*`, `GOOGLE_*` | That app shows "Not available yet", or offers its paste-a-token option where one exists. |
 | `QUICKBOOKS_SANDBOX=true` | Talks to real QuickBooks companies (correct for production). |
@@ -140,7 +141,29 @@ Google URLs on that one client.
 
 ---
 
-## 6. Runbook
+## 6. How syncing works
+
+- **Queue, not page requests.** Every sync is a `SyncJob` row. Connecting an app queues one and starts it right
+  after the browser is redirected back; "Sync now" queues one per app and shows results for up to 25 seconds;
+  the daily cron (07:00 UTC - the Vercel Hobby plan allows one run a day) queues every connection that hasn't
+  synced in 12 hours and works the queue for 45 seconds. Jobs are claimed with `FOR UPDATE SKIP LOCKED`, so
+  overlapping runs never take the same job; a job whose worker died is picked up again after 5 minutes.
+- **Retries.** Rate limits (429) and provider errors (5xx) are retried in the request with exponential backoff
+  and `Retry-After`; a failed job is re-queued with backoff (30s, 1m, 2m... capped at 1h) up to 5 attempts.
+  Revoked or expired access is never retried - the app shows Reconnect.
+- **Incremental (Google).** Gmail uses `history.list` from the stored historyId (404 = expired, full re-read);
+  Drive uses `changes.list` from the stored page token (removed/trashed files are deleted); Calendar re-reads a
+  fixed window (7 days back, 30 ahead) each run and removes events that left it. Cursors (`SyncCursor`) only
+  advance after the data they cover is saved. Other apps read their recent items each run.
+- **What's downloaded.** Metadata and snippets only: subject, sender, snippet, labels; file names and links;
+  event titles, times and attendees. Never message bodies, attachments or file contents.
+- **Retention.** Synced copies are working context, not an archive: mail older than 90 days, and anything past
+  1,000 messages or 1,000 files per connection, is deleted from STACK (never from the source app).
+  Disconnecting deletes everything synced from that app, plus its cursors.
+
+---
+
+## 7. Runbook
 
 **A user says an app "needs attention" or sync errors.** Connected Apps shows the reason in plain words.
 The raw provider error is in the Vercel function logs (search `sync <app> failed`). Common causes:
@@ -160,6 +183,10 @@ the signing secret doesn't match `STRIPE_WEBHOOK_SECRET`. A 500 means the save f
 automatically for up to 3 days, and you can also **Resend** an event. The handler is idempotent (it upserts
 by workspace), so re-sending is safe.
 
+**An app hasn't synced for a long time.** Check `SyncJob` rows for that person and app: `Failed` with
+`lastError` explains why (5 failed attempts, or revoked access). Vercel > Project > Settings > Cron Jobs shows
+whether the daily run happened; a 401 there means `CRON_SECRET` isn't set. "Sync now" queues a fresh job.
+
 **Production returns P2022 "column does not exist".** Code shipped before its migration. Run
 `prisma migrate deploy` against production (section 2), then redeploy.
 
@@ -178,7 +205,7 @@ pages show users a reference code (`digest`) that matches the server log entry.
 
 ---
 
-## 7. Needs you - only the owner can do these (in order)
+## 8. Needs you - only the owner can do these (in order)
 
 0. **Google sign-in for everyone.** Sign-in uses the same Google OAuth client as the Gmail/Drive connection. While
    that client's consent screen is in **Testing**, only its listed test users can sign in to STACK at all - and Google

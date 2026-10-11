@@ -84,6 +84,27 @@ export interface TokenConnect {
   validate(token: string, fields: Record<string, string>): Promise<{ account?: string; metadata?: Record<string, unknown> }>;
 }
 
+/**
+ * The result of syncing one kind of content. `full: true` means `upserts` is the complete current set for this
+ * connection (a first sync, or a cursor the provider expired), so anything stored that isn't in it is removed.
+ * Otherwise it is only what changed, and `deletedIds` lists what disappeared upstream.
+ */
+export interface SyncDelta<T> {
+  upserts: T[];
+  deletedIds: string[];
+  full: boolean;
+}
+
+export interface IncrementalSyncResult {
+  messages?: SyncDelta<MailMessage>;
+  events?: SyncDelta<CalendarEvent>;
+  files?: SyncDelta<ProviderFile>;
+  /** Cursors to store for next time, by resource. A resource left out keeps its old cursor. */
+  cursors: Record<string, string>;
+  /** Resources that failed this run (the others still synced). */
+  errors?: unknown[];
+}
+
 export interface IntegrationProvider {
   id: string;
   label: string;
@@ -113,6 +134,12 @@ export interface IntegrationProvider {
   getCalendarEvents?(tokens: ConnectedTokens): Promise<CalendarEvent[]>;
   getMessages?(tokens: ConnectedTokens): Promise<MailMessage[]>;
   getFiles?(tokens: ConnectedTokens): Promise<ProviderFile[]>;
+
+  /**
+   * Fetches only what changed since `cursors` (stored per resource), falling back to a bounded full read when there
+   * is no cursor yet or the provider expired it. When present, the sync engine uses this instead of the get* methods.
+   */
+  syncIncremental?(tokens: ConnectedTokens, cursors: Record<string, string>): Promise<IncrementalSyncResult>;
 }
 
 export class ProviderNotConfiguredError extends Error {

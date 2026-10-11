@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { encrypt } from "@/server/crypto";
 import { getProvider } from "@/server/integrations/registry";
@@ -8,6 +8,9 @@ import { audit } from "@/server/audit";
 import { rateLimit, tooManyRequests } from "@/server/rate-limit";
 import { friendlyProviderError } from "@/server/integrations/errors";
 import type { ConnectedTokens } from "@/server/integrations/provider";
+import { enqueueSync, processSyncJobs } from "@/server/sync/jobs";
+
+export const maxDuration = 60;
 
 /**
  * Connects an app with an access token the user created in that app. The token is checked against the app
@@ -71,6 +74,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
       update: { accessToken: encrypt(token), refreshToken: null, expiresAt: null, metadata, syncError: null, lastSyncError: null },
     });
     await audit({ workspaceId, userId: session.user.id, action: "integration.connected", target: id, detail: { method: "token" } });
+    await enqueueSync(workspaceId, session.user.id, id, "connect");
+    const filter = { workspaceId, userId: session.user.id };
+    after(() => processSyncJobs({ budgetMs: 45_000, filter }).catch((e) => console.error("initial sync failed", e)));
 
     return NextResponse.json({ ok: true, account });
   } catch (err) {
