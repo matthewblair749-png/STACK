@@ -392,7 +392,7 @@ export function ConnectionCenter() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8">
       <h1 className="text-2xl font-semibold tracking-tight text-ink">Your work, connected.</h1>
-      <p className="mt-1 text-sm text-neutral-500">Connect the apps where your work happens. STACK brings the important context together - and only ever reads what you authorize.</p>
+      <p className="mt-1 text-sm text-neutral-500">Connect the apps where your work happens. STACK brings the important context together - and only ever reads what you authorize. Workspace owners and admins can see which apps you&apos;ve connected and whether they&apos;re working, never their content.</p>
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stat("Connected", summary?.connected)}

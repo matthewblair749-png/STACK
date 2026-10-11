@@ -36,6 +36,7 @@ function historyLabel(h: Details["history"][number]) {
     case "integration.connected":
       return h.detail.method === "token" ? "Connected with your own token" : "Connected";
     case "integration.disconnected":
+      if (h.detail.byAdmin) return `Disconnected by a workspace admin${removedText(h.detail)}`;
       return `Disconnected${h.detail.revoked ? " and access revoked" : ""}${removedText(h.detail)}`;
     case "integration.data_deleted":
       return `Synced data deleted${removedText(h.detail)}`;

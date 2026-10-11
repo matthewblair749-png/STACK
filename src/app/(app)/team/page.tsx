@@ -6,6 +6,7 @@ import { useDemo } from "@/lib/demo-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/app/toast";
+import { TeamConnections } from "@/components/app/team-connections";
 
 type Role = "Owner" | "Admin" | "Member";
 interface Member { userId: string; name: string; email: string | null; role: Role; joinedAt: string; isYou: boolean }
@@ -264,6 +265,8 @@ export default function TeamPage() {
           </div>
         </section>
       )}
+
+      {canManage && <TeamConnections />}
 
       {me && me.role !== "Owner" && (
         <section className="mt-10 rounded-xl border border-neutral-100 p-4">

@@ -140,6 +140,8 @@ async function clearMemberData(workspaceId: string, userId: string) {
     db.syncedMessage.deleteMany({ where }),
     db.syncedEvent.deleteMany({ where }),
     db.syncedFile.deleteMany({ where }),
+    db.syncedTask.deleteMany({ where }),
+    db.syncJob.deleteMany({ where }),
     db.conversation.deleteMany({ where }),
     db.pendingAction.deleteMany({ where }),
     db.insight.deleteMany({ where }),
