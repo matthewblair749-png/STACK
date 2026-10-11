@@ -156,6 +156,11 @@ Google URLs on that one client.
   Drive uses `changes.list` from the stored page token (removed/trashed files are deleted); Calendar re-reads a
   fixed window (7 days back, 30 ahead) each run and removes events that left it. Cursors (`SyncCursor`) only
   advance after the data they cover is saved. Other apps read their recent items each run.
+- **Incremental (Microsoft, ready but untested live until the Microsoft app is registered).** Outlook mail uses
+  Graph `messages/delta` on the Inbox (last 90 days); a long first round continues across runs from the saved
+  nextLink; `@removed` deletes; partial read/unread updates are re-read in full. OneDrive uses driveItem delta
+  (`token=latest` first, `deleted` facet removes, folders skipped). A 410 / syncStateNotFound restarts the round.
+  Calendar re-reads a fixed window like Google. Stored cursors are only ever followed back to graph.microsoft.com.
 - **What's downloaded.** Metadata and snippets only: subject, sender, snippet, labels; file names and links;
   event titles, times and attendees. Never message bodies, attachments or file contents.
 - **Tasks (Asana, Jira, Linear, Trello, ClickUp, GitHub, GitLab).** Open tasks/issues assigned to the person are stored as `SyncedTask` rows with

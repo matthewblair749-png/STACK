@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Privacy Policy - STACK" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="October 9, 2026">
+    <LegalPage title="Privacy Policy" updated="October 11, 2026">
       <p>STACK helps you understand, prioritize and act on your work by connecting the apps you already use. This policy explains what STACK collects, why, who it is shared with, and the control you have. We only access an app after you sign in to it and approve access yourself.</p>
 
       <h2>What we collect</h2>
@@ -43,6 +43,7 @@ export default function PrivacyPage() {
       <h2>Your choices</h2>
       <ul>
         <li><strong>Disconnect an app</strong> at any time from Integrations. STACK then revokes its access where the app allows it, deletes the stored credentials, and deletes the content it imported from that app.</li>
+        <li><strong>Delete synced data</strong> from one app without disconnecting it, from that app&apos;s panel in Integrations. STACK deletes its copies; nothing is deleted in the app itself, and only new activity is imported afterwards.</li>
         <li><strong>Revoke access yourself</strong> in the app&apos;s own settings, for example your Google Account&apos;s third-party access page.</li>
         <li><strong>Delete your account and data</strong> yourself, any time, from Settings. STACK revokes its access to every connected app where the app allows it, then permanently deletes your account, your workspace and everything imported into it.</li>
       </ul>
@@ -58,11 +59,11 @@ export default function PrivacyPage() {
         <li><strong>Sentry</strong> - error reports, if enabled. Reports describe what broke in the app and are configured not to include your IP address, cookies or message content.</li>
         <li>The apps you choose to connect, which STACK reads from (and acts in only after you approve).</li>
       </ul>
-      <p><strong>Shared workspaces:</strong> if you join or invite others to a workspace, its members can see each other&apos;s name, email address and role, plus the tasks, projects and calls in that workspace. Data from your connected apps (email, messages, files, meetings) and your AI chats stay private to you and are never shown to teammates. If you leave or are removed from a workspace, your connections and imported data in it are deleted; tasks you created stay with the team.</p>
+      <p><strong>Shared workspaces:</strong> if you join or invite others to a workspace, its members can see each other&apos;s name, email address and role, plus the tasks, projects and calls in that workspace. Data from your connected apps (email, messages, files, meetings, tasks) and your AI chats stay private to you and are never shown to teammates. Workspace owners and admins can see which apps you have connected, the account and permissions you granted, and whether each connection is working - never the content - and can disconnect an app of yours (for example when you leave the organization), which deletes what STACK imported from it. If you leave or are removed from a workspace, your connections and imported data in it are deleted; tasks you created stay with the team.</p>
 
       <h2>How long we keep data</h2>
       <ul>
-        <li>Data imported from an app is kept while that app is connected, and deleted when you disconnect it, leave the workspace, or delete your account.</li>
+        <li>Data imported from an app is recent working context, not an archive: STACK keeps email from the last 90 days and at most 1,000 messages, 1,000 files and 1,000 tasks per connected app, deleting older copies automatically (never anything in the app itself). Everything imported from an app is deleted when you disconnect it, delete its synced data, leave the workspace, or delete your account.</li>
         <li>Your tasks, projects and AI chats are kept until you delete them or your account.</li>
         <li>Sign-in sessions end after 30 days without use. Short-lived security records, such as rate-limit counters, are cleared within a day.</li>
         <li>Our database provider keeps short-term backups for disaster recovery, so deleted data can remain in those backups for a limited time before it ages out.</li>

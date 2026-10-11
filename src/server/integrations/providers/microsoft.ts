@@ -1,5 +1,6 @@
 import type { CalendarEvent, ConnectedTokens, IntegrationProvider, MailMessage, ProviderFile } from "../provider";
 import { ProviderNotConfiguredError } from "../provider";
+import { microsoftSyncIncremental } from "./microsoft-sync";
 
 const SCOPES = ["offline_access", "User.Read", "Mail.Read", "Calendars.Read", "Files.Read"].join(" ");
 
@@ -97,6 +98,9 @@ export const microsoftProvider: IntegrationProvider = {
       scopes: typeof data.scope === "string" ? data.scope.split(" ") : SCOPES.split(" "),
     };
   },
+
+  // Background sync uses Graph delta queries (microsoft-sync.ts); the reads below are one-off looks.
+  syncIncremental: microsoftSyncIncremental,
 
   async getMessages(tokens): Promise<MailMessage[]> {
     const headers = { Authorization: `Bearer ${tokens.accessToken}` };
