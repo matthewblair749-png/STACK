@@ -162,3 +162,45 @@ describe("GitLab tasks", () => {
     expect(tasks[1]).toMatchObject({ id: "mr:2", status: "Review requested", container: "grp/proj" });
   });
 });
+
+describe("Monday.com assigned items", () => {
+  it("filters each board's people columns by assigned_to_me and maps date and status columns", async () => {
+    const { mondayProvider } = await import("./monday");
+    const bodies: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_u: string, init: RequestInit) => {
+        const q = JSON.parse(String(init.body)).query as string;
+        bodies.push(q);
+        if (q.includes("columns(types: [people])"))
+          return json({ data: { boards: [{ id: "11", name: "Launch", columns: [{ id: "person" }, { id: "owner" }] }, { id: "12", name: "No people", columns: [] }] } });
+        return json({
+          data: {
+            b0: [{ items_page: { cursor: null, items: [{ id: "501", name: "Write copy", updated_at: "2026-10-05T10:00:00Z", url: "https://x.monday.com/boards/11/pulses/501", column_values: [{ type: "status", text: "Working on it" }, { type: "date", text: "2026-10-14", date: "2026-10-14" }] }] } }],
+          },
+        });
+      }),
+    );
+    const { tasks, complete } = await mondayProvider.getTasks!({ accessToken: "t", scopes: [] });
+    // Only boards with a people column are queried, with one rule per people column.
+    expect(bodies[1]).toContain('b0: boards(ids: ["11"])');
+    expect(bodies[1]).not.toContain('"12"');
+    expect(bodies[1]).toContain('column_id: "person", compare_value: ["assigned_to_me"], operator: any_of');
+    expect(bodies[1]).toContain('column_id: "owner"');
+    expect(complete).toBe(true);
+    expect(tasks).toEqual([expect.objectContaining({ id: "501", title: "Write copy", status: "Working on it", isDone: false, due: "2026-10-14", container: "Launch" })]);
+  });
+
+  it("flags a partial list when a board has more items than one page", async () => {
+    const { mondayProvider } = await import("./monday");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_u: string, init: RequestInit) =>
+        String(init.body).includes("columns(types: [people])")
+          ? json({ data: { boards: [{ id: "11", name: "Big", columns: [{ id: "person" }] }] } })
+          : json({ data: { b0: [{ items_page: { cursor: "more", items: [] } }] } }),
+      ),
+    );
+    expect((await mondayProvider.getTasks!({ accessToken: "t", scopes: [] })).complete).toBe(false);
+  });
+});

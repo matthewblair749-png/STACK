@@ -9,8 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useDemo } from "@/lib/demo-context";
 import { useSyncedList } from "@/lib/use-synced-list";
-import { WORK_SUMMARY_PROVIDERS } from "@/lib/data-groups";
-import { externalToTask, syncedTaskToTask, type SyncedTaskItem, type SyncedWorkItem } from "@/lib/external-tasks";
+import { syncedTaskToTask, type SyncedTaskItem } from "@/lib/external-tasks";
 import { providerLabel } from "@/lib/providers-meta";
 import { IntegrationLogo } from "@/components/brand-icons";
 import type { Priority, Task } from "@/lib/types";
@@ -33,7 +32,6 @@ function formatDueDate(dueDate?: string) {
 }
 
 const NO_PARAMS = {};
-const SUMMARY_PARAMS = { provider: WORK_SUMMARY_PROVIDERS.join(",") };
 
 type View = "list" | "board" | "timeline" | "calendar";
 
@@ -41,10 +39,9 @@ const priorityOrder: Record<Priority, number> = { urgent: 0, important: 1, norma
 
 export default function TasksPage() {
   const { tasks: ownTasks, toggleTask: toggleOwn, addTask, updateTask: updateOwn, deleteTask, projects, people } = useDemo();
-  const external = useSyncedList<SyncedWorkItem>("messages", SUMMARY_PARAMS);
-  // Most task apps sync as real tasks (status, due date); the few in WORK_SUMMARY_PROVIDERS still arrive as summaries.
+  // Tasks from connected apps, with their real status and due dates (read-only here; changed in the app).
   const appTasks = useSyncedList<SyncedTaskItem>("tasks", NO_PARAMS);
-  const externalTasks = useMemo(() => [...appTasks.items.map((t) => syncedTaskToTask(t)), ...external.items.map(externalToTask)], [appTasks.items, external.items]);
+  const externalTasks = useMemo(() => appTasks.items.map((t) => syncedTaskToTask(t)), [appTasks.items]);
   const tasks = useMemo(() => [...ownTasks, ...externalTasks], [ownTasks, externalTasks]);
   const toggleTask = (id: string) => {
     if (!id.startsWith("ext:")) toggleOwn(id);
@@ -196,9 +193,9 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {external.error && (
+      {appTasks.error && (
         <p className="mt-4 rounded-xl bg-red-soft px-4 py-3 text-sm text-red">
-          Couldn&apos;t load tasks from your connected apps. <button onClick={external.reload} className="font-semibold underline">Try again</button>
+          Couldn&apos;t load tasks from your connected apps. <button onClick={appTasks.reload} className="font-semibold underline">Try again</button>
         </p>
       )}
 

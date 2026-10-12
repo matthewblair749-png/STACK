@@ -163,13 +163,13 @@ Google URLs on that one client.
   Calendar re-reads a fixed window like Google. Stored cursors are only ever followed back to graph.microsoft.com.
 - **What's downloaded.** Metadata and snippets only: subject, sender, snippet, labels; file names and links;
   event titles, times and attendees. Never message bodies, attachments or file contents.
-- **Tasks (Asana, Jira, Linear, Trello, ClickUp, GitHub, GitLab).** Open tasks/issues assigned to the person are stored as `SyncedTask` rows with
+- **Tasks (Asana, Jira, Linear, Trello, ClickUp, Monday, GitHub, GitLab).** Open tasks/issues assigned to the person are stored as `SyncedTask` rows with
   the app's own status, due date (whole-day or exact time), priority and project/team, up to 100 per read. When
   the app says the list is complete, tasks no longer open or assigned are removed; a partial list only adds and
   updates. They appear in My Work, search, and the AI's context (cited as `extask:<id>`, with overdue marked),
   and are capped at 1,000 per connection. GitHub and GitLab tasks are issues assigned to you plus pull/merge requests
   waiting on your review; their notifications and to-dos still sync as activity under Updates > Code & deploys.
-  Monday still syncs recently updated board items as summaries (not assignments).
+  Monday tasks are items assigned to you through a board's people columns (25 most-used boards).
 - **Slack real-time.** Slack's Events API calls `/api/webhooks/slack`. Each request is checked against
   `SLACK_SIGNING_SECRET` (HMAC-SHA256 over the raw body, rejected if more than 5 minutes old), answered within
   Slack's 3-second limit, and de-duplicated by `event_id` (`WebhookDelivery`), so Slack's retries never run

@@ -35,9 +35,6 @@ export function groupFor(providerId: string): DataGroup | undefined {
 }
 
 /** The groups that appear in the Updates tab (email, chat and tasks have their own tabs). */
-/** Task apps that still sync work items as summaries, not real tasks - My Work reads these from the message feed. */
-export const WORK_SUMMARY_PROVIDERS = ["monday"];
-
 export const UPDATE_GROUPS = DATA_GROUPS.filter((g) => g.id !== "email" && g.id !== "chat" && g.id !== "work");
 
 // Calendar and Files aren't DATA_GROUPS (those pages show every connected provider generically,
