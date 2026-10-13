@@ -35,6 +35,7 @@ export function primaryAction(app: CatalogApp): { label: string; kind: "connect"
   if (!app.supported) {
     if (app.authType === "DesktopApp") return { label: "Desktop app", kind: "none", reason: "Local software - there's no cloud account for STACK to authorize." };
     if (app.authType === "Unavailable") return { label: "Unavailable", kind: "none", reason: "This product has no public API for STACK to connect to." };
+    if (app.authType === "ApiKey") return { label: "Coming soon", kind: "none", reason: "This app lets you create an API key, and STACK is adding a connector for it." };
     return { label: "Coming soon", kind: "none", reason: "STACK doesn't have a connector for this app yet." };
   }
   if (!app.configured && app.tokenConnect) return { label: "Connect", kind: "token" };

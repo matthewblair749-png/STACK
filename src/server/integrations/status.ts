@@ -26,7 +26,10 @@ export function computeConnectionStatus(input: {
   if (input.connected) return "connected";
   if (input.authType === "DesktopApp") return "desktop_app";
   if (input.authType === "Unavailable") return "unavailable";
-  if (input.authType !== "OAuth2" || !input.hasOauthProvider) return "external_tool";
+  // Only apps with a real connector are connectable. An ApiKey app without one is a verified key to build on
+  // later, so it shows "Coming soon" like any other app STACK can't connect yet.
+  const connectable = input.authType === "OAuth2" || input.authType === "ApiKey";
+  if (!connectable || !input.hasOauthProvider) return "external_tool";
   return input.configured ? "available" : "needs_setup";
 }
 

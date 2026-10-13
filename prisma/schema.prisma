@@ -684,6 +684,9 @@ model Subscription {
 enum AppAuthType {
   /// Real OAuth2 flow through the IntegrationProvider registry.
   OAuth2
+  /// The app lets a user create their own API key / personal access token (verified against its official
+  /// docs - see App.apiDocsUrl). Connectable only once an IntegrationProvider with `tokenConnect` exists.
+  ApiKey
   /// Desktop/local software with no cloud account to authorize (Photoshop, Blender, MATLAB...).
   DesktopApp
   /// A real product, but STACK has no OAuth/API integration built (or access to one) yet.
@@ -721,6 +724,18 @@ model App {
   /// it instead of the neutral fallback.
   logoVerified    Boolean     @default(false)
   oauthProviderId String?
+  /// Provenance for the app's API access, filled by prisma/import-apps.mjs. `apiAccess` is the researched
+  /// classification verbatim (ApiKey, OAuth2Only, ShortLivedToken, PartnerOnly, DesktopApp, NoApi, Unverified);
+  /// the rest says where it was verified so a claim can always be traced back to official docs.
+  apiAccess       String?
+  apiDocsUrl      String?
+  /// What the app calls the credential, e.g. "Personal access token".
+  tokenName       String?
+  /// Where the user creates it, e.g. "Settings > Developer > Tokens".
+  tokenWhere      String?
+  tokenReadAccess String?
+  apiCheckedAt    DateTime?
+  apiConfidence   String?
   isUniversal     Boolean     @default(false)
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())

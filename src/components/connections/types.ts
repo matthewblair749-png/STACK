@@ -12,7 +12,7 @@ export interface CatalogApp {
   brandColor?: string | null;
   logoPath?: string | null;
   hasRealLogo: boolean;
-  authType: "OAuth2" | "DesktopApp" | "ExternalTool" | "Unavailable";
+  authType: "OAuth2" | "ApiKey" | "DesktopApp" | "ExternalTool" | "Unavailable";
   isUniversal: boolean;
   oauthProviderId: string | null;
   status: AppStatus;
