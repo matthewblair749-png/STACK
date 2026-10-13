@@ -7,6 +7,9 @@ import { useToast } from "./toast";
 const CACHE_KEY = "stack-work-state-v2";
 const POLL_MS = 60_000;
 const RESYNC_AFTER_MS = 5 * 60 * 1000;
+/** When this tab last synced on its own. A connection that keeps failing never updates lastSyncAt, so without
+ * this every page load would re-sync every app. */
+const AUTO_SYNC_KEY = "stack-auto-sync-at";
 
 type Status = "loading" | "ready" | "error";
 
@@ -20,7 +23,8 @@ interface WorkStateContextValue {
   /** Re-read the computed picture (cheap). */
   refresh: () => Promise<void>;
   /** Pull fresh data from connected apps, then refresh. */
-  syncNow: () => Promise<void>;
+  /** `quiet`: a background sync - failures show in the page's connection notice, not as a pop-up. */
+  syncNow: (opts?: { quiet?: boolean }) => Promise<void>;
 }
 
 const WorkStateContext = createContext<WorkStateContextValue | null>(null);
@@ -63,7 +67,8 @@ export function WorkStateProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const syncNow = useCallback(async () => {
+  const syncNow = useCallback(async (opts?: { quiet?: boolean }) => {
+    const quiet = opts?.quiet === true;
     if (syncingRef.current) return;
     syncingRef.current = true;
     setSyncing(true);
@@ -71,15 +76,16 @@ export function WorkStateProvider({ children }: { children: ReactNode }) {
       const res = await fetch("/api/integrations/sync", { method: "POST" });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast({ title: "Couldn't sync", description: body.error ?? "Try again in a moment.", tone: "error" });
+        if (!quiet) toast({ title: "Couldn't sync", description: body.error ?? "Try again in a moment.", tone: "error" });
       } else {
         const failed = (body.perProvider ?? []).filter((p: { error?: string }) => p.error);
         setSyncIssues(failed);
-        if (failed.length) toast({ title: "Some apps couldn't sync", description: failed.map((p: { provider: string; error: string }) => `${p.provider}: ${p.error}`).join(" | "), tone: "error" });
+        // Each error already names its app ("STACK couldn't sync Slack...").
+        if (failed.length && !quiet) toast({ title: "Some apps couldn't sync", description: failed.map((p: { error: string }) => p.error).join(" "), tone: "error" });
       }
       await refresh();
     } catch {
-      toast({ title: "Couldn't reach STACK", description: "Check your connection and try again.", tone: "error" });
+      if (!quiet) toast({ title: "Couldn't reach STACK", description: "Check your connection and try again.", tone: "error" });
     } finally {
       syncingRef.current = false;
       setSyncing(false);
@@ -108,7 +114,20 @@ export function WorkStateProvider({ children }: { children: ReactNode }) {
       try {
         const fresh = JSON.parse(sessionStorage.getItem(CACHE_KEY) ?? "null")?.state as WorkState | undefined;
         const stale = fresh && (!fresh.lastSyncAt || Date.now() - new Date(fresh.lastSyncAt).getTime() > RESYNC_AFTER_MS);
-        if (fresh && fresh.connectedProviders.length > 0 && stale) await syncNow();
+        let lastAuto = 0;
+        try {
+          lastAuto = Number(sessionStorage.getItem(AUTO_SYNC_KEY)) || 0;
+        } catch {
+          // No storage: allow the sync.
+        }
+        if (fresh && fresh.connectedProviders.length > 0 && stale && Date.now() - lastAuto > RESYNC_AFTER_MS) {
+          try {
+            sessionStorage.setItem(AUTO_SYNC_KEY, String(Date.now()));
+          } catch {
+            // Can't remember it; this tab may auto-sync again on the next load.
+          }
+          await syncNow({ quiet: true });
+        }
       } catch {
         // Cache unreadable - skip the auto-sync, the user can sync manually.
       }

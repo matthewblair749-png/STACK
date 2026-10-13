@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { LogoIcon } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -14,9 +13,11 @@ const QUICK_PROVIDERS = [
 ];
 
 interface AppRow {
+  slug: string;
   oauthProviderId: string | null;
   configured: boolean;
   connected: boolean;
+  tokenConnect?: unknown;
 }
 
 export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCustomize: () => void }) {
@@ -55,13 +56,17 @@ export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCu
 
   const state = QUICK_PROVIDERS.map((p) => {
     const rows = (apps ?? []).filter((a) => a.oauthProviderId === p.id);
-    return { ...p, connected: rows.some((r) => r.connected), configured: rows.some((r) => r.configured) };
+    // "configured" means sign-in (OAuth) is set up on this server; a paste-a-token option still connects without it.
+    return { ...p, connected: rows.some((r) => r.connected), configured: rows.some((r) => r.configured), tokenSlug: rows.find((r) => r.tokenConnect)?.slug };
   });
+  // Only offer what can actually connect here: an option that can't is just a dead button.
+  const visible = apps === null ? state : state.filter((s) => s.connected || s.configured || s.tokenSlug);
   const anyConnected = state.some((s) => s.connected);
 
-  function connect(providerId: string) {
-    setPending(providerId);
-    window.location.assign(new URL(`/api/integrations/${providerId}/connect?returnTo=/onboarding`, window.location.origin).toString());
+  function connect(s: (typeof state)[number]) {
+    setPending(s.id);
+    const path = s.configured ? `/api/integrations/${s.id}/connect?returnTo=/onboarding` : `/integrations?connect=${s.tokenSlug}`;
+    window.location.assign(new URL(path, window.location.origin).toString());
   }
 
   return (
@@ -73,7 +78,7 @@ export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCu
       </p>
 
       <div className="mt-8 w-full max-w-md space-y-2.5 text-left">
-        {state.map((s) => (
+        {visible.map((s) => (
           <div key={s.id} className="flex items-center gap-3 rounded-2xl border border-neutral-200 p-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-50">
               <IntegrationLogo app={s.id} name={s.name} size="md" />
@@ -85,9 +90,8 @@ export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCu
             <Button
               size="sm"
               variant={s.connected ? "outline" : "primary"}
-              disabled={apps === null || s.connected || !s.configured || pending === s.id}
-              title={!s.configured && apps !== null ? "This connection isn't set up on this STACK yet" : undefined}
-              onClick={() => connect(s.id)}
+              disabled={apps === null || s.connected || pending === s.id}
+              onClick={() => connect(s)}
               className="shrink-0"
             >
               {s.connected ? (
@@ -96,8 +100,6 @@ export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCu
                 </>
               ) : pending === s.id ? (
                 <Loader2 size={13} className="animate-spin" />
-              ) : apps !== null && !s.configured ? (
-                "Not set up yet"
               ) : (
                 "Connect"
               )}
@@ -114,9 +116,6 @@ export function QuickStart({ onBuild, onCustomize }: { onBuild: () => void; onCu
       <button onClick={onCustomize} className="mt-5 text-sm font-medium text-neutral-400 hover:text-ink">
         Set up more apps manually
       </button>
-      <p className="mt-4 text-sm text-neutral-400">
-        Already have an account? <Link href="/login" className="font-medium text-ink underline">Sign in</Link>
-      </p>
     </div>
   );
 }
