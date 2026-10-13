@@ -40,7 +40,7 @@ export const UPDATE_GROUPS = DATA_GROUPS.filter((g) => g.id !== "email" && g.id 
 // Calendar and Files aren't DATA_GROUPS (those pages show every connected provider generically,
 // unfiltered) - but a person connecting one of these still deserves to be told where to look.
 const CALENDAR_PROVIDERS = new Set(["google", "microsoft", "calendly", "clio"]);
-const FILE_PROVIDERS = new Set(["google", "microsoft", "notion", "dropbox", "box", "figma", "airtable", "smartsheet", "typeform", "zotero", "confluence", "qualtrics"]);
+const FILE_PROVIDERS = new Set(["google", "microsoft", "notion", "dropbox", "box", "figma", "airtable", "smartsheet", "typeform", "zotero", "confluence", "qualtrics", "wordpress"]);
 
 export interface Destination {
   label: string;

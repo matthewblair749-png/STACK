@@ -14,6 +14,7 @@ export const PROVIDER_LABEL: Record<string, string> = {
   zotero: "Zotero",
   confluence: "Confluence",
   qualtrics: "Qualtrics",
+  wordpress: "WordPress",
 };
 
 export function providerLabel(id: string) {

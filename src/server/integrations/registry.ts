@@ -42,6 +42,7 @@ import { typeformProvider } from "./providers/typeform";
 import { zoteroProvider } from "./providers/zotero";
 import { confluenceProvider } from "./providers/confluence";
 import { qualtricsProvider } from "./providers/qualtrics";
+import { wordpressProvider } from "./providers/wordpress";
 
 export const integrationRegistry: Record<string, IntegrationProvider> = {
   google: googleProvider,
@@ -87,6 +88,7 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   zotero: zoteroProvider,
   confluence: confluenceProvider,
   qualtrics: qualtricsProvider,
+  wordpress: wordpressProvider,
 };
 
 export function getProvider(id: string): IntegrationProvider | undefined {

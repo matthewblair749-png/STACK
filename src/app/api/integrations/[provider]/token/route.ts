@@ -27,7 +27,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ pro
     const limit = await rateLimit("tokenConnect", session.user.id);
     if (!limit.ok) return tooManyRequests(limit, "Too many connection attempts. Wait a moment and try again.");
     const body = (await req.json().catch(() => ({}))) as { token?: unknown; fields?: Record<string, unknown> };
-    const token = typeof body.token === "string" ? body.token.trim() : "";
+    const pasted = typeof body.token === "string" ? body.token.trim() : "";
+    const token = provider.tokenConnect.normalize ? provider.tokenConnect.normalize(pasted) : pasted;
     if (token.length < 20 || token.length > 600 || /\s/.test(token)) {
       return NextResponse.json({ error: "That doesn't look like a valid token. Copy it again without spaces." }, { status: 400 });
     }

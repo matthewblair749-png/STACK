@@ -101,6 +101,8 @@ export interface TokenConnect {
   steps: string[];
   /** Extra details needed alongside the token (a store address, a team). */
   fields?: ConnectField[];
+  /** Tidies a pasted token before it is checked (e.g. WordPress shows application passwords with spaces). */
+  normalize?(token: string): string;
   /** Checks the token really works and says whose account it is. Throws a readable Error if not. `metadata` is saved with the connection. */
   validate(token: string, fields: Record<string, string>): Promise<{ account?: string; metadata?: Record<string, unknown> }>;
 }
