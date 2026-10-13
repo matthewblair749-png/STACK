@@ -22,7 +22,7 @@ A change takes effect on the next deployment.
 | `ENCRYPTION_KEY` | AES-256-GCM key for stored app tokens. 32 bytes base64. **Never change it** once people have connected apps - existing connections become unreadable. | Connecting apps fails. |
 | `APP_URL` | Canonical public URL, `https://www.stackunder.website` (no trailing slash). Used by the sitemap, share cards and Stripe return links. OAuth redirects use the address the request arrived on. | Falls back to the request address. |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Shown in the footer, Help and legal pages. | Pages say "use the contact option" instead of an address. |
-| At least one sign-in provider | `GOOGLE_*`, `MICROSOFT_*`, `APPLE_*`, or `RESEND_API_KEY` + `EMAIL_FROM`. | Nobody can sign in. |
+| At least one sign-in provider | `GOOGLE_*` (Google sign-in) or `RESEND_API_KEY` + `EMAIL_FROM` (email links). Those are the only two sign-in options. | Nobody can sign in. |
 
 ### Optional (each degrades honestly)
 
@@ -76,8 +76,6 @@ Register exactly these. Keep the `http://localhost:3000/...` versions as well if
 
 **Sign-in (Auth.js):**
 - Google: `https://www.stackunder.website/api/auth/callback/google`
-- Microsoft: `https://www.stackunder.website/api/auth/callback/microsoft-entra-id`
-- Apple: `https://www.stackunder.website/api/auth/callback/apple` (Apple needs HTTPS; no localhost)
 
 **App connections** - one per app, all of the form
 `https://www.stackunder.website/api/integrations/<app>/callback`:

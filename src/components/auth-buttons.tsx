@@ -4,12 +4,10 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GoogleIcon, MicrosoftIcon, AppleIcon } from "@/components/oauth-icons";
+import { GoogleIcon } from "@/components/oauth-icons";
 
 export type ConfiguredAuthProviders = {
   google: boolean;
-  microsoft: boolean;
-  apple: boolean;
   email: boolean;
 };
 
@@ -25,24 +23,20 @@ export function AuthButtons({
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error" | "limited">("idle");
   const [oauthPending, setOauthPending] = useState<string | null>(null);
 
-  const noneConfigured = !configured.google && !configured.microsoft && !configured.apple && !configured.email;
+  const noneConfigured = !configured.google && !configured.email;
 
   if (noneConfigured) {
     return (
       <div className="rounded-xl border border-yellow/40 bg-yellow/10 p-4 text-sm text-ink">
         Sign-in isn&apos;t configured yet. Set <code className="font-mono text-xs">GOOGLE_CLIENT_ID</code> /{" "}
-        <code className="font-mono text-xs">GOOGLE_CLIENT_SECRET</code>,{" "}
-        <code className="font-mono text-xs">MICROSOFT_CLIENT_ID</code> /{" "}
-        <code className="font-mono text-xs">MICROSOFT_CLIENT_SECRET</code>,{" "}
-        <code className="font-mono text-xs">APPLE_CLIENT_ID</code> / <code className="font-mono text-xs">APPLE_TEAM_ID</code> /{" "}
-        <code className="font-mono text-xs">APPLE_KEY_ID</code> / <code className="font-mono text-xs">APPLE_PRIVATE_KEY</code>, or{" "}
+        <code className="font-mono text-xs">GOOGLE_CLIENT_SECRET</code>, or{" "}
         <code className="font-mono text-xs">RESEND_API_KEY</code> /{" "}
         <code className="font-mono text-xs">EMAIL_FROM</code> in your environment to enable it.
       </div>
     );
   }
 
-  async function handleOAuth(provider: "google" | "microsoft-entra-id" | "apple") {
+  async function handleOAuth(provider: "google") {
     setOauthPending(provider);
     await signIn(provider, { callbackUrl });
   }
@@ -64,32 +58,6 @@ export function AuthButtons({
         onClick={() => handleOAuth("google")}
       >
         <GoogleIcon /> {configured.google ? "Continue with Google" : "Google — needs setup"}
-      </Button>
-      <Button
-        variant="outline"
-        className="w-full justify-center"
-        disabled={!configured.microsoft || oauthPending !== null}
-        title={
-          configured.microsoft
-            ? undefined
-            : "Set MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET to enable Microsoft sign-in"
-        }
-        onClick={() => handleOAuth("microsoft-entra-id")}
-      >
-        <MicrosoftIcon /> {configured.microsoft ? "Continue with Microsoft" : "Microsoft — needs setup"}
-      </Button>
-      <Button
-        variant="outline"
-        className="w-full justify-center"
-        disabled={!configured.apple || oauthPending !== null}
-        title={
-          configured.apple
-            ? undefined
-            : "Set APPLE_CLIENT_ID, APPLE_TEAM_ID, APPLE_KEY_ID, and APPLE_PRIVATE_KEY to enable Apple sign-in"
-        }
-        onClick={() => handleOAuth("apple")}
-      >
-        <AppleIcon /> {configured.apple ? "Continue with Apple" : "Apple — needs setup"}
       </Button>
       <Button
         variant="outline"

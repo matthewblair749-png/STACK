@@ -35,8 +35,6 @@ export default async function SignupPage({
       <AuthButtons
         configured={{
           google: ids.has("google"),
-          microsoft: ids.has("microsoft-entra-id"),
-          apple: ids.has("apple"),
           email: ids.has("resend"),
         }}
         callbackUrl={callbackUrl}
