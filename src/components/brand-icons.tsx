@@ -13,6 +13,7 @@ import {
   SiWordpress, SiWebflow, SiContentful, SiR, SiQgis, SiBioconductor,
   SiGoogleclassroom, SiCanvas, SiMoodle,
   SiAutodeskmaya, SiFedex, SiUps, SiMeta, SiRhinoceros, SiAutodeskrevit,
+  SiAirtable, SiTypeform, SiZotero, SiConfluence, SiQualtrics,
 } from "react-icons/si";
 import { Calendar, type LucideIcon } from "lucide-react";
 import { MicrosoftIcon, GoogleIcon, AppleIcon } from "@/components/oauth-icons";
@@ -97,6 +98,11 @@ export const brandIcons: Record<string, BrandIcon> = {
   oracle: { Icon: OracleIcon, color: "#F80000" },
   "click-up": { Icon: SiClickup, color: "#7B68EE" },
   clickup: { Icon: SiClickup, color: "#7B68EE" },
+  airtable: { Icon: SiAirtable, color: "#18BFFF" },
+  typeform: { Icon: SiTypeform, color: "#262627" },
+  zotero: { Icon: SiZotero, color: "#CC2936" },
+  confluence: { Icon: SiConfluence, color: "#172B4D" },
+  qualtrics: { Icon: SiQualtrics, color: "#00B4EF" },
   greenhouse: { Icon: SiGreenhouse, color: "#24A47F" },
   zendesk: { Icon: SiZendesk, color: "#03363D" },
   intercom: { Icon: SiIntercom, color: "#000000" },

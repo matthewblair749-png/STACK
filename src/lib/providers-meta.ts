@@ -8,6 +8,12 @@ export const PROVIDER_LABEL: Record<string, string> = {
   zoom: "Zoom",
   dropbox: "Dropbox",
   box: "Box",
+  airtable: "Airtable",
+  smartsheet: "Smartsheet",
+  typeform: "Typeform",
+  zotero: "Zotero",
+  confluence: "Confluence",
+  qualtrics: "Qualtrics",
 };
 
 export function providerLabel(id: string) {

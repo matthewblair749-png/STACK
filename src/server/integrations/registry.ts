@@ -36,6 +36,12 @@ import { shippoProvider } from "./providers/shippo";
 import { cin7Provider } from "./providers/cin7";
 import { benchlingProvider } from "./providers/benchling";
 import { servicenowProvider } from "./providers/servicenow";
+import { airtableProvider } from "./providers/airtable";
+import { smartsheetProvider } from "./providers/smartsheet";
+import { typeformProvider } from "./providers/typeform";
+import { zoteroProvider } from "./providers/zotero";
+import { confluenceProvider } from "./providers/confluence";
+import { qualtricsProvider } from "./providers/qualtrics";
 
 export const integrationRegistry: Record<string, IntegrationProvider> = {
   google: googleProvider,
@@ -75,6 +81,12 @@ export const integrationRegistry: Record<string, IntegrationProvider> = {
   cin7: cin7Provider,
   benchling: benchlingProvider,
   servicenow: servicenowProvider,
+  airtable: airtableProvider,
+  smartsheet: smartsheetProvider,
+  typeform: typeformProvider,
+  zotero: zoteroProvider,
+  confluence: confluenceProvider,
+  qualtrics: qualtricsProvider,
 };
 
 export function getProvider(id: string): IntegrationProvider | undefined {
