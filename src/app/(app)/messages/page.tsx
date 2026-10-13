@@ -1,7 +1,7 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { MessageList } from "@/components/app/message-list";
-
-export default function ConversationsPage() {
-  return <MessageList group="chat" title="Conversations" subtitle="Chat threads from your connected messaging apps." noun="conversations" />;
+/** Conversations is now the Chat tab of the Inbox; old links land there (a search, ?q=, carries over). */
+export default async function ConversationsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
+  redirect(q ? `/inbox?group=chat&q=${encodeURIComponent(q)}` : "/inbox?group=chat");
 }

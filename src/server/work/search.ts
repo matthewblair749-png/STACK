@@ -97,7 +97,7 @@ export async function searchWorkspace(workspaceId: string, userId: string, rawQu
     companies.set(domain, cur);
   }
   for (const [domain, c] of [...companies].slice(0, 3)) {
-    results.push({ id: domain, type: "company", title: c.name, subtitle: `Company - ${c.count} message${c.count === 1 ? "" : "s"} from ${domain}`, href: `/messages?q=${encodeURIComponent(domain)}` });
+    results.push({ id: domain, type: "company", title: c.name, subtitle: `Company - ${c.count} message${c.count === 1 ? "" : "s"} from ${domain}`, href: `/inbox?q=${encodeURIComponent(domain)}` });
   }
 
   for (const p of listProviders()) {

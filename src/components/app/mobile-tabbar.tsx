@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Home, CheckSquare, Inbox, FolderKanban, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AskStackBar } from "./ask-stack-bar";
-import { useWorkState } from "./work-state-provider";
+import { useAttention } from "@/lib/use-attention";
 
 const tabs = [
   { label: "Home", href: "/home", icon: Home },
@@ -24,8 +24,8 @@ const tabs = [
 export function MobileTabBar() {
   const pathname = usePathname();
   const [askOpen, setAskOpen] = useState(false);
-  const { state } = useWorkState();
-  const unread = state?.understand.counts.importantMessages ?? 0;
+  const attention = useAttention();
+  const dots: Record<string, boolean> = { "/inbox": !!attention?.inbox, "/tasks": !!attention?.work };
   const onAi = pathname?.startsWith("/ai");
 
   return (
@@ -47,7 +47,7 @@ export function MobileTabBar() {
           return (
             <Link key={tab.href} href={tab.href} aria-current={active ? "page" : undefined} className="relative flex flex-1 flex-col items-center gap-1 py-2">
               <Icon size={20} strokeWidth={2} className={active ? "text-blue" : "text-neutral-400"} />
-              {tab.href === "/inbox" && unread > 0 && <span className="absolute right-[calc(50%-16px)] top-1.5 h-2 w-2 rounded-full bg-red" />}
+              {dots[tab.href] && <span aria-label="Needs you" className="absolute right-[calc(50%-16px)] top-1.5 h-2 w-2 rounded-full bg-red" />}
               <span className={cn("text-[11px] font-medium", active ? "text-blue" : "text-neutral-400")}>{tab.label}</span>
             </Link>
           );

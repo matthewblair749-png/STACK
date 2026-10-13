@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Bell, Building2, CheckSquare, Home, FolderKanban, Inbox, Calendar, Files, MessageSquare, Sparkles, Search,
+  Building2, CheckSquare, Home, FolderKanban, Inbox, Calendar, Files, MessageSquare, Sparkles, Search,
   User, CornerDownLeft, Loader2, Users, Plug, Video,
 } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
@@ -35,9 +35,8 @@ const GO_TO: { label: string; href: string; icon: typeof Search }[] = [
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Files", href: "/files", icon: Files },
-  { label: "Conversations", href: "/messages", icon: MessageSquare },
+  { label: "Inbox - Chat", href: "/inbox?group=chat", icon: MessageSquare },
   { label: "Calls", href: "/calls", icon: Video },
-  { label: "Updates", href: "/updates", icon: Bell },
   { label: "STACK AI", href: "/ai", icon: Sparkles },
   { label: "Team", href: "/team", icon: Users },
 ];

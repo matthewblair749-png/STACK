@@ -6,15 +6,15 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Home, CheckSquare, FolderKanban, Inbox, Calendar, Files, MessageSquare, Bell, Sparkles,
+  Home, CheckSquare, FolderKanban, Inbox, Calendar, Files, Sparkles,
   AppWindow, Users, Plug, Settings, HelpCircle, ChevronsUpDown, PanelLeft, Check, LogOut, Plus, Video,
 } from "lucide-react";
 import { Logo, LogoIcon } from "@/components/logo";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { useDemo } from "@/lib/demo-context";
 import { useMediaQuery } from "@/lib/use-media-query";
+import { badgeLabel, useAttention } from "@/lib/use-attention";
 import { cn } from "@/lib/utils";
-import { useWorkState } from "./work-state-provider";
 import { useToast } from "./toast";
 
 interface NavItem {
@@ -32,9 +32,7 @@ const mainNav: NavItem[] = [
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Files", href: "/files", icon: Files },
-  { label: "Conversations", href: "/messages", icon: MessageSquare },
   { label: "Calls", href: "/calls", icon: Video },
-  { label: "Updates", href: "/updates", icon: Bell },
   { label: "AI", href: "/ai", icon: Sparkles },
 ];
 
@@ -79,7 +77,7 @@ function NavRow({ item, active, collapsed, onNavigate }: { item: NavItem; active
         {!collapsed && <span className="relative z-10 truncate">{item.label}</span>}
         {!!item.badge && !collapsed && (
           <span className={cn("relative z-10 ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-semibold", item.badgeAccent === "neutral" ? "bg-neutral-100 text-neutral-500" : "bg-red text-white")}>
-            {item.badge}
+            {badgeLabel(item.badge)}
           </span>
         )}
         {!!item.badge && collapsed && <span className={cn("absolute right-2 top-1.5 z-10 h-1.5 w-1.5 rounded-full", item.badgeAccent === "neutral" ? "bg-neutral-400" : "bg-red")} />}
@@ -98,7 +96,7 @@ export function Sidebar({ onNavigate, expanded = false }: { onNavigate?: () => v
   const [userCollapsed, setUserCollapsed] = useState(false);
   const collapsed = !expanded && (userCollapsed || !isDesktop);
   const { openTabs } = useDemo();
-  const { state } = useWorkState();
+  const attention = useAttention();
   const toast = useToast();
   const { data: session } = useSession();
   const [workspaces, setWorkspaces] = useState<WorkspaceRow[]>([]);
@@ -125,7 +123,8 @@ export function Sidebar({ onNavigate, expanded = false }: { onNavigate?: () => v
   const active = workspaces.find((w) => w.active);
   const workspaceName = active?.name ?? "Workspace";
   const connected = (apps ?? []).filter((a) => a.connected);
-  const unread = state?.understand.counts.importantMessages ?? 0;
+  // "Needs you" counts: important Inbox items, and my tasks due today or overdue.
+  const badges: Record<string, number | undefined> = { "/inbox": attention?.inbox || undefined, "/tasks": attention?.work || undefined };
 
   function isActive(href: string) {
     return pathname === href || pathname?.startsWith(href + "/");
@@ -172,7 +171,7 @@ export function Sidebar({ onNavigate, expanded = false }: { onNavigate?: () => v
 
       <nav aria-label="Main" className="mt-5 flex-1 overflow-y-auto px-3 pb-3">
         {mainNav.map((item) => (
-          <NavRow key={item.href} item={item.href === "/inbox" ? { ...item, badge: unread || undefined } : item} active={isActive(item.href)} collapsed={collapsed} onNavigate={onNavigate} />
+          <NavRow key={item.href} item={badges[item.href] ? { ...item, badge: badges[item.href] } : item} active={isActive(item.href)} collapsed={collapsed} onNavigate={onNavigate} />
         ))}
 
         <SectionLabel collapsed={collapsed}>Workspaces</SectionLabel>

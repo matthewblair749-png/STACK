@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import {
   Search, Plus, List as ListIcon, Kanban, GanttChart, Calendar as CalendarIcon,
-  Circle, CheckCircle2, ChevronDown, MessageSquareText, ExternalLink,
+  Circle, CheckCircle2, ChevronDown, MessageSquareText, ExternalLink, Sparkles,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { useDemo } from "@/lib/demo-context";
@@ -16,6 +17,7 @@ import type { Priority, Task } from "@/lib/types";
 import { PriorityDot, Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskModal } from "@/components/app/task-modal";
+import { askStackAbout, taskForAi } from "@/components/app/ask-about";
 import { KpiTile } from "@/components/app/kpi-tile";
 import { getOpenTasks, getUrgentOpenTasks, getOverdueTasks, getCompletedTasks } from "@/lib/dashboard-metrics";
 import { cn } from "@/lib/utils";
@@ -235,7 +237,21 @@ function TaskRow({
   personName?: (id?: string) => string | undefined;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const router = useRouter();
   const doneSubtasks = task.subtasks.filter((s) => s.done).length;
+  const askAbout = () =>
+    askStackAbout(
+      router.push,
+      taskForAi({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        source: task.external ? providerLabel(task.external.provider) : "STACK",
+        project: projectName(task.projectId),
+      }),
+    );
 
   return (
     <div className="border-b border-neutral-100 last:border-0">
@@ -262,6 +278,9 @@ function TaskRow({
           </div>
         </button>
         <PriorityDot priority={task.priority} />
+        <button onClick={askAbout} title="Ask STACK about this task" aria-label="Ask STACK about this task" className="shrink-0 rounded-lg p-1.5 text-neutral-300 hover:bg-blue-soft hover:text-blue">
+          <Sparkles size={14} />
+        </button>
         {task.external?.url && <ExternalLink size={13} className="shrink-0 text-neutral-300" aria-label={`Opens in ${providerLabel(task.external.provider)}`} />}
         {task.subtasks.length > 0 && (
           <button onClick={() => setExpanded((v) => !v)} className="flex items-center gap-1 text-xs text-neutral-400">

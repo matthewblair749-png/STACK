@@ -12,7 +12,7 @@ export interface DataGroup {
 
 export const DATA_GROUPS: DataGroup[] = [
   { id: "email", label: "Email", blurb: "Email from your connected accounts, newest first.", noun: "emails", providers: ["google", "microsoft"] },
-  { id: "chat", label: "Conversations", blurb: "Chat threads from your connected messaging apps.", noun: "conversations", providers: ["slack"] },
+  { id: "chat", label: "Chat", blurb: "Chat threads from your connected messaging apps.", noun: "conversations", providers: ["slack"] },
   { id: "work", label: "Tasks & issues", blurb: "Tasks, cards and issues assigned to you, and code reviews waiting on you.", noun: "tasks and issues", providers: ["asana", "jira", "linear", "trello", "clickup", "monday", "github", "gitlab"] },
   { id: "support", label: "Support", blurb: "Customer tickets and conversations that need a reply.", noun: "support items", providers: ["zendesk", "intercom", "gorgias", "servicenow"] },
   { id: "customers", label: "Customers & sales", blurb: "Deals, opportunities and marketing campaigns.", noun: "deals and campaigns", providers: ["hubspot", "salesforce", "mailchimp"] },
@@ -34,8 +34,17 @@ export function groupFor(providerId: string): DataGroup | undefined {
   return DATA_GROUPS.find((g) => g.providers.includes(providerId));
 }
 
-/** The groups that appear in the Updates tab (email, chat and tasks have their own tabs). */
-export const UPDATE_GROUPS = DATA_GROUPS.filter((g) => g.id !== "email" && g.id !== "chat" && g.id !== "work");
+/** The Inbox's tabs: every group except tasks, which live in My Work. */
+export const INBOX_GROUPS = DATA_GROUPS.filter((g) => g.id !== "work");
+
+export function isInboxGroupId(id: string | null | undefined): id is DataGroupId {
+  return isDataGroupId(id) && id !== "work";
+}
+
+/** The Inbox tab a group's items appear in (Email is the default tab). */
+export function inboxHref(id: DataGroupId): string {
+  return id === "email" ? "/inbox" : `/inbox?group=${id}`;
+}
 
 // Calendar and Files aren't DATA_GROUPS (those pages show every connected provider generically,
 // unfiltered) - but a person connecting one of these still deserves to be told where to look.
@@ -51,12 +60,10 @@ export interface Destination {
  * the app's detail view can honestly say where to look, instead of a vague "unlocks" blurb. */
 export function destinationsFor(providerId: string): Destination[] {
   const out: Destination[] = [];
-  if (GROUP_BY_ID.email.providers.includes(providerId)) out.push({ label: "Inbox", href: "/inbox" });
-  if (GROUP_BY_ID.chat.providers.includes(providerId)) out.push({ label: "Conversations", href: "/messages" });
-  if (GROUP_BY_ID.work.providers.includes(providerId)) out.push({ label: "My Work", href: "/tasks" });
-  for (const g of UPDATE_GROUPS) {
-    if (g.providers.includes(providerId)) out.push({ label: `Updates - ${g.label}`, href: `/updates?group=${g.id}` });
+  for (const g of INBOX_GROUPS) {
+    if (g.providers.includes(providerId)) out.push({ label: g.id === "email" ? "Inbox" : `Inbox - ${g.label}`, href: inboxHref(g.id) });
   }
+  if (GROUP_BY_ID.work.providers.includes(providerId)) out.push({ label: "My Work", href: "/tasks" });
   if (CALENDAR_PROVIDERS.has(providerId)) out.push({ label: "Calendar", href: "/calendar" });
   if (FILE_PROVIDERS.has(providerId)) out.push({ label: "Files", href: "/files" });
   return out;
