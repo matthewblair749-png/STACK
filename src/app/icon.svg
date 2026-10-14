@@ -1,10 +1,9 @@
-<svg width="64" height="64" viewBox="0.6 0.6 23 23" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0.4 0.4 23.2 23.2" xmlns="http://www.w3.org/2000/svg">
   <style>
-    .l { fill: #121110; stroke: #121110; stroke-width: 1.6; stroke-linejoin: round; }
-    @media (prefers-color-scheme: dark) { .l { fill: #fff; stroke: #fff; } }
-    .l.y { fill: #f5c400; stroke: #f5c400; }
+    .l { fill: none; stroke: #000; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+    @media (prefers-color-scheme: dark) { .l { stroke: #fff; } }
   </style>
-  <path class="l" d="M10.5 13.5L19 17.5L10.5 21.5L2 17.5Z"/>
-  <path class="l y" d="M14 8L22.5 12L14 16L5.5 12Z"/>
-  <path class="l" d="M10.5 2.5L19 6.5L10.5 10.5L2 6.5Z"/>
+  <path class="l" d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/>
+  <path class="l" d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>
+  <path class="l" d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>
 </svg>
