@@ -27,30 +27,36 @@
 }
 
 /*
- * The signed-in app's light theme: a warm off-white canvas with a violet/indigo accent (replacing the
- * default blue) and soft lavender highlights, in place of the stark-white + blue default above. Scoped
- * the same way dark mode is - the marketing site keeps its own fixed palette regardless of this.
+ * The signed-in app's light theme: the same warm paper, warm ink, STACK blue and yellow highlighter as the
+ * public site (see .calm below), so signing in feels like walking into the product you were just shown.
+ * Scoped the same way dark mode is - the marketing site keeps its own fixed palette regardless of this.
  */
 :root[data-theme="light"]:not([data-surface="marketing"]) {
-  --background: #f8f8f6;
-  --foreground: #18171a;
+  --background: #f1efea;
+  --foreground: #121110;
 
-  --color-ink: #18171a;
+  --color-ink: #121110;
   --color-paper: #ffffff;
 
-  /* Sampled directly from the reference screenshot's accent icon (#6b69e2 / #6a68e1). */
-  --color-blue: #6b69e2;
-  --color-blue-soft: #edecfb;
+  --color-blue: #2f4fe0;
+  --color-blue-soft: #e8ecfd;
+  --color-yellow-soft: #fff6cc;
+  --color-green: #15803d;
+  --color-green-soft: #e9f7ee;
+  --color-red: #d93a2b;
+  --color-red-soft: #fdeeec;
 
-  --color-neutral-25: #f8f8f6;
-  --color-neutral-50: #f4f3f0;
-  /* Sampled directly from the reference's sidebar background. */
-  --color-neutral-100: #efeee7;
-  --color-neutral-200: #e1ddd3;
-  --color-neutral-400: #706d69; /* 4.6:1+ on the warm canvas (WCAG AA) */
-  --color-neutral-500: #636059;
-  --color-neutral-700: #47433c;
-  --color-neutral-900: #201e19;
+  --color-neutral-25: #fbfaf8;
+  --color-neutral-50: #f6f4f0;
+  --color-neutral-100: #eeebe5;
+  --color-neutral-200: #e2ded5;
+  --color-neutral-300: #cfcac0;
+  --color-neutral-400: #6d6962; /* 4.6:1+ on the warm paper (WCAG AA) */
+  --color-neutral-500: #5c5852;
+  --color-neutral-700: #403d38;
+  --color-neutral-900: #1d1b18;
+
+  --highlighter: #ffe14d;
 }
 
 /*
@@ -70,10 +76,11 @@
   --color-white: #141417;
   --color-black: #000000;
 
-  /* Same violet identity as the light theme's #6b69e2, lightened for contrast on this dark
-     background - derived the same way this block already lightens every other accent. */
-  --color-blue: #a29ef0;
-  --color-blue-soft: #282242;
+  /* The light theme's STACK blue (#2f4fe0), lightened for contrast on this dark background. */
+  --color-blue: #8fa2ff;
+  --color-blue-soft: #1c2246;
+  /* The highlighter glows instead of covering: light text stays readable on top of it. */
+  --highlighter: rgba(255, 214, 48, 0.32);
   --color-yellow: #ffc42e;
   --color-yellow-soft: #2b2410;
   --color-yellow-700: #f5c451;
