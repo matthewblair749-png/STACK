@@ -16,21 +16,21 @@ export function DeskSurface({ scene = "plain", note, className, children }: { sc
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 hidden xl:block">
         {scene === "auth" && (
           <>
-            <DeskClock className="left-[6%] top-[12%] rotate-[-5deg]" />
+            <DeskClock className="left-[6%] top-[12%]" />
             <Laptop className="bottom-[4%] right-[3%] origin-bottom-right rotate-[-3deg] scale-[0.5]" />
             <Highlighter className="bottom-[16%] left-[8%] rotate-[18deg]" />
           </>
         )}
         {scene === "message" && (
           <>
-            <DeskClock className="right-[6%] top-[10%] rotate-[4deg]" />
+            <DeskClock className="right-[6%] top-[10%]" />
             <Coffee className="bottom-[12%] left-[10%]" />
             {note && <StickyNote lines={note} className="right-[12%] bottom-[16%] rotate-[5deg]" />}
           </>
         )}
         {scene === "onboarding" && (
           <>
-            <DeskClock className="left-[5%] top-[9%] rotate-[-4deg]" />
+            <DeskClock className="left-[5%] top-[9%]" />
             <Coffee className="bottom-[10%] right-[8%]" />
             <Highlighter className="bottom-[18%] left-[6%] rotate-[-16deg]" />
           </>

@@ -33,16 +33,16 @@ export function StoryHero() {
       {/* STACK's desk: the 8:47 clock, the phone that won't stop, coffee, and the highlighter. Wide screens only. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease }} className="absolute inset-0">
-          <DeskClock className="right-[3%] top-[24px] origin-top-right rotate-[-3deg] scale-[0.78]" />
+          <DeskClock className="right-[3%] top-[24px] origin-top-right scale-[0.78]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.4, ease }} className="absolute inset-0">
-          <Laptop className="bottom-[56px] left-[3%] origin-bottom-left rotate-[2deg] scale-[0.72]" />
+          <Laptop className="bottom-[56px] right-[3%] origin-bottom-right rotate-[-2deg] scale-[0.72]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.5, ease }} className="absolute inset-0">
-          <Coffee className="bottom-[110px] right-[4%]" />
+          <Coffee className="bottom-[150px] left-[5%]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7, ease }} className="absolute inset-0">
-          <Highlighter className="bottom-[170px] left-[47%] rotate-[-9deg]" />
+          <Highlighter className="bottom-[120px] left-[24%] rotate-[-9deg]" />
         </motion.div>
       </div>
 
