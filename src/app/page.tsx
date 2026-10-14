@@ -3,6 +3,7 @@ import { StoryHero } from "@/components/landing/story/hero";
 import { MorningChapter, UnderstandChapter, PrioritizeChapter, ActChapter, MoveForwardChapter } from "@/components/landing/story/chapters";
 import { TrustChapter, AppsChapter, ClosingChapter } from "@/components/landing/story/closing";
 import { MotionRoot } from "@/components/landing/story/motion-root";
+import { Starfield } from "@/components/landing/story/space";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { Footer } from "@/components/landing/footer";
 import { listProviders } from "@/server/integrations/registry";
@@ -25,7 +26,8 @@ export default function LandingPage() {
 
   return (
     <MotionRoot>
-      <div className="flex min-h-screen flex-col">
+      <div className="cosmic relative isolate flex min-h-screen flex-col overflow-x-clip">
+        <Starfield />
         <LandingNav />
         <main className="flex-1">
           <StoryHero />

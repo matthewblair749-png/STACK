@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ArrowDown, Check, Sparkles } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 import { AppWindow, Sources } from "./primitives";
+import { Nebula, Orbits } from "./space";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const rise = (delay: number) => ({ initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease } });
@@ -13,25 +14,36 @@ const chips = ["3 priorities", "2 meetings", "1 project at risk", "4 people wait
 
 export function StoryHero() {
   return (
-    <section className="relative overflow-hidden px-6 pt-20 sm:pt-28">
-      {/* A soft morning glow behind the headline. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-40 mx-auto h-[520px] max-w-4xl rounded-full bg-[radial-gradient(closest-side,rgba(47,94,255,0.10),transparent)]" />
+    <section className="relative overflow-hidden px-6 pt-24 sm:pt-36">
+      <Nebula className="-top-48 left-1/2 h-[640px] w-[900px] -translate-x-1/2" color="124,108,255" opacity={0.28} />
+      <Nebula className="right-[-200px] top-40 h-[520px] w-[620px]" color="80,140,255" opacity={0.16} />
+      <Nebula className="left-[-240px] top-72 h-[480px] w-[560px]" color="214,110,255" opacity={0.12} />
 
-      <div className="relative mx-auto max-w-4xl text-center">
-        <motion.p {...rise(0)} className="text-sm font-medium text-neutral-500">
+      <div className="relative mx-auto max-w-4xl pb-6 text-center sm:pb-16">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.8, ease }}>
+          <Orbits className="scale-[0.55] sm:scale-90 lg:scale-100" />
+        </motion.div>
+        <motion.p
+          {...rise(0)}
+          className="relative inline-flex items-center gap-2 rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-4 py-1.5 text-sm font-medium text-neutral-700 backdrop-blur"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-blue shadow-[0_0_10px_var(--color-blue)]" />
           All your work, together.
         </motion.p>
-        <motion.h1 {...rise(0.06)} className="mt-5 text-[3.25rem] font-semibold leading-[0.98] tracking-[-0.035em] text-ink sm:text-[5.5rem]">
+        <motion.h1
+          {...rise(0.06)}
+          className="relative mt-7 bg-gradient-to-b from-[#ffffff] via-[#ece9ff] to-[#a99df0] bg-clip-text pb-2 text-[3.25rem] font-semibold leading-[0.98] tracking-[-0.035em] text-transparent sm:text-[5.75rem]"
+        >
           Know what
           <br />
           needs you.
         </motion.h1>
-        <motion.p {...rise(0.14)} className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-neutral-500 sm:text-xl">
+        <motion.p {...rise(0.14)} className="relative mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-neutral-500 sm:text-xl">
           STACK reads your email, chat, calendar, tasks and files, then shows you on one calm page what matters today, why it
           matters, and what to do next.
         </motion.p>
-        <motion.div {...rise(0.22)} className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/signup" className={buttonClasses({ size: "lg", className: "group" })}>
+        <motion.div {...rise(0.22)} className="relative mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/signup" className={buttonClasses({ size: "lg", className: "group shadow-[0_0_44px_-8px_rgba(165,150,255,0.75)]" })}>
             Get started free
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
@@ -40,7 +52,7 @@ export function StoryHero() {
             <ArrowDown size={16} className="transition-transform group-hover:translate-y-0.5" />
           </Link>
         </motion.div>
-        <motion.p {...rise(0.3)} className="mt-6 text-sm text-neutral-500">
+        <motion.p {...rise(0.3)} className="relative mt-6 text-sm text-neutral-500">
           Free during early access · Read-only by default · Nothing sent without your OK
         </motion.p>
       </div>

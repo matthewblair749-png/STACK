@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, Clock, AlertTriangle, CornerDownLeft, Hourglass } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { AppWindow, Chapter, ChapterMark, Reveal, Sources } from "./primitives";
+import { Nebula } from "./space";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const inView = { once: true, margin: "-80px" } as const;
@@ -25,16 +26,19 @@ const noise = [
 
 export function MorningChapter() {
   return (
-    <section id="story" className="relative scroll-mt-24 overflow-hidden bg-[#0c0c0f] px-6 py-28 text-white sm:py-36">
-      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
+    <section id="story" className="relative scroll-mt-24 overflow-hidden px-6 py-28 sm:py-36">
+      {/* The storm: too many signals, in a warmer, angrier light than the rest of the sky. */}
+      <Nebula className="right-[-120px] top-10 h-[640px] w-[760px]" color="255,92,70" opacity={0.16} />
+      <Nebula className="left-[-200px] bottom-0 h-[420px] w-[520px]" color="255,150,90" opacity={0.08} />
+      <div className="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
         <Reveal>
           <ChapterMark time="8:47 AM" dark />
           <h2 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
             You haven&apos;t started yet.
             <br />
-            <span className="text-white/45">You&apos;re already behind.</span>
+            <span className="text-neutral-400">You&apos;re already behind.</span>
           </h2>
-          <div className="mt-7 max-w-lg space-y-4 text-lg leading-relaxed text-white/65">
+          <div className="mt-7 max-w-lg space-y-4 text-lg leading-relaxed text-neutral-500">
             <p>
               Twenty-three emails. Fourteen Slack threads. A meeting that moved. A board that changed overnight.
             </p>
@@ -43,7 +47,7 @@ export function MorningChapter() {
               done any work at all.
             </p>
           </div>
-          <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-white/10 pt-8">
+          <dl className="mt-10 grid max-w-md grid-cols-3 gap-6 border-t border-neutral-200 pt-8">
             {[
               ["47", "unread"],
               ["6", "apps open"],
@@ -52,7 +56,7 @@ export function MorningChapter() {
               <div key={l}>
                 <dt className="sr-only">{l}</dt>
                 <dd className="text-3xl font-semibold tracking-tight">{n}</dd>
-                <dd className="mt-1 text-sm text-white/50">{l}</dd>
+                <dd className="mt-1 text-sm text-neutral-400">{l}</dd>
               </div>
             ))}
           </dl>
@@ -67,26 +71,26 @@ export function MorningChapter() {
               whileInView={{ opacity: 1 - i * 0.045, y: 0, x: (i % 3) * 14 - 14, rotate: (i % 2 ? 1 : -1) * (i * 0.35) }}
               viewport={inView}
               transition={{ duration: 0.55, delay: 0.15 + i * 0.12, ease }}
-              className="absolute left-0 right-0 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-white/10 bg-[#17171c]/95 p-3.5 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8)] backdrop-blur"
+              className="absolute left-0 right-0 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-[rgba(255,120,100,0.14)] bg-[rgba(24,18,30,0.88)] p-3.5 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.9),0_0_30px_-12px_rgba(255,110,90,0.35)] backdrop-blur"
               style={{ top: i * 44 }}
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ffffff]">
                 <IntegrationLogo app={n.app} name={n.name} size="md" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-white/90">{n.text}</span>
-                <span className="block truncate text-xs text-white/45">
+                <span className="block truncate text-sm font-medium text-ink">{n.text}</span>
+                <span className="block truncate text-xs text-neutral-400">
                   {n.name} · {n.meta}
                 </span>
               </span>
             </motion.div>
           ))}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0c0c0f] to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#06050d] to-transparent" />
         </div>
       </div>
 
-      <Reveal className="mx-auto mt-20 max-w-6xl" delay={0.1}>
-        <p className="flex items-center gap-3 text-lg text-white/80">
+      <Reveal className="relative mx-auto mt-20 max-w-6xl" delay={0.1}>
+        <p className="flex items-center gap-3 text-lg text-neutral-700">
           <ArrowRight size={18} className="text-yellow" /> Now, the same morning with STACK.
         </p>
       </Reveal>
@@ -137,7 +141,7 @@ export function UnderstandChapter() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={inView}
                 transition={{ duration: 0.4, delay: i * 0.06, ease }}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-100 bg-white shadow-sm"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] shadow-[0_0_20px_-6px_rgba(165,150,255,0.4)]"
               >
                 <IntegrationLogo app={app} size="md" />
               </motion.span>
@@ -267,7 +271,7 @@ export function ActChapter() {
                 by noon today.
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4">
-                <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-[#b3800a]">
+                <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-yellow">
                   <Hourglass size={13} /> Waiting for your approval
                 </span>
                 <span className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700">Cancel</span>
@@ -294,7 +298,7 @@ export function ActChapter() {
 
 const columns = [
   { icon: Clock, label: "Up next", tone: "text-blue", items: [["Tomorrow 9:30", "Pricing review with Dev"], ["Friday", "Launch checklist due"]] },
-  { icon: Hourglass, label: "Waiting on others", tone: "text-[#b3800a]", items: [["Dev · 2 days", "API spec for checkout"], ["Sarah · today", "Proposal sign-off"]] },
+  { icon: Hourglass, label: "Waiting on others", tone: "text-yellow", items: [["Dev · 2 days", "API spec for checkout"], ["Sarah · today", "Proposal sign-off"]] },
   { icon: AlertTriangle, label: "At risk", tone: "text-red", items: [["Mobile redesign", "No updates in 6 days"]] },
 ];
 

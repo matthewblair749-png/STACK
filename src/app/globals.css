@@ -206,3 +206,59 @@ textarea:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * The landing page's night-sky theme. Redefining the colour tokens on a subtree flips every bg-white /
+ * text-ink / border-neutral-* inside it, the same way the app's dark mode works - tinted towards violet
+ * so panels feel like glass in space rather than plain grey. Only pages that opt in (class="cosmic") use it.
+ */
+.cosmic {
+  color-scheme: dark;
+  --background: #06050d;
+  --foreground: #f5f4fb;
+  --color-ink: #f5f4fb;
+  --color-paper: #06050d;
+  --color-white: #11101b;
+  --color-blue: #a596ff;
+  --color-blue-soft: #221d42;
+  --color-yellow: #ffc85a;
+  --color-yellow-soft: #2b2312;
+  --color-red: #ff7a6b;
+  --color-red-soft: #36191c;
+  --color-green: #4fdc8a;
+  --color-green-soft: #11291c;
+  --color-neutral-25: #0c0b15;
+  --color-neutral-50: #15141f;
+  --color-neutral-100: #1e1c2c;
+  --color-neutral-200: #2b2940;
+  --color-neutral-300: #3c3955;
+  --color-neutral-400: #8a88a3;
+  --color-neutral-500: #a6a4bc;
+  --color-neutral-700: #d4d2e3;
+  --color-neutral-900: #f1f0f8;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Brand logos are drawn for light backgrounds (GitHub is black): give them a small light chip. */
+.cosmic [data-logo] {
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+/* Apps orbiting STACK in the hero. Rings turn; each logo counter-turns so it stays upright. */
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbit-spin-back {
+  to { transform: rotate(-360deg); }
+}
+.orbit-ring {
+  animation: orbit-spin var(--orbit-duration, 90s) linear infinite;
+  animation-direction: var(--orbit-direction, normal);
+}
+.orbit-upright {
+  animation: orbit-spin-back var(--orbit-duration, 90s) linear infinite;
+  animation-direction: var(--orbit-direction, normal);
+}

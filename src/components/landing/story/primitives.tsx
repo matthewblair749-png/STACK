@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { IntegrationLogo } from "@/components/brand-icons";
+import { Nebula } from "./space";
 import { cn } from "@/lib/utils";
 
 /** Fades and lifts its children in the first time they scroll into view. */
@@ -22,12 +23,12 @@ export function Reveal({ children, delay = 0, className, y = 18 }: { children: R
 /** The "8:48 AM · Understand" marker that opens each chapter of the day. */
 export function ChapterMark({ time, stage, dark = false }: { time: string; stage?: string; dark?: boolean }) {
   return (
-    <div className={cn("flex items-center gap-3 font-mono text-[13px] tracking-wide", dark ? "text-white/55" : "text-neutral-500")}>
-      <span className={cn("h-2 w-2 rounded-full", dark ? "bg-yellow" : "bg-blue")} />
-      <span className={dark ? "text-white" : "text-ink"}>{time}</span>
+    <div className="flex items-center gap-3 font-mono text-[13px] tracking-wide text-neutral-500">
+      <span className={cn("h-2 w-2 rounded-full", dark ? "bg-yellow shadow-[0_0_12px_var(--color-yellow)]" : "bg-blue shadow-[0_0_12px_var(--color-blue)]")} />
+      <span className="text-ink">{time}</span>
       {stage && (
         <>
-          <span aria-hidden className={cn("h-px w-6", dark ? "bg-white/25" : "bg-neutral-200")} />
+          <span aria-hidden className="h-px w-6 bg-neutral-300" />
           <span className="uppercase">{stage}</span>
         </>
       )}
@@ -59,7 +60,10 @@ export function Chapter({
           <h2 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-5xl">{title}</h2>
           <div className="mt-6 space-y-4 text-lg leading-relaxed text-neutral-500">{body}</div>
         </Reveal>
-        <div className={cn("min-w-0", flip && "lg:order-1")}>{visual}</div>
+        <div className={cn("relative min-w-0", flip && "lg:order-1")}>
+          <Nebula className="-inset-16" color={flip ? "90,140,255" : "150,110,255"} opacity={0.2} />
+          <div className="relative">{visual}</div>
+        </div>
       </div>
     </section>
   );
@@ -68,8 +72,8 @@ export function Chapter({
 /** A product window: soft frame, title bar and a quiet "example" tag so the sample data is never mistaken for real. */
 export function AppWindow({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("overflow-hidden rounded-[22px] border border-neutral-200 bg-white shadow-[0_40px_80px_-40px_rgba(15,15,30,0.35),0_2px_6px_-2px_rgba(15,15,30,0.08)]", className)}>
-      <div className="flex items-center gap-2 border-b border-neutral-100 bg-neutral-25 px-4 py-2.5">
+    <div className={cn("overflow-hidden rounded-[22px] border border-[rgba(255,255,255,0.09)] bg-[rgba(17,16,27,0.82)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_50px_120px_-40px_rgba(110,90,255,0.5)] backdrop-blur-xl", className)}>
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
