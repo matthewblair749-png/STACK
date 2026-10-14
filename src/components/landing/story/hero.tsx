@@ -26,23 +26,23 @@ const BRIEF_TOP = SHEETS.length * PEEK;
 
 export function StoryHero() {
   return (
-    <section className="relative overflow-x-clip px-6 pb-20 pt-14 sm:pt-20 lg:pb-28 xl:pb-[390px]">
+    <section className="relative overflow-hidden px-6 pb-20 pt-14 sm:pt-20 lg:pb-28 xl:pb-[580px]">
       {/* Light on the desk. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_65%_at_62%_40%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
 
       {/* STACK's desk: the 8:47 clock, the phone that won't stop, coffee, and the highlighter. Wide screens only. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease }} className="absolute inset-0">
-          <DeskClock className="right-[2%] top-[4px] origin-top-right rotate-[-3deg] scale-[0.78]" />
+          <DeskClock className="right-[3%] top-[24px] origin-top-right rotate-[-3deg] scale-[0.78]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.4, ease }} className="absolute inset-0">
-          <Laptop className="bottom-[-300px] left-[1%] rotate-[7deg] [mask-image:linear-gradient(to_bottom,black_56%,transparent_74%)]" />
+          <Laptop className="bottom-[56px] left-[3%] origin-bottom-left rotate-[2deg] scale-[0.72]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.5, ease }} className="absolute inset-0">
-          <Coffee className="bottom-[40px] right-[-50px]" />
+          <Coffee className="bottom-[110px] right-[4%]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7, ease }} className="absolute inset-0">
-          <Highlighter className="bottom-[90px] left-[50%] rotate-[-9deg]" />
+          <Highlighter className="bottom-[170px] left-[47%] rotate-[-9deg]" />
         </motion.div>
       </div>
 

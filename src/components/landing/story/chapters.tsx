@@ -57,10 +57,10 @@ export function MorningChapter() {
         </Reveal>
 
         {/* A messy desk: notifications land like slips of paper, each at its own careless angle. */}
-        <div aria-hidden className="relative h-[480px] sm:h-[540px]">
+        <div aria-hidden className="relative h-[500px] [--slip-w:250px] sm:h-[540px] sm:[--slip-w:300px]">
           {noise.map((n, i) => {
             const rot = [-7, 5, -3, 8, -10, 4, -5, 9, -2, 6][i];
-            const left = [4, 30, 10, 38, 0, 24, 14, 34, 6, 20][i];
+            const spread = [0.1, 0.78, 0.26, 1, 0, 0.62, 0.36, 0.88, 0.16, 0.52][i];
             return (
               <motion.div
                 key={i}
@@ -68,8 +68,8 @@ export function MorningChapter() {
                 whileInView={{ opacity: 1, y: 0, rotate: rot }}
                 viewport={inView}
                 transition={{ duration: 0.6, delay: 0.1 + i * 0.11, ease }}
-                className="absolute flex w-[260px] items-center gap-3 rounded-[10px] bg-white p-3 shadow-[0_16px_24px_-16px_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.06)] sm:w-[300px]"
-                style={{ top: i * 46, left: `${left}%` }}
+                className="absolute flex w-[var(--slip-w)] items-center gap-3 rounded-[10px] bg-white p-3 shadow-[0_16px_24px_-16px_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.06)] sm:w-[300px]"
+                style={{ top: i * 46, left: `calc((100% - var(--slip-w)) * ${spread * 0.94} + 6px)` }}
               >
                 <IntegrationLogo app={n.app} name={n.name} size="md" />
                 <span className="min-w-0 flex-1">

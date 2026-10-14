@@ -17,7 +17,7 @@ export function DeskSurface({ scene = "plain", note, className, children }: { sc
         {scene === "auth" && (
           <>
             <DeskClock className="left-[6%] top-[12%] rotate-[-5deg]" />
-            <Laptop className="bottom-[-330px] right-[-60px] origin-bottom-right rotate-[-10deg] scale-[0.85]" />
+            <Laptop className="bottom-[4%] right-[3%] origin-bottom-right rotate-[-3deg] scale-[0.5]" />
             <Highlighter className="bottom-[16%] left-[8%] rotate-[18deg]" />
           </>
         )}

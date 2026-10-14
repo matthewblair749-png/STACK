@@ -292,3 +292,9 @@ textarea:focus-visible {
   font-size: 0.875rem;
   box-shadow: 3px 3px 0 0 var(--highlighter, #ffe14d), 3px 3px 0 1px #121110;
 }
+
+/* Public pages: anchor links glide instead of jumping, and land clear of the sticky nav. (Reduced motion keeps instant jumps - see the rule above.) */
+html:has(.calm) {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
