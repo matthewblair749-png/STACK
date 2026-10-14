@@ -1,6 +1,6 @@
 /*
  * Objects on STACK's desk, seen from above, drawn in CSS/SVG (no images). Each one belongs to the story - the
- * 8:47 clock, the keyboard you're about to start on, the three priorities on a sticky note, the coffee for the
+ * 8:47 clock, the laptop with STACK already open, the three priorities on a sticky note, the coffee for the
  * morning. Decoration only: hidden from screen readers, never clickable, lit from the same top-left light.
  */
 import { cn } from "@/lib/utils";
@@ -86,68 +86,6 @@ export function DeskClock({ className }: { className?: string }) {
       </div>
       {/* glass over the display */}
       <div className="absolute inset-0 rounded-[12px] bg-[linear-gradient(160deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.02)_30%,rgba(255,255,255,0)_31%)]" />
-    </div>
-  );
-}
-
-type Key = { w: number; label?: string; kind?: "mod" | "accent" };
-const k = (labels: string) => labels.split(" ").map((label) => ({ w: 1, label }));
-const mod = (w: number, label = ""): Key => ({ w, label, kind: "mod" });
-
-/** A compact mechanical keyboard: warm off-white keys, charcoal modifiers, and one highlighter-yellow Enter. */
-const KEY_ROWS: Key[][] = [
-  [{ w: 1, label: "esc", kind: "mod" }, ...k("F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12"), mod(1), mod(1)],
-  [...k("` 1 2 3 4 5 6 7 8 9 0 - ="), mod(2, "delete")],
-  [mod(1.5, "tab"), ...k("Q W E R T Y U I O P [ ]"), { w: 1.5, label: "\\" }],
-  [mod(1.75, "caps"), ...k("A S D F G H J K L ; '"), { w: 2.25, label: "return", kind: "accent" }],
-  [mod(2.25, "shift"), ...k("Z X C V B N M , . /"), mod(1.75, "shift"), { w: 1, label: "↑" }],
-  [mod(1.25, "ctrl"), mod(1.25, "opt"), mod(1.25, "cmd"), { w: 7 }, mod(1.25, "cmd"), { w: 1, label: "←" }, { w: 1, label: "↓" }, { w: 1, label: "→" }],
-];
-
-const KEY_STYLE: Record<"key" | "mod" | "accent", { background: string; color: string; boxShadow: string }> = {
-  key: {
-    background: "linear-gradient(180deg,#fdfcf9,#ebe7df)",
-    color: "#6d6962",
-    boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.09), inset 0 1px 0 #ffffff, 0 2px 2px rgba(0,0,0,0.35)",
-  },
-  mod: {
-    background: "linear-gradient(180deg,#4b4945,#2d2b28)",
-    color: "#c9c5bc",
-    boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.10), 0 2px 2px rgba(0,0,0,0.4)",
-  },
-  accent: {
-    background: "linear-gradient(180deg,#fff27d,#f4ce1c)",
-    color: "#5a4a00",
-    boxShadow: "inset 0 -3px 0 rgba(140,100,0,0.28), inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 2px rgba(0,0,0,0.35)",
-  },
-};
-
-export function Keyboard({ className }: { className?: string }) {
-  return (
-    <div
-      aria-hidden
-      className={cn("pointer-events-none absolute w-[560px] rounded-[18px] p-[9px]", className)}
-      style={{ background: "linear-gradient(160deg,#e3dfd7,#c4bfb5 60%,#d4d0c7)", boxShadow: `${grounded}, inset 0 1px 0 rgba(255,255,255,0.7)` }}
-    >
-      {/* the dark plate between the keys */}
-      <div className="flex flex-col gap-[4px] rounded-[11px] bg-[#34312d] p-[5px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
-        {KEY_ROWS.map((row, r) => (
-          <div key={r} className="flex gap-[4px]">
-            {row.map((key, i) => {
-              const style = KEY_STYLE[key.kind ?? "key"];
-              return (
-                <span
-                  key={i}
-                  className={cn("flex rounded-[5px] px-[4px] pt-[3px] font-medium leading-none", r === 0 ? "h-[20px] text-[6px]" : "h-[31px] text-[8px]", key.w > 1.4 ? "items-end pb-[4px]" : "items-start")}
-                  style={{ flex: key.w, ...style }}
-                >
-                  {key.label}
-                </span>
-              );
-            })}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

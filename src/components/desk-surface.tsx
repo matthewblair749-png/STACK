@@ -1,5 +1,6 @@
 import { hand } from "@/components/landing/story/fonts";
-import { Coffee, DeskClock, Highlighter, IndexTab, Keyboard, StickyNote } from "@/components/landing/story/desk";
+import { Coffee, DeskClock, Highlighter, IndexTab, StickyNote } from "@/components/landing/story/desk";
+import { Laptop } from "@/components/landing/story/laptop";
 import { cn } from "@/lib/utils";
 
 type Scene = "auth" | "message" | "onboarding" | "plain";
@@ -16,7 +17,7 @@ export function DeskSurface({ scene = "plain", note, className, children }: { sc
         {scene === "auth" && (
           <>
             <DeskClock className="left-[6%] top-[12%] rotate-[-5deg]" />
-            <Keyboard className="bottom-[-100px] right-[-140px] rotate-[-14deg]" />
+            <Laptop className="bottom-[-330px] right-[-60px] origin-bottom-right rotate-[-10deg] scale-[0.85]" />
             <Highlighter className="bottom-[16%] left-[8%] rotate-[18deg]" />
           </>
         )}

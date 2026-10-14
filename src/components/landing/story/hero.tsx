@@ -6,7 +6,8 @@ import { ArrowRight, ArrowDown, Check, Sparkles } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { LogoMark } from "@/components/logo";
 import { Sources } from "./primitives";
-import { Coffee, DeskClock, Highlighter, Keyboard } from "./desk";
+import { Coffee, DeskClock, Highlighter } from "./desk";
+import { Laptop } from "./laptop";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const rise = (delay: number) => ({ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease } });
@@ -25,7 +26,7 @@ const BRIEF_TOP = SHEETS.length * PEEK;
 
 export function StoryHero() {
   return (
-    <section className="relative overflow-hidden px-6 pb-20 pt-14 sm:pt-20 lg:pb-28">
+    <section className="relative overflow-x-clip px-6 pb-20 pt-14 sm:pt-20 lg:pb-28 xl:pb-[390px]">
       {/* Light on the desk. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_65%_at_62%_40%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
 
@@ -35,13 +36,13 @@ export function StoryHero() {
           <DeskClock className="right-[2%] top-[4px] origin-top-right rotate-[-3deg] scale-[0.78]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.4, ease }} className="absolute inset-0">
-          <Keyboard className="bottom-[-120px] left-[-200px] rotate-[12deg]" />
+          <Laptop className="bottom-[-300px] left-[1%] rotate-[7deg] [mask-image:linear-gradient(to_bottom,black_56%,transparent_74%)]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.5, ease }} className="absolute inset-0">
           <Coffee className="bottom-[40px] right-[-50px]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7, ease }} className="absolute inset-0">
-          <Highlighter className="bottom-[46px] left-[30%] rotate-[-9deg]" />
+          <Highlighter className="bottom-[90px] left-[50%] rotate-[-9deg]" />
         </motion.div>
       </div>
 
