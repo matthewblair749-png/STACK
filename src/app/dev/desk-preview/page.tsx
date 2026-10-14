@@ -11,8 +11,8 @@ export default async function DeskPreview({ searchParams }: { searchParams: Prom
       <div className="relative h-[760px] w-[1200px]" style={{ transform: `scale(${zoom})`, transformOrigin: "0 0" }}>
         <Keyboard className="left-[30px] top-[460px]" />
         <DeskClock className="left-[460px] top-[60px]" />
-        <Coffee className="left-[680px] top-[50px]" />
-        <StickyNote lines={["1. reply to Sarah", "2. fix the build", "3. prep 2pm"]} className="left-[900px] top-[60px] rotate-[-4deg]" />
+        <Coffee className="left-[830px] top-[230px]" />
+        <StickyNote lines={["1. reply to Sarah", "2. fix the build", "3. prep 2pm"]} className="left-[880px] top-[20px] rotate-[-4deg]" />
         <Highlighter className="left-[460px] top-[330px] rotate-[-9deg]" />
         <Highlighter className="left-[760px] top-[460px]" />
       </div>

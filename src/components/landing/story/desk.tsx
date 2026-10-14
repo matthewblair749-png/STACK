@@ -8,42 +8,84 @@ import { cn } from "@/lib/utils";
 /** A soft shadow that grounds an object on the desk: a wide ambient one plus a tight contact one. */
 const grounded = "0 34px 44px -22px rgba(30,24,16,0.42), 0 10px 14px -8px rgba(30,24,16,0.28)";
 
-/** A round desk clock - brushed-metal case, glass, a ticking second hand - showing 8:47. */
-export function DeskClock({ className }: { className?: string }) {
-  // Angles from 12 o'clock: minutes 47 -> 282deg, hours 8:47 -> 263.5deg, seconds parked at 12s -> 72deg.
-  const hand = (deg: number) => ({ transformOrigin: "50% 100%", transform: `translateX(-50%) rotate(${deg}deg)` });
+/* Seven-segment digits, drawn as the angled bars of an LED display (a top, b top-right, c bottom-right, d bottom,
+   e bottom-left, f top-left, g middle). Unlit segments stay faintly visible, like a real display. */
+const hBar = (x1: number, x2: number, y: number) => `${x1},${y} ${x1 + 3.5},${y - 3.5} ${x2 - 3.5},${y - 3.5} ${x2},${y} ${x2 - 3.5},${y + 3.5} ${x1 + 3.5},${y + 3.5}`;
+const vBar = (x: number, y1: number, y2: number) => `${x},${y1} ${x + 3.5},${y1 + 3.5} ${x + 3.5},${y2 - 3.5} ${x},${y2} ${x - 3.5},${y2 - 3.5} ${x - 3.5},${y1 + 3.5}`;
+const SEGMENTS = {
+  a: hBar(7, 33, 4),
+  b: vBar(36, 7, 34),
+  c: vBar(36, 38, 65),
+  d: hBar(7, 33, 68),
+  e: vBar(4, 38, 65),
+  f: vBar(4, 7, 34),
+  g: hBar(7, 33, 36),
+};
+const DIGITS: Record<string, string> = { "0": "abcdef", "1": "bc", "2": "abged", "3": "abgcd", "4": "fgbc", "5": "afgcd", "6": "afgedc", "7": "abc", "8": "abcdefg", "9": "abcdfg" };
+
+function SevenSeg({ digit, color, height }: { digit: string; color: string; height: number }) {
+  const on = DIGITS[digit] ?? "";
   return (
-    <div aria-hidden className={cn("pointer-events-none absolute h-[156px] w-[156px] rounded-full", className)} style={{ boxShadow: grounded }}>
-      {/* case */}
-      <div className="absolute inset-0 rounded-full" style={{ background: "conic-gradient(from 210deg, #f4f2ee, #9f9a92, #e9e6e0, #77736c, #f4f2ee, #b2ada4, #f4f2ee)" }} />
-      <div className="absolute inset-[5px] rounded-full bg-[#2a2826] shadow-[inset_0_2px_3px_rgba(0,0,0,0.6)]" />
-      {/* face */}
-      <div className="absolute inset-[9px] overflow-hidden rounded-full bg-[radial-gradient(circle_at_50%_40%,#ffffff,#f1eee8)] shadow-[inset_0_3px_8px_rgba(0,0,0,0.25)]">
-        {Array.from({ length: 60 }, (_, i) => (
-          <span
-            key={i}
-            className={cn("absolute left-1/2 top-[5px] rounded-full bg-[#2a2826]", i % 5 === 0 ? "h-[9px] w-[2.5px]" : "h-[4px] w-[1px] opacity-60")}
-            style={{ transformOrigin: "50% 64px", transform: `translateX(-50%) rotate(${i * 6}deg)` }}
-          />
-        ))}
-        {[
-          ["12", "left-1/2 top-[17px] -translate-x-1/2"],
-          ["3", "right-[18px] top-1/2 -translate-y-1/2"],
-          ["6", "bottom-[15px] left-1/2 -translate-x-1/2"],
-          ["9", "left-[19px] top-1/2 -translate-y-1/2"],
-        ].map(([n, pos]) => (
-          <span key={n} className={cn("absolute text-[12px] font-semibold leading-none text-[#2a2826]", pos)}>
-            {n}
+    <svg viewBox="0 0 40 72" style={{ height, width: (height * 40) / 72 }}>
+      {Object.entries(SEGMENTS).map(([name, points]) => (
+        <polygon key={name} points={points} fill={on.includes(name) ? color : "rgba(255,255,255,0.045)"} />
+      ))}
+    </svg>
+  );
+}
+
+const LED_YELLOW = "#ffd84a";
+const glow = (color: string, px: number) => ({ filter: `drop-shadow(0 0 ${px}px ${color}99)` });
+
+/** A digital LED desk clock: weekdays down the side, 08:47 in big yellow digits, the temperature and the date. */
+export function DeskClock({ className }: { className?: string }) {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  return (
+    <div
+      aria-hidden
+      className={cn("pointer-events-none absolute flex h-[104px] w-[330px] items-center gap-3 rounded-[12px] px-3.5", className)}
+      style={{
+        background: "linear-gradient(180deg,#1c1c1e,#0a0a0b 60%,#121214)",
+        boxShadow: `${grounded}, inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.6)`,
+      }}
+    >
+      {/* weekdays, today lit */}
+      <div className="flex flex-col gap-[1.5px] text-[8px] font-bold leading-[1.15] tracking-wide">
+        {days.map((d) => (
+          <span key={d} style={d === "Tue" ? { color: LED_YELLOW, ...glow(LED_YELLOW, 3) } : { color: "rgba(255,255,255,0.88)" }}>
+            {d}
           </span>
         ))}
-        <p className="absolute left-1/2 top-[40px] -translate-x-1/2 font-mono text-[6px] tracking-[0.25em] text-[#8a857c]">STACK</p>
-        <span className="absolute bottom-1/2 left-1/2 h-[30px] w-[5px] rounded-full bg-[#1c1b19] shadow-[1px_2px_2px_rgba(0,0,0,0.3)]" style={hand(263.5)} />
-        <span className="absolute bottom-1/2 left-1/2 h-[48px] w-[3.5px] rounded-full bg-[#1c1b19] shadow-[1px_2px_2px_rgba(0,0,0,0.3)]" style={hand(282)} />
-        <span className="absolute bottom-1/2 left-1/2 h-[54px] w-[1.5px] bg-[#e8a400]" style={{ ...hand(72), transformOrigin: "50% calc(100% - 0px)" }} />
-        <span className="absolute left-1/2 top-1/2 h-[9px] w-[9px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e8a400] shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
-        {/* glass */}
-        <div className="absolute inset-0 rounded-full bg-[linear-gradient(135deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0)_38%,rgba(255,255,255,0)_70%,rgba(255,255,255,0.18)_100%)]" />
       </div>
+      {/* 08:47 */}
+      <div className="flex items-center gap-[5px]" style={glow(LED_YELLOW, 5)}>
+        <SevenSeg digit="0" color={LED_YELLOW} height={70} />
+        <SevenSeg digit="8" color={LED_YELLOW} height={70} />
+        <span className="mx-[2px] flex flex-col gap-[14px]">
+          <span className="h-[7px] w-[7px] rounded-[1.5px]" style={{ background: LED_YELLOW }} />
+          <span className="h-[7px] w-[7px] rounded-[1.5px]" style={{ background: LED_YELLOW }} />
+        </span>
+        <SevenSeg digit="4" color={LED_YELLOW} height={70} />
+        <SevenSeg digit="7" color={LED_YELLOW} height={70} />
+      </div>
+      {/* temperature and date, in white */}
+      <div className="ml-auto flex flex-col items-end gap-2" style={glow("#ffffff", 2)}>
+        <div className="flex items-start gap-[3px]">
+          <SevenSeg digit="2" color="#ffffff" height={24} />
+          <SevenSeg digit="1" color="#ffffff" height={24} />
+          <span className="text-[7px] font-semibold leading-none text-[#ffffff]">°C</span>
+        </div>
+        <div className="flex items-end gap-[3px]">
+          <SevenSeg digit="1" color="#ffffff" height={24} />
+          <SevenSeg digit="0" color="#ffffff" height={24} />
+          <span className="text-[6px] font-semibold leading-none text-[#ffffff]">M</span>
+          <SevenSeg digit="1" color="#ffffff" height={24} />
+          <SevenSeg digit="4" color="#ffffff" height={24} />
+          <span className="text-[6px] font-semibold leading-none text-[#ffffff]">D</span>
+        </div>
+      </div>
+      {/* glass over the display */}
+      <div className="absolute inset-0 rounded-[12px] bg-[linear-gradient(160deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.02)_30%,rgba(255,255,255,0)_31%)]" />
     </div>
   );
 }
