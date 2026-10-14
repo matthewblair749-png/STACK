@@ -1,9 +1,10 @@
 import { LandingNav } from "@/components/landing/nav";
 import { StoryHero } from "@/components/landing/story/hero";
-import { MorningChapter, UnderstandChapter, PrioritizeChapter, ActChapter, MoveForwardChapter } from "@/components/landing/story/chapters";
-import { TrustChapter, AppsChapter, ClosingChapter } from "@/components/landing/story/closing";
+import { MorningChapter } from "@/components/landing/story/chapters";
+import { HowItWorks } from "@/components/landing/story/how-it-works";
+import { TrustChapter, ClosingChapter } from "@/components/landing/story/closing";
 import { MotionRoot } from "@/components/landing/story/motion-root";
-import { AppMarquee, AskDemo, FaqSection, NumbersBand } from "@/components/landing/story/extras";
+import { AppMarquee, AskDemo, FaqSection } from "@/components/landing/story/extras";
 import { hand } from "@/components/landing/story/fonts";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { Footer } from "@/components/landing/footer";
@@ -33,14 +34,9 @@ export default function LandingPage() {
           <StoryHero />
           <AppMarquee apps={apps} />
           <MorningChapter />
-          <UnderstandChapter />
-          <PrioritizeChapter />
-          <ActChapter />
-          <MoveForwardChapter />
+          <HowItWorks />
           <AskDemo />
-          <NumbersBand appCount={providers.length} />
-          <TrustChapter />
-          <AppsChapter featured={apps} total={providers.length} />
+          <TrustChapter appCount={providers.length} />
           <PricingSection />
           <FaqSection />
           <ClosingChapter />

@@ -36,40 +36,6 @@ export function ChapterMark({ time, stage, tone = "light" }: { time: string; sta
   );
 }
 
-/** A chapter: text on one side, the product moment on the other. */
-export function Chapter({
-  id,
-  mark,
-  title,
-  body,
-  visual,
-  flip = false,
-}: {
-  id?: string;
-  mark: React.ReactNode;
-  title: React.ReactNode;
-  body: React.ReactNode;
-  visual: React.ReactNode;
-  flip?: boolean;
-}) {
-  return (
-    <section id={id} className="scroll-mt-24 px-6 py-20 sm:py-28">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-20">
-        <Reveal className={cn("max-w-xl", flip && "lg:order-2")}>
-          {mark}
-          <h2 className="mt-6 text-balance text-4xl font-semibold leading-[1.06] tracking-[-0.025em] text-ink sm:text-[3.25rem]">{title}</h2>
-          <div className="mt-6 space-y-4 text-lg leading-relaxed text-neutral-500">{body}</div>
-        </Reveal>
-        <div className={cn("relative min-w-0", flip && "lg:order-1")}>
-          {/* A soft wash of colour behind the product, like light on a desk. */}
-          <div aria-hidden className="pointer-events-none absolute -inset-10 rounded-[48px] bg-[radial-gradient(closest-side,rgba(47,94,255,0.07),transparent)]" />
-          <div className="relative">{visual}</div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /** A product window: soft frame, title bar and a quiet "example" tag so the sample data is never mistaken for real. */
 export function AppWindow({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (

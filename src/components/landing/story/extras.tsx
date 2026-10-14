@@ -18,7 +18,7 @@ export function AppMarquee({ apps }: { apps: { id: string; name: string }[] }) {
   const shown = apps.filter((a) => hasRealBrandIcon(a.id)).slice(0, 18);
   if (shown.length < 6) return null;
   return (
-    <section aria-label="Apps STACK connects" className="px-6 pb-6 pt-2">
+    <section id="integrations" aria-label="Apps STACK connects" className="scroll-mt-24 px-6 pb-6 pt-2">
       <p className="text-center text-sm text-neutral-500">Works with the tools you already use</p>
       <div className="group relative mx-auto mt-6 max-w-6xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <ul className="flex w-max gap-3 py-3 pr-3 [animation:marquee_48s_linear_infinite] group-hover:[animation-play-state:paused]">
@@ -172,7 +172,7 @@ export function AskDemo() {
 
 /* ------------------------------------------------------------------ big numbers */
 
-export function NumbersBand({ appCount }: { appCount: number }) {
+export function NumbersRow({ appCount }: { appCount: number }) {
   const items = [
     [String(appCount), "apps connect today"],
     ["0", "actions taken without your OK"],
@@ -180,16 +180,14 @@ export function NumbersBand({ appCount }: { appCount: number }) {
     ["$0", "while STACK is in early access"],
   ];
   return (
-    <section className="px-6 py-10 sm:py-14">
-      <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {items.map(([n, label], i) => (
           <Reveal key={label} delay={i * 0.06} className="clay bg-white px-7 py-8">
             <p className="text-[2.75rem] font-semibold leading-none tracking-[-0.04em] text-ink">{n}</p>
             <p className="mt-3 text-[15px] text-neutral-500">{label}</p>
           </Reveal>
         ))}
-      </div>
-    </section>
+    </div>
   );
 }
 
@@ -199,7 +197,7 @@ const FAQ = [
   ["Is STACK free?", "Yes, while it's in early access. There's no card and no trial clock. If paid plans come later, you'll hear about it before anything is ever charged."],
   ["What can STACK see in my apps?", "Only the apps you connect, and read-only wherever an app lets you choose. Every connection's token is encrypted with AES-256-GCM and never sent back to your browser."],
   ["Will STACK send emails or change things on its own?", "No. When STACK drafts a reply, a task or an invite, it waits for you to approve, edit or cancel it. Nothing is sent, created or changed on its own."],
-  ["Which apps does it work with?", "Email, calendar and files from Google, plus chat, task, CRM, support, code and research tools - the full list is above. You connect each one in about a minute."],
+  ["Which apps does it work with?", "Email, calendar and files from Google, plus chat, task, CRM, support, code and research tools - many of them scroll past at the top of this page, and you'll see every one when you sign up. Each connects in about a minute."],
   ["Can I take my data back out?", "Disconnect an app and STACK revokes its access where the app allows it and deletes what it imported. You can delete your whole account from Settings at any time."],
   ["Does it work on my phone?", "Yes. STACK runs in your browser on any screen - check your brief on your phone, act on it at your desk. Nothing to install."],
 ];

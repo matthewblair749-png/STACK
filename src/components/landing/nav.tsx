@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { label: "How it works", href: "/#story" },
-  { label: "Integrations", href: "/#integrations" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "How it works", href: "/#how" },
+  { label: "Try it", href: "/#try" },
   { label: "Trust", href: "/#trust" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export function LandingNav() {
