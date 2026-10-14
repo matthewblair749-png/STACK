@@ -6,7 +6,7 @@ import { ArrowRight, ArrowDown, Check, Sparkles } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { LogoMark } from "@/components/logo";
 import { Sources } from "./primitives";
-import { Coffee, DeskClock, Highlighter, Phone } from "./desk";
+import { Coffee, DeskClock, Highlighter, Keyboard } from "./desk";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const rise = (delay: number) => ({ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease } });
@@ -34,8 +34,8 @@ export function StoryHero() {
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease }} className="absolute inset-0">
           <DeskClock className="right-[3%] top-[26px]" />
         </motion.div>
-        <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.4, ease }} className="absolute inset-0 hidden 2xl:block">
-          <Phone className="bottom-[-70px] left-[-34px] rotate-[16deg]" />
+        <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.4, ease }} className="absolute inset-0">
+          <Keyboard className="bottom-[-120px] left-[-200px] rotate-[12deg]" />
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1, delay: 0.5, ease }} className="absolute inset-0">
           <Coffee className="bottom-[40px] right-[-50px]" />

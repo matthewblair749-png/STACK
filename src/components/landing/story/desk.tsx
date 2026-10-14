@@ -1,10 +1,8 @@
 /*
  * Objects on STACK's desk, seen from above, drawn in CSS/SVG (no images). Each one belongs to the story - the
- * 8:47 clock, the phone that won't stop buzzing, the three priorities on a sticky note, the coffee for the
+ * 8:47 clock, the keyboard you're about to start on, the three priorities on a sticky note, the coffee for the
  * morning. Decoration only: hidden from screen readers, never clickable, lit from the same top-left light.
  */
-import { Camera, Flashlight, Lock } from "lucide-react";
-import { IntegrationLogo } from "@/components/brand-icons";
 import { cn } from "@/lib/utils";
 
 /** A soft shadow that grounds an object on the desk: a wide ambient one plus a tight contact one. */
@@ -50,73 +48,63 @@ export function DeskClock({ className }: { className?: string }) {
   );
 }
 
-const NOTIFICATIONS = [
-  { app: "slack", who: "Sarah Chen", what: "Any update on the Q4 proposal?", when: "now" },
-  { app: "gmail", who: "Gmail", what: "Re: Re: Q4 proposal", when: "2m" },
-  { app: "github", who: "GitHub", what: "Build failing on main", when: "9m" },
+type Key = { w: number; label?: string; kind?: "mod" | "accent" };
+const k = (labels: string) => labels.split(" ").map((label) => ({ w: 1, label }));
+const mod = (w: number, label = ""): Key => ({ w, label, kind: "mod" });
+
+/** A compact mechanical keyboard: warm off-white keys, charcoal modifiers, and one highlighter-yellow Enter. */
+const KEY_ROWS: Key[][] = [
+  [{ w: 1, label: "esc", kind: "mod" }, ...k("F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12"), mod(1), mod(1)],
+  [...k("` 1 2 3 4 5 6 7 8 9 0 - ="), mod(2, "delete")],
+  [mod(1.5, "tab"), ...k("Q W E R T Y U I O P [ ]"), { w: 1.5, label: "\\" }],
+  [mod(1.75, "caps"), ...k("A S D F G H J K L ; '"), { w: 2.25, label: "return", kind: "accent" }],
+  [mod(2.25, "shift"), ...k("Z X C V B N M , . /"), mod(1.75, "shift"), { w: 1, label: "↑" }],
+  [mod(1.25, "ctrl"), mod(1.25, "opt"), mod(1.25, "cmd"), { w: 7 }, mod(1.25, "cmd"), { w: 1, label: "←" }, { w: 1, label: "↓" }, { w: 1, label: "→" }],
 ];
 
-/** A phone lying face up on the desk: titanium frame, lock screen at 8:47, notifications piling up. */
-export function Phone({ count = 47, className }: { count?: number; className?: string }) {
+const KEY_STYLE: Record<"key" | "mod" | "accent", { background: string; color: string; boxShadow: string }> = {
+  key: {
+    background: "linear-gradient(180deg,#fdfcf9,#ebe7df)",
+    color: "#6d6962",
+    boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.09), inset 0 1px 0 #ffffff, 0 2px 2px rgba(0,0,0,0.35)",
+  },
+  mod: {
+    background: "linear-gradient(180deg,#4b4945,#2d2b28)",
+    color: "#c9c5bc",
+    boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.10), 0 2px 2px rgba(0,0,0,0.4)",
+  },
+  accent: {
+    background: "linear-gradient(180deg,#fff27d,#f4ce1c)",
+    color: "#5a4a00",
+    boxShadow: "inset 0 -3px 0 rgba(140,100,0,0.28), inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 2px rgba(0,0,0,0.35)",
+  },
+};
+
+export function Keyboard({ className }: { className?: string }) {
   return (
-    <div aria-hidden className={cn("pointer-events-none absolute h-[330px] w-[162px]", className)}>
-      {/* side buttons, just visible past the frame */}
-      <span className="absolute -left-[2px] top-[70px] h-[22px] w-[3px] rounded-l-[2px] bg-[linear-gradient(90deg,#55585e,#8b8e94)]" />
-      <span className="absolute -left-[2px] top-[100px] h-[36px] w-[3px] rounded-l-[2px] bg-[linear-gradient(90deg,#55585e,#8b8e94)]" />
-      <span className="absolute -right-[2px] top-[96px] h-[48px] w-[3px] rounded-r-[2px] bg-[linear-gradient(90deg,#8b8e94,#55585e)]" />
-      {/* titanium frame */}
-      <div
-        className="absolute inset-0 rounded-[36px] p-[3px]"
-        style={{ background: "linear-gradient(145deg,#c9ccd1 0%,#6c6f75 22%,#2c2d31 55%,#8d9096 85%,#d6d8dc 100%)", boxShadow: grounded }}
-      >
-        <div className="h-full w-full rounded-[33px] bg-[#0b0b0d] p-[5px]">
-          {/* screen */}
-          <div
-            className="relative h-full w-full overflow-hidden rounded-[28px] px-[9px] pt-[30px]"
-            style={{
-              background:
-                "radial-gradient(120% 70% at 15% 0%, #7b6bff 0%, rgba(123,107,255,0) 55%), radial-gradient(110% 70% at 100% 100%, #ff9a6b 0%, rgba(255,154,107,0) 55%), linear-gradient(180deg,#24234a,#34234e 60%,#4a2a46)",
-            }}
-          >
-            <span className="absolute left-1/2 top-[8px] h-[15px] w-[50px] -translate-x-1/2 rounded-full bg-[#050506]" />
-            <Lock size={8} strokeWidth={2.5} className="mx-auto text-[#ffffff]/80" />
-            <p className="mt-1 text-center text-[8.5px] font-medium text-[#ffffff]/85">Tuesday 14 October</p>
-            <p className="text-center text-[52px] font-semibold leading-[0.95] tracking-[-0.04em] text-[#ffffff]/95">8:47</p>
-
-            <div className="mt-4 space-y-[5px]">
-              {NOTIFICATIONS.map((n) => (
-                <div key={n.what} className="flex items-start gap-1.5 rounded-[13px] bg-[rgba(255,255,255,0.22)] p-[6px] backdrop-blur-md">
-                  <span className="flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[5px] bg-[#ffffff]">
-                    <IntegrationLogo app={n.app} size="sm" />
-                  </span>
-                  <span className="min-w-0 flex-1 leading-tight">
-                    <span className="flex items-baseline justify-between gap-1">
-                      <span className="truncate text-[7.5px] font-semibold text-[#ffffff]">{n.who}</span>
-                      <span className="shrink-0 text-[6.5px] text-[#ffffff]/70">{n.when}</span>
-                    </span>
-                    <span className="block truncate text-[7px] text-[#ffffff]/85">{n.what}</span>
-                  </span>
-                </div>
-              ))}
-              {/* the rest, collapsed into a stack */}
-              <div className="relative h-[16px]">
-                <div className="absolute inset-x-[8px] top-0 h-[8px] rounded-b-[10px] bg-[rgba(255,255,255,0.16)]" />
-                <div className="absolute inset-x-[16px] top-[8px] h-[6px] rounded-b-[9px] bg-[rgba(255,255,255,0.10)]" />
-              </div>
-              <p className="text-center text-[7px] font-medium text-[#ffffff]/75">{count - NOTIFICATIONS.length} more notifications</p>
-            </div>
-
-            <span className="absolute bottom-[16px] left-[12px] flex h-[24px] w-[24px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.18)] backdrop-blur">
-              <Flashlight size={11} className="text-[#ffffff]" />
-            </span>
-            <span className="absolute bottom-[16px] right-[12px] flex h-[24px] w-[24px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.18)] backdrop-blur">
-              <Camera size={11} className="text-[#ffffff]" />
-            </span>
-            <span className="absolute bottom-[6px] left-1/2 h-[3.5px] w-[52px] -translate-x-1/2 rounded-full bg-[#ffffff]/80" />
-            {/* glass glare */}
-            <div className="absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_32%,rgba(255,255,255,0)_33%)]" />
+    <div
+      aria-hidden
+      className={cn("pointer-events-none absolute w-[560px] rounded-[18px] p-[9px]", className)}
+      style={{ background: "linear-gradient(160deg,#e3dfd7,#c4bfb5 60%,#d4d0c7)", boxShadow: `${grounded}, inset 0 1px 0 rgba(255,255,255,0.7)` }}
+    >
+      {/* the dark plate between the keys */}
+      <div className="flex flex-col gap-[4px] rounded-[11px] bg-[#34312d] p-[5px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+        {KEY_ROWS.map((row, r) => (
+          <div key={r} className="flex gap-[4px]">
+            {row.map((key, i) => {
+              const style = KEY_STYLE[key.kind ?? "key"];
+              return (
+                <span
+                  key={i}
+                  className={cn("flex rounded-[5px] px-[4px] pt-[3px] font-medium leading-none", r === 0 ? "h-[20px] text-[6px]" : "h-[31px] text-[8px]", key.w > 1.4 ? "items-end pb-[4px]" : "items-start")}
+                  style={{ flex: key.w, ...style }}
+                >
+                  {key.label}
+                </span>
+              );
+            })}
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
