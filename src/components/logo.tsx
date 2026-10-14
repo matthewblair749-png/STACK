@@ -11,6 +11,9 @@ const layerPaths = [
 
 const separateOffsets = [-1.6, 0, 1.6];
 
+/** The middle layer is STACK's highlighter yellow - a shade deep enough to hold up as a thin line on light paper. */
+export const LOGO_YELLOW = "#f5c400";
+
 export function LogoMark({
   size = 28,
   animate = true,
@@ -38,6 +41,7 @@ export function LogoMark({
         <motion.path
           key={d}
           d={d}
+          stroke={i === 1 ? LOGO_YELLOW : undefined}
           initial={false}
           animate={animate ? { y: [0, separateOffsets[i], 0] } : { y: 0 }}
           transition={{
