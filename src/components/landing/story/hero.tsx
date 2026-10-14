@@ -19,6 +19,25 @@ const ease = [0.22, 1, 0.36, 1] as const;
 const rise = (delay: number) => ({ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease } });
 const enter = "[animation:panel-in_0.5s_cubic-bezier(0.22,1,0.36,1)_both]";
 
+/** What you'd otherwise open first thing: the headline cycles through them. */
+const WORDS = ["email", "chats", "calendar", "tasks", "files", "docs"];
+
+function RotatingWord() {
+  const still = useReducedMotion();
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (still) return;
+    const id = window.setInterval(() => setI((n) => (n + 1) % WORDS.length), 2000);
+    return () => window.clearInterval(id);
+  }, [still]);
+  // One word at a time: a new key swaps the element, and it rises in with a short CSS animation.
+  return (
+    <span key={WORDS[i]} className="inline-block [animation:word-in_0.45s_cubic-bezier(0.22,1,0.36,1)]">
+      {WORDS[i]}
+    </span>
+  );
+}
+
 /* ------------------------------------------------------------------ example mornings */
 
 type Priority = { title: string; why: string; app: string };
@@ -225,10 +244,13 @@ export function StoryHero() {
             Early access is open · free, no card
           </motion.p>
           <motion.h1 {...rise(0.06)} className="mt-7 text-balance text-[2.75rem] font-semibold leading-[1.02] tracking-[-0.04em] text-ink sm:text-[3.75rem] lg:text-wrap lg:text-[3.1rem] xl:text-[3.75rem]">
-            {/* Three set lines beside the product; "what needs you" never splits. */}
-            Know <span className="highlight whitespace-nowrap">what needs you</span>
-            <br className="hidden lg:block" /> before you open
-            <br className="hidden lg:block" /> a single app.
+            <span className="sr-only">Know what needs you before you open your email, chats, calendar, tasks, files or docs.</span>
+            {/* Three set lines beside the product; "what needs you" never splits, and the last word keeps changing. */}
+            <span aria-hidden>
+              Know <span className="highlight whitespace-nowrap">what needs you</span>
+              <br className="hidden lg:block" /> before you open
+              <br className="hidden lg:block" /> your <RotatingWord />.
+            </span>
           </motion.h1>
           <motion.p {...rise(0.14)} className="mx-auto mt-6 max-w-[34rem] text-[17px] leading-relaxed text-neutral-500 sm:text-lg lg:mx-0">
             STACK reads your email, chats, calendar and tasks, then hands you one brief: what matters, why, and the next step,
