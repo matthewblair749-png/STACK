@@ -359,3 +359,20 @@ html:has(.calm) {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
 }
+
+/* The strip of app logos under the hero scrolls in a seamless loop (it holds two copies of the list). */
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* The cycling word in the hero headline rises in. */
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(40%); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* A swapped-in panel (the Ask STACK answers) fades up. */
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}

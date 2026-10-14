@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowDown, Check, Sparkles } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { LogoMark } from "@/components/logo";
@@ -24,6 +25,25 @@ const SHEETS = [
 ];
 const PEEK = 30; // how much of each sheet's header shows above the next one
 const BRIEF_TOP = SHEETS.length * PEEK;
+
+/** "email", "meetings", "tasks"... then "work": what STACK reads, ending on the whole of it. */
+const WORDS = ["email", "meetings", "tasks", "files", "chats", "work"];
+
+function RotatingWord() {
+  const still = useReducedMotion();
+  const [i, setI] = useState(WORDS.length - 1);
+  useEffect(() => {
+    if (still) return;
+    const id = window.setInterval(() => setI((n) => (n + 1) % WORDS.length), 2000);
+    return () => window.clearInterval(id);
+  }, [still]);
+  // One word at a time: a new key swaps the element, and it rises in with a short CSS animation.
+  return (
+    <span key={WORDS[i]} className="inline-block [animation:word-in_0.45s_cubic-bezier(0.22,1,0.36,1)]">
+      {WORDS[i]}
+    </span>
+  );
+}
 
 export function StoryHero() {
   return (
@@ -57,7 +77,10 @@ export function StoryHero() {
             <span className="text-ink">8:47 AM</span> · Tuesday
           </motion.p>
           <motion.h1 {...rise(0.06)} className="mt-6 text-balance text-[3rem] font-semibold leading-[1.0] tracking-[-0.04em] text-ink sm:text-[4.25rem] lg:text-[4.6rem]">
-            All your work, in one <span className="highlight">neat stack.</span>
+            <span className="sr-only">All your work, in one neat stack.</span>
+            <span aria-hidden>
+              All your <RotatingWord />, in one <span className="highlight">neat stack.</span>
+            </span>
           </motion.h1>
           <motion.p {...rise(0.14)} className="mt-6 max-w-md text-[17px] leading-relaxed text-neutral-500">
             Every morning STACK reads your email, chat, calendar and tasks, and hands you one brief: what needs you, why, and

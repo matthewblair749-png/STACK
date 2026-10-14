@@ -3,6 +3,7 @@ import { StoryHero } from "@/components/landing/story/hero";
 import { MorningChapter, UnderstandChapter, PrioritizeChapter, ActChapter, MoveForwardChapter } from "@/components/landing/story/chapters";
 import { TrustChapter, AppsChapter, ClosingChapter } from "@/components/landing/story/closing";
 import { MotionRoot } from "@/components/landing/story/motion-root";
+import { AppMarquee, AskDemo, FaqSection, NumbersBand } from "@/components/landing/story/extras";
 import { hand } from "@/components/landing/story/fonts";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { Footer } from "@/components/landing/footer";
@@ -30,14 +31,18 @@ export default function LandingPage() {
         <LandingNav />
         <main className="flex-1">
           <StoryHero />
+          <AppMarquee apps={apps} />
           <MorningChapter />
           <UnderstandChapter />
           <PrioritizeChapter />
           <ActChapter />
           <MoveForwardChapter />
+          <AskDemo />
+          <NumbersBand appCount={providers.length} />
           <TrustChapter />
           <AppsChapter featured={apps} total={providers.length} />
           <PricingSection />
+          <FaqSection />
           <ClosingChapter />
         </main>
         <Footer />
