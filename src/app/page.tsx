@@ -5,7 +5,6 @@ import { HowItWorks } from "@/components/landing/story/how-it-works";
 import { TrustChapter, ClosingChapter } from "@/components/landing/story/closing";
 import { MotionRoot } from "@/components/landing/story/motion-root";
 import { AppMarquee, AskDemo, FaqSection } from "@/components/landing/story/extras";
-import { hand } from "@/components/landing/story/fonts";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { Footer } from "@/components/landing/footer";
 import { listProviders } from "@/server/integrations/registry";
@@ -28,7 +27,7 @@ export default function LandingPage() {
 
   return (
     <MotionRoot>
-      <div className={`calm ${hand.variable} relative isolate flex min-h-screen flex-col overflow-x-clip`}>
+      <div className="calm relative isolate flex min-h-screen flex-col overflow-x-clip">
         <LandingNav />
         <main className="flex-1">
           <StoryHero />

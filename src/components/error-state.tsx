@@ -30,7 +30,7 @@ export function ErrorState({
     );
   }
   return (
-    <DeskSurface scene="message" note={code ? [code, "page went missing"] : ["note to self:", "try again :)"]}>
+    <DeskSurface>
       <main className="flex min-h-screen items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <PaperSheet className="px-7 py-9 text-center">

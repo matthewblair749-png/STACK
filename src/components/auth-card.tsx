@@ -17,7 +17,7 @@ export function AuthCard({
   footer?: React.ReactNode;
 }) {
   return (
-    <DeskSurface scene="auth">
+    <DeskSurface>
       <div className="flex min-h-screen items-center justify-center px-6 py-12">
         <motion.div
           initial={{ opacity: 0, y: 14 }}

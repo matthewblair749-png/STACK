@@ -239,7 +239,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <DeskSurface scene="onboarding">
+    <DeskSurface>
       <div className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
         <div className="mb-8 flex items-center justify-center gap-2">
           <Logo size={26} />

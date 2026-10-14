@@ -1,41 +1,14 @@
-import { hand } from "@/components/landing/story/fonts";
-import { Coffee, DeskClock, Highlighter, IndexTab, StickyNote } from "@/components/landing/story/desk";
-import { Laptop } from "@/components/landing/story/laptop";
+import { IndexTab } from "@/components/landing/story/desk";
 import { cn } from "@/lib/utils";
 
-type Scene = "auth" | "message" | "onboarding" | "plain";
-
 /**
- * The grey desk the public site is built on (see the landing page): light falling on the middle, a few objects
- * around the edges on wide screens, and the "calm" palette so every page outside the app looks like one product.
+ * The surface the public site is built on: the "calm" palette and soft light falling on the middle, so every page
+ * outside the app looks like one product.
  */
-export function DeskSurface({ scene = "plain", note, className, children }: { scene?: Scene; note?: string[]; className?: string; children: React.ReactNode }) {
+export function DeskSurface({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <div className={cn("calm relative isolate min-h-screen overflow-hidden", hand.variable, className)}>
+    <div className={cn("calm relative isolate min-h-screen overflow-hidden", className)}>
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_65%_55%_at_50%_40%,#fbfaf7_0%,rgba(251,250,247,0)_72%)]" />
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 hidden xl:block">
-        {scene === "auth" && (
-          <>
-            <DeskClock className="left-[6%] top-[12%]" />
-            <Laptop className="bottom-[4%] right-[3%] origin-bottom-right rotate-[-3deg] scale-[0.5]" />
-            <Highlighter className="bottom-[16%] left-[8%] rotate-[18deg]" />
-          </>
-        )}
-        {scene === "message" && (
-          <>
-            <DeskClock className="right-[6%] top-[10%]" />
-            <Coffee className="bottom-[12%] left-[10%]" />
-            {note && <StickyNote lines={note} className="right-[12%] bottom-[16%] rotate-[5deg]" />}
-          </>
-        )}
-        {scene === "onboarding" && (
-          <>
-            <DeskClock className="left-[5%] top-[9%]" />
-            <Coffee className="bottom-[10%] right-[8%]" />
-            <Highlighter className="bottom-[18%] left-[6%] rotate-[-16deg]" />
-          </>
-        )}
-      </div>
       {children}
     </div>
   );

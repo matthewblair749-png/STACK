@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, Eye, Hand, Lock, Link2, Trash2, LogOut } from "lucide-react";
 import { ChapterMark, Reveal } from "./primitives";
-import { Coffee, DeskClock, StickyNote } from "./desk";
 import { NumbersRow } from "./extras";
 
 
@@ -54,11 +53,6 @@ export function ClosingChapter() {
   return (
     <section className="relative overflow-hidden px-6 pb-32 pt-24 sm:pb-40 sm:pt-32">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_45%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
-      <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
-        <StickyNote lines={["tomorrow 8:47", "open STACK first :)"]} className="left-[9%] top-[120px] rotate-[-6deg]" />
-        <DeskClock className="right-[7%] top-[70px]" />
-        <Coffee className="right-[8%] bottom-[70px]" />
-      </div>
       <Reveal className="relative mx-auto max-w-2xl text-center">
         <div className="flex justify-center">
           <ChapterMark time="Tomorrow, 8:47 AM" />
