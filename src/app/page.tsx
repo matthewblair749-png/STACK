@@ -3,7 +3,7 @@ import { StoryHero } from "@/components/landing/story/hero";
 import { MorningChapter, UnderstandChapter, PrioritizeChapter, ActChapter, MoveForwardChapter } from "@/components/landing/story/chapters";
 import { TrustChapter, AppsChapter, ClosingChapter } from "@/components/landing/story/closing";
 import { MotionRoot } from "@/components/landing/story/motion-root";
-import { Starfield } from "@/components/landing/story/space";
+import { hand } from "@/components/landing/story/fonts";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { Footer } from "@/components/landing/footer";
 import { listProviders } from "@/server/integrations/registry";
@@ -26,12 +26,10 @@ export default function LandingPage() {
 
   return (
     <MotionRoot>
-      <div className="cosmic relative isolate flex min-h-screen flex-col overflow-x-clip">
-        <Starfield />
+      <div className={`calm ${hand.variable} relative isolate flex min-h-screen flex-col overflow-x-clip`}>
         <LandingNav />
         <main className="flex-1">
-          <StoryHero />
-          <div className="h-24 sm:h-32" />
+          <StoryHero appCount={providers.length} />
           <MorningChapter />
           <UnderstandChapter />
           <PrioritizeChapter />

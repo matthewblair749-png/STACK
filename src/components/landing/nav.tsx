@@ -66,7 +66,7 @@ export function LandingNav() {
             <Link href="/login" className="text-sm font-medium text-neutral-700 hover:text-ink">
               Log in
             </Link>
-            <Link href="/signup" className={buttonClasses({ size: "sm" })}>
+            <Link href="/signup" className={buttonClasses({ size: "sm", className: "rounded-full px-4" })}>
               Get started →
             </Link>
           </div>

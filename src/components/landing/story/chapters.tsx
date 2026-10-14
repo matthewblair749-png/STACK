@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, Clock, AlertTriangle, CornerDownLeft, Hourglass } from "lucide-react";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { AppWindow, Chapter, ChapterMark, Reveal, Sources } from "./primitives";
-import { Nebula } from "./space";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const inView = { once: true, margin: "-80px" } as const;
@@ -26,24 +25,19 @@ const noise = [
 
 export function MorningChapter() {
   return (
-    <section id="story" className="relative scroll-mt-24 overflow-hidden px-6 py-28 sm:py-36">
-      {/* The storm: too many signals, in a warmer, angrier light than the rest of the sky. */}
-      <Nebula className="right-[-120px] top-10 h-[640px] w-[760px]" color="255,92,70" opacity={0.16} />
-      <Nebula className="left-[-200px] bottom-0 h-[420px] w-[520px]" color="255,150,90" opacity={0.08} />
+    <section id="story" className="relative scroll-mt-20 overflow-hidden px-6 py-24 sm:py-32">
       <div className="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
         <Reveal>
-          <ChapterMark time="8:47 AM" dark />
-          <h2 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
+          <ChapterMark time="8:47 AM" />
+          <h2 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl lg:text-[3.4rem]">
             You haven&apos;t started yet.
             <br />
             <span className="text-neutral-400">You&apos;re already behind.</span>
           </h2>
           <div className="mt-7 max-w-lg space-y-4 text-lg leading-relaxed text-neutral-500">
+            <p>Twenty-three emails. Fourteen Slack threads. A meeting that moved. A board that changed overnight.</p>
             <p>
-              Twenty-three emails. Fourteen Slack threads. A meeting that moved. A board that changed overnight.
-            </p>
-            <p>
-              Somewhere in there is the one thing that actually matters today, and finding it is your job before you&apos;ve
+              Somewhere in that pile is the one thing that actually matters today, and finding it is your job before you&apos;ve
               done any work at all.
             </p>
           </div>
@@ -55,43 +49,44 @@ export function MorningChapter() {
             ].map(([n, l]) => (
               <div key={l}>
                 <dt className="sr-only">{l}</dt>
-                <dd className="text-3xl font-semibold tracking-tight">{n}</dd>
-                <dd className="mt-1 text-sm text-neutral-400">{l}</dd>
+                <dd className="text-3xl font-semibold tracking-tight text-ink">{n}</dd>
+                <dd className="mt-1 text-sm text-neutral-500">{l}</dd>
               </div>
             ))}
           </dl>
         </Reveal>
 
-        {/* Notifications pile up, each a little more crowded than the last. */}
-        <div aria-hidden className="relative h-[460px] sm:h-[520px]">
-          {noise.map((n, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: -24, x: (i % 3) * 14 - 14, rotate: 0 }}
-              whileInView={{ opacity: 1 - i * 0.045, y: 0, x: (i % 3) * 14 - 14, rotate: (i % 2 ? 1 : -1) * (i * 0.35) }}
-              viewport={inView}
-              transition={{ duration: 0.55, delay: 0.15 + i * 0.12, ease }}
-              className="absolute left-0 right-0 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-[rgba(255,120,100,0.14)] bg-[rgba(24,18,30,0.88)] p-3.5 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.9),0_0_30px_-12px_rgba(255,110,90,0.35)] backdrop-blur"
-              style={{ top: i * 44 }}
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ffffff]">
+        {/* A messy desk: notifications land like slips of paper, each at its own careless angle. */}
+        <div aria-hidden className="relative h-[480px] sm:h-[540px]">
+          {noise.map((n, i) => {
+            const rot = [-7, 5, -3, 8, -10, 4, -5, 9, -2, 6][i];
+            const left = [4, 30, 10, 38, 0, 24, 14, 34, 6, 20][i];
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: -40, rotate: rot * 2 }}
+                whileInView={{ opacity: 1, y: 0, rotate: rot }}
+                viewport={inView}
+                transition={{ duration: 0.6, delay: 0.1 + i * 0.11, ease }}
+                className="absolute flex w-[260px] items-center gap-3 rounded-[10px] bg-white p-3 shadow-[0_16px_24px_-16px_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.06)] sm:w-[300px]"
+                style={{ top: i * 46, left: `${left}%` }}
+              >
                 <IntegrationLogo app={n.app} name={n.name} size="md" />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-ink">{n.text}</span>
-                <span className="block truncate text-xs text-neutral-400">
-                  {n.name} · {n.meta}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-ink">{n.text}</span>
+                  <span className="block truncate text-xs text-neutral-500">
+                    {n.name} · {n.meta}
+                  </span>
                 </span>
-              </span>
-            </motion.div>
-          ))}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#06050d] to-transparent" />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
-      <Reveal className="relative mx-auto mt-20 max-w-6xl" delay={0.1}>
-        <p className="flex items-center gap-3 text-lg text-neutral-700">
-          <ArrowRight size={18} className="text-yellow" /> Now, the same morning with STACK.
+      <Reveal className="relative mx-auto mt-16 max-w-6xl" delay={0.1}>
+        <p className="flex items-center gap-3 text-lg font-medium text-ink">
+          <ArrowRight size={18} className="text-blue" /> Now, the same morning with STACK.
         </p>
       </Reveal>
     </section>
@@ -141,7 +136,7 @@ export function UnderstandChapter() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={inView}
                 transition={{ duration: 0.4, delay: i * 0.06, ease }}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] shadow-[0_0_20px_-6px_rgba(165,150,255,0.4)]"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white shadow-sm"
               >
                 <IntegrationLogo app={app} size="md" />
               </motion.span>
@@ -271,7 +266,7 @@ export function ActChapter() {
                 by noon today.
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4">
-                <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-yellow">
+                <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-[#a16207]">
                   <Hourglass size={13} /> Waiting for your approval
                 </span>
                 <span className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700">Cancel</span>
@@ -298,7 +293,7 @@ export function ActChapter() {
 
 const columns = [
   { icon: Clock, label: "Up next", tone: "text-blue", items: [["Tomorrow 9:30", "Pricing review with Dev"], ["Friday", "Launch checklist due"]] },
-  { icon: Hourglass, label: "Waiting on others", tone: "text-yellow", items: [["Dev · 2 days", "API spec for checkout"], ["Sarah · today", "Proposal sign-off"]] },
+  { icon: Hourglass, label: "Waiting on others", tone: "text-[#a16207]", items: [["Dev · 2 days", "API spec for checkout"], ["Sarah · today", "Proposal sign-off"]] },
   { icon: AlertTriangle, label: "At risk", tone: "text-red", items: [["Mobile redesign", "No updates in 6 days"]] },
 ];
 
