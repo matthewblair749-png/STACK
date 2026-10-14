@@ -45,8 +45,8 @@ export function ErrorState({
   );
 }
 
-export const primaryAction = "inline-flex h-10 items-center rounded-full bg-ink px-5 text-sm font-medium text-paper hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue";
-export const secondaryAction = "inline-flex h-10 items-center rounded-full border border-neutral-200 bg-white px-5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue";
+export const primaryAction = "inline-flex h-10 items-center rounded-[10px] bg-ink px-5 text-sm font-medium text-paper hover:bg-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue";
+export const secondaryAction = "inline-flex h-10 items-center rounded-[10px] border border-neutral-200 bg-white px-5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue";
 
 export function HomeLink({ href = "/", label = "Go to STACK" }: { href?: string; label?: string }) {
   return (

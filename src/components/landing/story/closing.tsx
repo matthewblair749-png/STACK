@@ -4,9 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Eye, Hand, Lock, Link2, Trash2, LogOut } from "lucide-react";
 import { IntegrationLogo, hasRealBrandIcon } from "@/components/brand-icons";
-import { buttonClasses } from "@/components/ui/button";
 import { ChapterMark, Reveal } from "./primitives";
-import { Coffee, Paperclip, StickyNote } from "./desk";
+import { Coffee, DeskClock, StickyNote } from "./desk";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -94,10 +93,10 @@ export function AppsChapter({ featured, total }: { featured: { id: string; name:
 export function ClosingChapter() {
   return (
     <section className="relative overflow-hidden px-6 pb-32 pt-24 sm:pb-40 sm:pt-32">
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_45%,#ffffff_0%,rgba(255,255,255,0)_70%)]" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_45%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
         <StickyNote lines={["tomorrow 8:47", "open STACK first :)"]} className="left-[9%] top-[120px] rotate-[-6deg]" />
-        <Paperclip className="right-[14%] top-[90px] rotate-[-24deg]" />
+        <DeskClock className="right-[12%] top-[70px]" />
         <Coffee className="right-[8%] bottom-[70px]" />
       </div>
       <Reveal className="relative mx-auto max-w-2xl text-center">
@@ -105,13 +104,13 @@ export function ClosingChapter() {
           <ChapterMark time="Tomorrow, 8:47 AM" />
         </div>
         <h2 className="mt-7 text-balance text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-ink sm:text-[4.2rem]">
-          This time, you start ahead.
+          This time, you <span className="highlight">start ahead.</span>
         </h2>
         <p className="mx-auto mt-6 max-w-md text-[17px] leading-relaxed text-neutral-500">
           Connect your first app in about a minute. STACK is free while it&apos;s in early access, no card needed.
         </p>
         <div className="mt-9 flex justify-center">
-          <Link href="/signup" className={buttonClasses({ size: "md", className: "group h-11 rounded-full px-6" })}>
+          <Link href="/signup" className="btn-stack group">
             Get started free
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>

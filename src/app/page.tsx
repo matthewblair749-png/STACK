@@ -29,7 +29,7 @@ export default function LandingPage() {
       <div className={`calm ${hand.variable} relative isolate flex min-h-screen flex-col overflow-x-clip`}>
         <LandingNav />
         <main className="flex-1">
-          <StoryHero appCount={providers.length} />
+          <StoryHero />
           <MorningChapter />
           <UnderstandChapter />
           <PrioritizeChapter />

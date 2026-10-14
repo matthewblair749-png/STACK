@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -42,7 +42,7 @@ export function LandingNav() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className={cn(
-            "flex h-14 items-center justify-between rounded-full border border-neutral-200/80 bg-white/90 px-4 backdrop-blur-md transition-shadow sm:px-5",
+            "flex h-14 items-center justify-between rounded-[14px] border border-neutral-200/80 bg-white/90 px-4 backdrop-blur-md transition-shadow sm:px-5",
             scrolled ? "shadow-[0_12px_32px_-16px_rgba(0,0,0,0.25)]" : "shadow-[0_4px_16px_-10px_rgba(0,0,0,0.15)]",
           )}
         >
@@ -66,7 +66,7 @@ export function LandingNav() {
             <Link href="/login" className="text-sm font-medium text-neutral-700 hover:text-ink">
               Log in
             </Link>
-            <Link href="/signup" className={buttonClasses({ size: "sm", className: "rounded-full px-4" })}>
+            <Link href="/signup" className="btn-stack btn-sm">
               Get started →
             </Link>
           </div>

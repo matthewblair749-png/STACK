@@ -17,8 +17,8 @@ export default function Image() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "radial-gradient(ellipse 70% 65% at 50% 42%, #ffffff 0%, #f3f3f4 75%)",
-          color: "#0b0b0c",
+          background: "radial-gradient(ellipse 70% 65% at 50% 42%, #fbfaf7 0%, #f1efea 75%)",
+          color: "#121110",
           position: "relative",
         }}
       >
@@ -27,7 +27,7 @@ export default function Image() {
           style={{
             position: "absolute",
             left: 70,
-            bottom: 60,
+            top: 56,
             width: 270,
             gap: 6,
             padding: "22px 24px",
@@ -45,14 +45,17 @@ export default function Image() {
           <div>2. fix the build</div>
           <div>3. prep 2pm</div>
         </div>
-        <div style={{ display: "flex", padding: "10px 22px", borderRadius: 999, background: "#e7edff", color: "#2f5eff", fontSize: 26, fontWeight: 600 }}>
+        <div style={{ display: "flex", padding: "8px 20px 12px", borderRadius: "10px 10px 0 0", background: "#ffe14d", color: "#121110", fontSize: 24, letterSpacing: 3 }}>
           {SITE_NAME}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 34, fontSize: 84, fontWeight: 700, letterSpacing: -3, lineHeight: 1.02 }}>
-          <div>Your workday, sorted</div>
-          <div>before you start</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 34, fontSize: 88, fontWeight: 700, letterSpacing: -3, lineHeight: 1.02 }}>
+          <div>All your work,</div>
+          <div style={{ display: "flex" }}>
+            in one&nbsp;
+            <span style={{ display: "flex", padding: "0 8px", backgroundImage: "linear-gradient(transparent 55%, #ffe14d 55%, #ffe14d 92%, transparent 92%)" }}>neat stack.</span>
+          </div>
         </div>
-        <div style={{ marginTop: 30, fontSize: 30, color: "#5c5c63" }}>{SITE_TAGLINE}</div>
+        <div style={{ marginTop: 30, fontSize: 30, color: "#5c5852" }}>Every morning, one brief: what needs you and what to do next.</div>
       </div>
     ),
     size,

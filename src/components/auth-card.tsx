@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/logo";
 import { DeskSurface, PaperSheet } from "@/components/desk-surface";
-import { Paperclip } from "@/components/landing/story/desk";
 
 export function AuthCard({
   title,
@@ -32,9 +31,8 @@ export function AuthCard({
             <p className="mt-2 text-[15px] text-neutral-500">{subtitle}</p>
           </div>
 
-          <div className="relative mt-9">
-            <Paperclip className="-top-9 left-7 z-10 w-[34px] rotate-[8deg]" />
-            <PaperSheet className="p-6">{children}</PaperSheet>
+          <div className="mt-14">
+            <PaperSheet tab="STACK" className="p-6">{children}</PaperSheet>
           </div>
 
           {footer && <p className="mt-7 text-center text-sm text-neutral-500">{footer}</p>}

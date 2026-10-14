@@ -12,9 +12,9 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
     <section id="pricing-section" className={cn("mx-auto max-w-7xl px-6", compact ? "py-4" : "py-28 sm:py-36")}>
       {!compact && (
         <div className="mx-auto max-w-2xl text-center">
-          <p className="inline-flex rounded-full bg-blue-soft px-3.5 py-1.5 text-[13px] font-medium text-blue">Pricing</p>
+          <p className="font-mono text-[13px] uppercase tracking-wide text-neutral-500">Pricing</p>
           <h2 className="mt-5 text-balance text-4xl font-semibold tracking-[-0.035em] text-ink sm:text-[3.5rem] sm:leading-[1.05]">
-            Free while we&apos;re in early access.
+            <span className="highlight">Free</span> while we&apos;re in early access.
           </h2>
           <p className="mt-6 text-lg text-neutral-500 sm:text-xl">
             No card, no trial clock. If paid plans arrive later, you&apos;ll hear about it before anything is ever charged.
@@ -52,11 +52,11 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
             </ul>
 
             {plan.comingSoon ? (
-              <Button size="lg" className="mt-7 w-full rounded-full" variant="outline" disabled>
+              <Button size="lg" className="mt-7 w-full rounded-[10px]" variant="outline" disabled>
                 {plan.cta}
               </Button>
             ) : (
-              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full rounded-full" })}>
+              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full rounded-[10px]" })}>
                 {plan.cta}
               </Link>
             )}
