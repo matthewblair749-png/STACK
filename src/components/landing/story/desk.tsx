@@ -43,10 +43,10 @@ export function DeskClock({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className={cn("pointer-events-none absolute flex h-[104px] w-[330px] items-center gap-3 rounded-[12px] px-3.5", className)}
+      className={cn("pointer-events-none absolute flex h-[104px] w-[330px] items-center gap-3 rounded-[28px] px-5", className)}
       style={{
         background: "linear-gradient(180deg,#1c1c1e,#0a0a0b 60%,#121214)",
-        boxShadow: `${grounded}, inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.6)`,
+        boxShadow: `${grounded}, inset 0 4px 8px rgba(255,255,255,0.14), inset 0 -8px 14px rgba(0,0,0,0.55)`,
       }}
     >
       {/* weekdays, today lit */}
@@ -85,7 +85,7 @@ export function DeskClock({ className }: { className?: string }) {
         </div>
       </div>
       {/* glass over the display */}
-      <div className="absolute inset-0 rounded-[12px] bg-[linear-gradient(160deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.02)_30%,rgba(255,255,255,0)_31%)]" />
+      <div className="absolute inset-0 rounded-[28px] bg-[linear-gradient(170deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_40%)]" />
     </div>
   );
 }
@@ -121,30 +121,20 @@ export function Coffee({ className }: { className?: string }) {
 }
 
 export function StickyNote({ lines, className }: { lines: string[]; className?: string }) {
-  const fold = 30;
   return (
-    <div aria-hidden className={cn("pointer-events-none absolute w-[196px]", className)} style={{ filter: "drop-shadow(0 16px 14px rgba(30,24,16,0.28)) drop-shadow(0 2px 2px rgba(30,24,16,0.12))" }}>
-      {/* the note, its bottom-right corner folded back (so that corner shows the desk) */}
-      <div
-        className="relative px-5 pb-7 pt-6 text-[22px] leading-[1.18] text-[#3b3423]"
-        style={{
-          background: "linear-gradient(172deg,#fff6b8 0%,#ffe882 55%,#f8d964 100%)",
-          fontFamily: "var(--font-hand), 'Comic Sans MS', cursive",
-          clipPath: `polygon(0 0, 100% 0, 100% calc(100% - ${fold}px), calc(100% - ${fold}px) 100%, 0 100%)`,
-        }}
-      >
-        <div className="absolute inset-x-0 top-0 h-[16px] bg-[linear-gradient(180deg,rgba(214,176,40,0.22),rgba(214,176,40,0))]" />
-        {lines.map((l) => (
-          <p key={l} className="relative">
-            {l}
-          </p>
-        ))}
-      </div>
-      {/* the folded flap, lying on top of the note */}
-      <div
-        className="absolute bottom-0 right-0"
-        style={{ width: fold, height: fold, background: "linear-gradient(135deg,#fff3ad 0%,#f3d35a 50%,transparent 50%)", filter: "drop-shadow(-2px -2px 2px rgba(0,0,0,0.12))" }}
-      />
+    <div
+      aria-hidden
+      className={cn("pointer-events-none absolute w-[200px] rounded-[22px] px-6 pb-7 pt-6 text-[22px] leading-[1.18] text-[#3b3423]", className)}
+      style={{
+        background: "linear-gradient(170deg,#fff6b8 0%,#ffe882 55%,#f8d964 100%)",
+        boxShadow:
+          "0 26px 30px -18px rgba(150,110,0,0.45), 0 6px 8px -4px rgba(120,90,0,0.18), inset 0 4px 8px rgba(255,255,255,0.75), inset 0 -8px 14px rgba(200,150,0,0.22)",
+        fontFamily: "var(--font-hand), 'Comic Sans MS', cursive",
+      }}
+    >
+      {lines.map((l) => (
+        <p key={l}>{l}</p>
+      ))}
     </div>
   );
 }
@@ -182,7 +172,7 @@ export function IndexTab({ label, className }: { label: string; className?: stri
   return (
     <span
       aria-hidden
-      className={cn("absolute -top-[26px] left-6 rounded-t-[8px] bg-[#ffe14d] px-3.5 pb-2 pt-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#121110]", className)}
+      className={cn("absolute -top-[26px] left-6 rounded-t-[14px] bg-[linear-gradient(180deg,#ffeb73,#ffdc3c)] shadow-[inset_0_3px_5px_rgba(255,255,255,0.7)] px-4 pb-2 pt-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-[#121110]", className)}
     >
       {label}
     </span>

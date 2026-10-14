@@ -132,11 +132,11 @@ export function Laptop({ className }: { className?: string }) {
     <div aria-hidden className={cn("pointer-events-none absolute w-[620px]", className)}>
       {/* screen, hinged at the bottom and tilted back */}
       <div
-        className="relative mx-auto h-[368px] w-[580px] rounded-t-[20px] bg-[linear-gradient(180deg,#26272b,#141417)] p-[11px] pb-[18px]"
+        className="relative mx-auto h-[368px] w-[580px] rounded-t-[30px] bg-[linear-gradient(180deg,#26272b,#141417)] p-[11px] pb-[18px]"
         style={{ transform: "perspective(1500px) rotateX(22deg)", transformOrigin: "50% 100%", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)" }}
       >
         <span className="absolute left-1/2 top-[4px] h-[4px] w-[4px] -translate-x-1/2 rounded-full bg-[#3a3d44]" />
-        <div className="relative h-full w-full overflow-hidden rounded-[6px]">
+        <div className="relative h-full w-full overflow-hidden rounded-[14px]">
           <MiniDashboard />
           <div className="absolute inset-0 bg-[linear-gradient(125deg,rgba(255,255,255,0.20)_0%,rgba(255,255,255,0.04)_30%,rgba(255,255,255,0)_31%)]" />
         </div>
@@ -145,23 +145,23 @@ export function Laptop({ className }: { className?: string }) {
       <div className="mx-auto h-[9px] w-[592px] rounded-b-[6px] bg-[linear-gradient(180deg,#8c8f95,#c3c6cb)]" />
       {/* keyboard deck */}
       <div
-        className="mx-auto mt-[-2px] h-[330px] w-[620px] rounded-[20px] px-[34px] pt-[22px]"
-        style={{ background: "linear-gradient(170deg,#e4e6e9,#c4c7cc 55%,#d3d5d9)", boxShadow: `${grounded}, inset 0 1px 0 rgba(255,255,255,0.8)` }}
+        className="mx-auto mt-[-2px] h-[330px] w-[620px] rounded-[34px] px-[34px] pt-[24px]"
+        style={{ background: "linear-gradient(170deg,#e4e6e9,#c4c7cc 55%,#d3d5d9)", boxShadow: `${grounded}, inset 0 5px 10px rgba(255,255,255,0.85), inset 0 -10px 18px rgba(80,84,92,0.22)` }}
       >
-        <div className="flex flex-col gap-[5px] rounded-[8px] bg-[#a9acb2] p-[6px] shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)]">
+        <div className="flex flex-col gap-[5px] rounded-[16px] bg-[#a9acb2] p-[7px] shadow-[inset_0_2px_5px_rgba(0,0,0,0.3)]">
           {[14, 14, 13, 12, 8].map((count, r) => (
             <div key={r} className="flex gap-[5px]">
               {Array.from({ length: count }, (_, i) => (
                 <span
                   key={i}
-                  className="h-[22px] rounded-[4px] bg-[linear-gradient(180deg,#2c2d31,#1b1c1f)] shadow-[0_1px_1px_rgba(0,0,0,0.4)]"
+                  className="h-[22px] rounded-[7px] bg-[linear-gradient(180deg,#34353a,#1b1c1f)] shadow-[0_2px_2px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.12)]"
                   style={{ flex: r === 4 && i === 3 ? 6 : r > 0 && (i === 0 || i === count - 1) ? 1.6 : 1 }}
                 />
               ))}
             </div>
           ))}
         </div>
-        <div className="mx-auto mt-[22px] h-[130px] w-[230px] rounded-[12px] bg-[linear-gradient(180deg,#d6d8dc,#c8cbd0)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]" />
+        <div className="mx-auto mt-[22px] h-[130px] w-[230px] rounded-[22px] bg-[linear-gradient(180deg,#d6d8dc,#c8cbd0)] shadow-[inset_0_3px_6px_rgba(0,0,0,0.14),inset_0_-2px_3px_rgba(255,255,255,0.6)]" />
       </div>
     </div>
   );

@@ -35,8 +35,8 @@ export function TrustChapter() {
         </Reveal>
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {promises.map((p, i) => (
-            <Reveal key={p.title} delay={(i % 3) * 0.08} className="rounded-[14px] bg-white p-6 shadow-[0_18px_30px_-22px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.05)]">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-soft">
+            <Reveal key={p.title} delay={(i % 3) * 0.08} className="clay bg-white p-7 shadow-[0_18px_30px_-22px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.05)]">
+              <span className="clay-pill flex h-10 w-10 items-center justify-center bg-blue-soft">
                 <p.icon size={17} className="text-blue" strokeWidth={2} />
               </span>
               <h3 className="mt-4 text-base font-semibold text-ink">{p.title}</h3>
@@ -73,7 +73,7 @@ export function AppsChapter({ featured, total }: { featured: { id: string; name:
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.45, delay: i * 0.03, ease }}
-              className="flex items-center gap-2.5 rounded-full bg-white py-2 pl-2.5 pr-4 shadow-[0_8px_16px_-12px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.05)]"
+              className="clay-pill flex items-center gap-2.5 bg-white py-2.5 pl-3 pr-4 shadow-[0_8px_16px_-12px_rgba(0,0,0,0.3),0_1px_2px_rgba(0,0,0,0.05)]"
             >
               <IntegrationLogo app={a.id} name={a.name} size="md" />
               <span className="text-sm font-medium text-neutral-700">{a.name}</span>

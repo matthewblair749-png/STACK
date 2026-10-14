@@ -31,8 +31,8 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.4, delay: i * 0.06 }}
             className={cn(
-              "flex flex-col rounded-[14px] p-7 shadow-[0_30px_50px_-34px_rgba(0,0,0,0.4),0_2px_6px_-2px_rgba(0,0,0,0.08)]",
-              plan.highlighted ? "bg-ink text-paper" : "bg-white",
+              "flex flex-col p-8 shadow-[0_30px_50px_-34px_rgba(0,0,0,0.4),0_2px_6px_-2px_rgba(0,0,0,0.08)]",
+              plan.highlighted ? "clay-dark text-[#fffdf9]" : "clay bg-white",
             )}
           >
             <p className={cn("text-base font-semibold", plan.highlighted ? "text-paper" : "text-ink")}>{plan.name}</p>
@@ -52,11 +52,11 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
             </ul>
 
             {plan.comingSoon ? (
-              <Button size="lg" className="mt-7 w-full rounded-[10px]" variant="outline" disabled>
+              <Button size="lg" className="mt-7 w-full rounded-full" variant="outline" disabled>
                 {plan.cta}
               </Button>
             ) : (
-              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full rounded-[10px]" })}>
+              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full rounded-full" })}>
                 {plan.cta}
               </Link>
             )}

@@ -8,6 +8,7 @@ import { LogoMark } from "@/components/logo";
 import { Sources } from "./primitives";
 import { Coffee, DeskClock, Highlighter } from "./desk";
 import { Laptop } from "./laptop";
+import { ClayShapes } from "./clay-shapes";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const rise = (delay: number) => ({ initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.7, delay, ease } });
@@ -30,7 +31,7 @@ export function StoryHero() {
       {/* Light on the desk. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_65%_at_62%_40%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
 
-      {/* STACK's desk: the 8:47 clock, the phone that won't stop, coffee, and the highlighter. Wide screens only. */}
+      {/* STACK's desk: the 08:47 clock, the laptop with STACK open, coffee, the highlighter and a few clay shapes. Wide screens only. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease }} className="absolute inset-0">
           <DeskClock className="right-[3%] top-[24px] origin-top-right scale-[0.78]" />
@@ -43,6 +44,9 @@ export function StoryHero() {
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.7, ease }} className="absolute inset-0">
           <Highlighter className="bottom-[120px] left-[24%] rotate-[-9deg]" />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.9, ease }} className="absolute inset-0">
+          <ClayShapes />
         </motion.div>
       </div>
 
@@ -91,9 +95,9 @@ export function StoryHero() {
                   scale: [0.92, 0.92, 1 - depth * 0.018],
                 }}
                 transition={{ duration: 2.1, times: [0, 0.3, 1], delay: 0.35 + i * 0.07, ease }}
-                className="absolute inset-x-0 top-0 h-[300px] rounded-[12px] border border-neutral-200 bg-white shadow-[0_14px_24px_-18px_rgba(0,0,0,0.35)]"
+                className="clay-sm absolute inset-x-0 top-0 h-[300px] bg-white shadow-[0_14px_24px_-18px_rgba(0,0,0,0.35)]"
               >
-                <div className="flex h-[30px] items-center gap-2 px-4">
+                <div className="flex h-[30px] items-center gap-2 px-5">
                   <IntegrationLogo app={s.app} name={s.name} size="sm" />
                   <span className="text-[12px] font-semibold text-ink">{s.name}</span>
                   <span className="truncate text-[12px] text-neutral-500">{s.line}</span>
@@ -107,7 +111,7 @@ export function StoryHero() {
             initial={{ opacity: 0, y: BRIEF_TOP - 50 }}
             animate={{ opacity: 1, y: BRIEF_TOP }}
             transition={{ duration: 0.8, delay: 2.15, ease }}
-            className="absolute inset-x-0 top-0 rounded-[12px] bg-white shadow-[0_40px_60px_-30px_rgba(0,0,0,0.38),0_4px_10px_-4px_rgba(0,0,0,0.08)]"
+            className="clay absolute inset-x-0 top-0 bg-white shadow-[0_40px_60px_-30px_rgba(0,0,0,0.38),0_4px_10px_-4px_rgba(0,0,0,0.08)]"
           >
             <header className="flex items-center justify-between border-b border-neutral-100 px-5 py-3.5">
               <div className="flex items-center gap-2.5">

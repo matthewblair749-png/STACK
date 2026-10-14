@@ -47,12 +47,12 @@ export function PaperSheet({ children, className, pages = true, tab }: { childre
     <div className="relative">
       {pages && (
         <>
-          <div aria-hidden className="absolute inset-x-6 -top-[16px] bottom-6 rounded-[14px] border border-neutral-200 bg-[#fbfaf8]" />
-          <div aria-hidden className="absolute inset-x-3 -top-[8px] bottom-3 rounded-[14px] border border-neutral-200 bg-[#ffffff]" />
+          <div aria-hidden className="clay-sm absolute inset-x-6 -top-[16px] bottom-6 !rounded-[26px] bg-[#fbf8f2]" />
+          <div aria-hidden className="clay-sm absolute inset-x-3 -top-[8px] bottom-3 !rounded-[26px] bg-[#fffdf9]" />
         </>
       )}
       {tab && <IndexTab label={tab} className={pages ? "-top-[42px] z-10" : "z-10"} />}
-      <div className={cn("relative rounded-[14px] bg-white shadow-[0_40px_60px_-34px_rgba(0,0,0,0.32),0_4px_10px_-4px_rgba(0,0,0,0.08)]", className)}>{children}</div>
+      <div className={cn("clay relative bg-white shadow-[0_40px_60px_-34px_rgba(0,0,0,0.32),0_4px_10px_-4px_rgba(0,0,0,0.08)]", className)}>{children}</div>
     </div>
   );
 }

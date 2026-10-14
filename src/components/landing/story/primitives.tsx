@@ -75,11 +75,11 @@ export function AppWindow({ title, children, className }: { title: string; child
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[20px] border border-neutral-200 bg-white shadow-[0_30px_60px_-30px_rgba(40,32,20,0.28),0_8px_20px_-12px_rgba(40,32,20,0.12)]",
+        "clay overflow-hidden bg-white shadow-[0_30px_60px_-30px_rgba(40,32,20,0.28),0_8px_20px_-12px_rgba(40,32,20,0.12)]",
         className,
       )}
     >
-      <div className="flex items-center gap-2 border-b border-neutral-100 bg-neutral-25 px-4 py-2.5">
+      <div className="flex items-center gap-2 border-b border-neutral-100 bg-neutral-25/60 px-5 py-3">
         <span className="h-2.5 w-2.5 rounded-full bg-[#f2c4bd]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#f3dfae]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#c9e3c4]" />
@@ -96,7 +96,7 @@ export function Sources({ apps }: { apps: { id: string; name: string }[] }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
       {apps.map((a) => (
-        <span key={a.id} className="inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-neutral-25 py-0.5 pl-1 pr-2 text-[11px] font-medium text-neutral-500">
+        <span key={a.id} className="clay-pill inline-flex items-center gap-1 bg-neutral-25 py-0.5 pl-1 pr-2 text-[11px] font-medium text-neutral-500">
           <IntegrationLogo app={a.id} name={a.name} size="sm" />
           {a.name}
         </span>

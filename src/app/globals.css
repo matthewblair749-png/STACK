@@ -256,41 +256,102 @@ textarea:focus-visible {
   to { background-size: 100% 46%; }
 }
 
-/* STACK's button: a black sheet with a yellow one stacked underneath. */
+/*
+ * Clay: the public site's material. Everything is soft and puffy - a light catching the top edge, a gentle shade
+ * pressed into the bottom, and a soft shadow on the desk below - like shapes modelled from matte clay.
+ */
+.clay {
+  border-radius: 26px;
+  border-color: transparent;
+  background: #fffdf9;
+  box-shadow:
+    0 30px 50px -28px rgba(74, 58, 34, 0.40),
+    0 10px 18px -10px rgba(74, 58, 34, 0.16),
+    inset 0 4px 8px rgba(255, 255, 255, 0.95),
+    inset 0 -7px 14px rgba(120, 96, 60, 0.10);
+}
+.clay-sm {
+  border-radius: 16px;
+  border-color: transparent;
+  background: #fffdf9;
+  box-shadow:
+    0 14px 22px -14px rgba(74, 58, 34, 0.40),
+    0 3px 6px -3px rgba(74, 58, 34, 0.14),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95),
+    inset 0 -4px 8px rgba(120, 96, 60, 0.10);
+}
+.clay-pill {
+  border-radius: 999px;
+  border-color: transparent;
+  background: #fffdf9;
+  box-shadow:
+    0 8px 14px -8px rgba(74, 58, 34, 0.38),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 6px rgba(120, 96, 60, 0.12);
+}
+.clay-dark {
+  border-radius: 26px;
+  background: #1f1d1a;
+  box-shadow:
+    0 30px 50px -26px rgba(30, 24, 16, 0.6),
+    inset 0 4px 8px rgba(255, 255, 255, 0.10),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* STACK's button: a squishy yellow clay pill that presses in when you click it. */
 .btn-stack {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  height: 2.875rem;
-  padding: 0 1.4rem;
-  border-radius: 10px;
-  background: #121110;
-  color: #ffffff;
+  height: 3rem;
+  padding: 0 1.6rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffeb73, #ffd630);
+  color: #121110;
   font-size: 0.9375rem;
-  font-weight: 500;
-  box-shadow: 4px 4px 0 0 var(--highlighter, #ffe14d), 4px 4px 0 1px #121110;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  font-weight: 600;
+  box-shadow:
+    0 16px 24px -12px rgba(170, 120, 0, 0.55),
+    0 4px 6px -2px rgba(120, 90, 0, 0.22),
+    inset 0 3px 5px rgba(255, 255, 255, 0.75),
+    inset 0 -5px 9px rgba(190, 140, 0, 0.38);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease;
 }
 .btn-stack:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 0 var(--highlighter, #ffe14d), 5px 5px 0 1px #121110;
+  transform: translateY(-2px);
+  box-shadow:
+    0 20px 28px -12px rgba(170, 120, 0, 0.6),
+    0 5px 8px -2px rgba(120, 90, 0, 0.22),
+    inset 0 3px 5px rgba(255, 255, 255, 0.8),
+    inset 0 -5px 9px rgba(190, 140, 0, 0.38);
 }
 .btn-stack:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 0 var(--highlighter, #ffe14d), 1px 1px 0 1px #121110;
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    0 6px 10px -8px rgba(170, 120, 0, 0.5),
+    inset 0 4px 8px rgba(190, 140, 0, 0.35),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.5);
 }
 .btn-stack:focus-visible {
   outline: 2px solid var(--color-blue);
   outline-offset: 4px;
 }
 
-/* The smaller stacked button, for the nav. */
+/* The smaller clay button, for the nav. */
 .btn-stack.btn-sm {
   height: 2.25rem;
-  padding: 0 1rem;
+  padding: 0 1.1rem;
   font-size: 0.875rem;
-  box-shadow: 3px 3px 0 0 var(--highlighter, #ffe14d), 3px 3px 0 1px #121110;
+}
+
+/* Floating clay shapes in the hero: a slow bob, never for people who ask for less motion (see the rule above). */
+@keyframes clay-float {
+  from { transform: translateY(0) rotate(var(--clay-rot, 0deg)); }
+  to { transform: translateY(-10px) rotate(var(--clay-rot, 0deg)); }
+}
+.clay-float {
+  animation: clay-float 4.5s ease-in-out infinite alternate;
 }
 
 /* Public pages: anchor links glide instead of jumping, and land clear of the sticky nav. (Reduced motion keeps instant jumps - see the rule above.) */

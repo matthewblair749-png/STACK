@@ -52,7 +52,7 @@ export function AuthButtons({
     <div className="space-y-2.5">
       <Button
         variant="outline"
-        className="w-full justify-center rounded-[10px]"
+        className="clay-pill w-full justify-center"
         disabled={!configured.google || oauthPending !== null}
         title={configured.google ? undefined : "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable Google sign-in"}
         onClick={() => handleOAuth("google")}
@@ -61,7 +61,7 @@ export function AuthButtons({
       </Button>
       <Button
         variant="outline"
-        className="w-full justify-center rounded-[10px]"
+        className="clay-pill w-full justify-center"
         disabled={!configured.email}
         title={configured.email ? undefined : "Set RESEND_API_KEY and EMAIL_FROM to enable email sign-in"}
         onClick={() => setShowEmail((v) => !v)}
@@ -82,9 +82,9 @@ export function AuthButtons({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"
-              className="w-full rounded-[10px] border border-neutral-200 bg-neutral-25 px-4 py-2.5 text-sm outline-none focus:border-ink"
+              className="w-full rounded-full border border-transparent bg-neutral-50 px-4 py-2.5 text-sm shadow-[inset_0_2px_5px_rgba(74,58,34,0.12),inset_0_-1px_0_rgba(255,255,255,0.9)] outline-none focus:border-ink"
             />
-            <Button type="submit" className="w-full justify-center rounded-[10px]" disabled={status === "sending"}>
+            <Button type="submit" className="w-full justify-center rounded-full" disabled={status === "sending"}>
               {status === "sending" ? "Sending..." : "Send sign-in link"}
             </Button>
             {status === "limited" && (

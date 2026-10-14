@@ -68,7 +68,7 @@ export function MorningChapter() {
                 whileInView={{ opacity: 1, y: 0, rotate: rot }}
                 viewport={inView}
                 transition={{ duration: 0.6, delay: 0.1 + i * 0.11, ease }}
-                className="absolute flex w-[var(--slip-w)] items-center gap-3 rounded-[10px] bg-white p-3 shadow-[0_16px_24px_-16px_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.06)] sm:w-[300px]"
+                className="clay-sm absolute flex w-[var(--slip-w)] items-center gap-3 bg-white p-3.5 shadow-[0_16px_24px_-16px_rgba(0,0,0,0.35),0_1px_2px_rgba(0,0,0,0.06)] sm:w-[300px]"
                 style={{ top: i * 46, left: `calc((100% - var(--slip-w)) * ${spread * 0.94} + 6px)` }}
               >
                 <IntegrationLogo app={n.app} name={n.name} size="md" />
@@ -136,7 +136,7 @@ export function UnderstandChapter() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={inView}
                 transition={{ duration: 0.4, delay: i * 0.06, ease }}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white shadow-sm"
+                className="clay-sm flex h-11 w-11 items-center justify-center"
               >
                 <IntegrationLogo app={app} size="md" />
               </motion.span>
