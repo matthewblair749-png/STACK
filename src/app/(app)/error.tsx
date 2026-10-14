@@ -10,6 +10,7 @@ export default function Error({ error, retry }: { error: Error & { digest?: stri
 
   return (
     <ErrorState
+      inline
       title="Something went wrong on our side."
       body={
         <>

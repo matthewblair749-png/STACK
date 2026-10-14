@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Search, ArrowRight, Monitor, Clock, Ban, AlertTriangle } from "lucide-react";
 import { Logo, LogoIcon } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { DeskSurface, PaperSheet } from "@/components/desk-surface";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { QuickStart } from "@/components/onboarding/quick-start";
 import { referralSources } from "@/lib/profession-apps";
@@ -229,199 +230,205 @@ export default function OnboardingPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LogoIcon size={32} />
-      </div>
+      <DeskSurface>
+        <div className="flex min-h-screen items-center justify-center">
+          <LogoIcon size={32} />
+        </div>
+      </DeskSurface>
     );
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <div className="mb-8 flex items-center justify-center gap-2">
-        <Logo size={26} />
-      </div>
+    <DeskSurface scene="onboarding">
+      <div className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
+        <div className="mb-8 flex items-center justify-center gap-2">
+          <Logo size={26} />
+        </div>
 
-      <div className="mb-8 flex items-center justify-center gap-2">
-        {STEP_LABELS.map((s, i) => (
-          <div key={s} className={cn("h-1.5 w-10 rounded-full", i <= step ? "bg-ink" : "bg-neutral-100")} />
-        ))}
-      </div>
+        <div className="mb-8 flex items-center justify-center gap-2">
+          {STEP_LABELS.map((s, i) => (
+            <div key={s} className={cn("h-1.5 w-10 rounded-full", i <= step ? "bg-ink" : "bg-neutral-200")} />
+          ))}
+        </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -16 }}
-          transition={{ duration: 0.25 }}
-        >
-          {step === 0 && <QuickStart onBuild={buildMyDay} onCustomize={goNext} />}
+        <PaperSheet className="p-6 sm:p-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.25 }}
+            >
+              {step === 0 && <QuickStart onBuild={buildMyDay} onCustomize={goNext} />}
 
-          {step === 1 && (
-            <div>
-              <h1 className="text-center text-2xl font-semibold text-ink">What do you do?</h1>
-              <p className="mt-2 text-center text-sm text-neutral-500">
-                We&apos;ll recommend the tools you may use based on your profession.
-              </p>
-              <div className="mt-6 flex items-center gap-2 rounded-xl border border-neutral-200 px-3.5 py-2.5">
-                <Search size={15} className="text-neutral-400" />
-                <input
-                  value={professionQuery}
-                  onChange={(e) => setProfessionQuery(e.target.value)}
-                  placeholder="Search professions..."
-                  className="flex-1 text-sm outline-none placeholder:text-neutral-400"
-                />
-              </div>
-              <div className="mt-4 max-h-96 space-y-5 overflow-y-auto pr-1">
-                {groupedProfessions.map(([category, list]) => (
-                  <div key={category}>
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">{category}</p>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {list.map((p) => {
-                        const active = profession === p.slug;
-                        return (
-                          <button
-                            key={p.id}
-                            onClick={() => selectProfession(p.slug)}
-                            className={cn(
-                              "rounded-xl border px-3.5 py-3 text-left text-sm transition-colors",
-                              active ? "border-ink bg-neutral-50 font-medium text-ink" : "border-neutral-200 text-neutral-600 hover:border-neutral-300",
-                            )}
-                          >
-                            {p.name}
-                          </button>
-                        );
-                      })}
-                    </div>
+              {step === 1 && (
+                <div>
+                  <h1 className="text-center text-2xl font-semibold text-ink">What do you do?</h1>
+                  <p className="mt-2 text-center text-sm text-neutral-500">
+                    We&apos;ll recommend the tools you may use based on your profession.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 rounded-xl border border-neutral-200 px-3.5 py-2.5">
+                    <Search size={15} className="text-neutral-400" />
+                    <input
+                      value={professionQuery}
+                      onChange={(e) => setProfessionQuery(e.target.value)}
+                      placeholder="Search professions..."
+                      className="flex-1 text-sm outline-none placeholder:text-neutral-400"
+                    />
                   </div>
-                ))}
-                {groupedProfessions.length === 0 && (
-                  <p className="py-6 text-center text-sm text-neutral-400">No matches — try a different search.</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div>
-              <h1 className="text-center text-2xl font-semibold text-ink">Connect your work.</h1>
-              <p className="mt-2 text-center text-sm text-neutral-500">
-                We&apos;ve selected apps commonly used by people in your profession. Choose the ones you actually use.
-              </p>
-
-              {appsLoading ? (
-                <p className="mt-8 text-center text-sm text-neutral-400">Loading suggestions...</p>
-              ) : (
-                <>
-                  {recommendedApps.length > 0 && (
-                    <div className="mt-6">
-                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">Recommended for you</p>
-                      {professionName && <p className="-mt-1 mb-2 text-xs text-neutral-400">Recommended because you selected {professionName}. STACK only reads what you authorize.</p>}
-                      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                        {recommendedApps.map((app) => (
-                          <AppCard key={app.slug} app={app} pending={connectPending === app.slug} onConnect={() => connectApp(app)} />
-                        ))}
+                  <div className="mt-4 max-h-96 space-y-5 overflow-y-auto pr-1">
+                    {groupedProfessions.map(([category, list]) => (
+                      <div key={category}>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">{category}</p>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {list.map((p) => {
+                            const active = profession === p.slug;
+                            return (
+                              <button
+                                key={p.id}
+                                onClick={() => selectProfession(p.slug)}
+                                className={cn(
+                                  "rounded-xl border px-3.5 py-3 text-left text-sm transition-colors",
+                                  active ? "border-ink bg-neutral-50 font-medium text-ink" : "border-neutral-200 text-neutral-600 hover:border-neutral-300",
+                                )}
+                              >
+                                {p.name}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  <div className="mt-6">
-                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">You might also use</p>
-                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                      {universalApps.map((app) => (
-                        <AppCard key={app.slug} app={app} pending={connectPending === app.slug} onConnect={() => connectApp(app)} />
-                      ))}
-                    </div>
+                    ))}
+                    {groupedProfessions.length === 0 && (
+                      <p className="py-6 text-center text-sm text-neutral-400">No matches — try a different search.</p>
+                    )}
                   </div>
-                </>
+                </div>
               )}
 
-              <div className="mt-4 flex items-center justify-center">
-                <button onClick={refreshApps} className="text-xs font-medium text-neutral-400 hover:text-ink">
-                  I connected something — refresh status
-                </button>
-              </div>
-            </div>
-          )}
+              {step === 2 && (
+                <div>
+                  <h1 className="text-center text-2xl font-semibold text-ink">Connect your work.</h1>
+                  <p className="mt-2 text-center text-sm text-neutral-500">
+                    We&apos;ve selected apps commonly used by people in your profession. Choose the ones you actually use.
+                  </p>
 
-          {step === 3 && (
-            <div>
-              <h1 className="text-center text-2xl font-semibold text-ink">How did you hear about STACK?</h1>
-              <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {referralSources.map((r) => {
-                  const active = referral === r.id;
-                  return (
-                    <button
-                      key={r.id}
-                      onClick={() => selectReferral(r.id)}
-                      className={cn(
-                        "rounded-xl border px-3.5 py-3 text-sm transition-colors",
-                        active ? "border-ink bg-neutral-50 font-medium text-ink" : "border-neutral-200 text-neutral-600 hover:border-neutral-300",
+                  {appsLoading ? (
+                    <p className="mt-8 text-center text-sm text-neutral-400">Loading suggestions...</p>
+                  ) : (
+                    <>
+                      {recommendedApps.length > 0 && (
+                        <div className="mt-6">
+                          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">Recommended for you</p>
+                          {professionName && <p className="-mt-1 mb-2 text-xs text-neutral-400">Recommended because you selected {professionName}. STACK only reads what you authorize.</p>}
+                          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                            {recommendedApps.map((app) => (
+                              <AppCard key={app.slug} app={app} pending={connectPending === app.slug} onConnect={() => connectApp(app)} />
+                            ))}
+                          </div>
+                        </div>
                       )}
-                    >
-                      {r.label}
+
+                      <div className="mt-6">
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">You might also use</p>
+                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                          {universalApps.map((app) => (
+                            <AppCard key={app.slug} app={app} pending={connectPending === app.slug} onConnect={() => connectApp(app)} />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="mt-4 flex items-center justify-center">
+                    <button onClick={refreshApps} className="text-xs font-medium text-neutral-400 hover:text-ink">
+                      I connected something — refresh status
                     </button>
-                  );
-                })}
-              </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div>
+                  <h1 className="text-center text-2xl font-semibold text-ink">How did you hear about STACK?</h1>
+                  <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {referralSources.map((r) => {
+                      const active = referral === r.id;
+                      return (
+                        <button
+                          key={r.id}
+                          onClick={() => selectReferral(r.id)}
+                          className={cn(
+                            "rounded-xl border px-3.5 py-3 text-sm transition-colors",
+                            active ? "border-ink bg-neutral-50 font-medium text-ink" : "border-neutral-200 text-neutral-600 hover:border-neutral-300",
+                          )}
+                        >
+                          {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div>
+                  <h1 className="text-center text-2xl font-semibold text-ink">STACK is free during early access.</h1>
+                  <p className="mx-auto mt-2 max-w-md text-center text-sm text-neutral-500">No card, no trial clock. If paid plans arrive later, we&apos;ll tell you before anything is ever charged.</p>
+                  <div className="mx-auto mt-6 max-w-md rounded-2xl border border-neutral-200 p-5">
+                    <p className="text-sm font-semibold text-ink">Included for you</p>
+                    <ul className="mt-3 space-y-2">
+                      {EARLY_ACCESS_INCLUDES.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-sm text-neutral-600">
+                          <Check size={14} className="mt-0.5 shrink-0 text-blue" /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-6 flex justify-center">
+                    <Button onClick={chooseFree}>
+                      Continue <ArrowRight size={15} />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {step === 5 && (
+                <div className="flex flex-col items-center text-center">
+                  <LogoIcon size={48} />
+                  <h1 className="mt-6 text-2xl font-semibold text-ink">Your STACK is ready.</h1>
+                  <div className="mt-4 h-5">
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={readyMessageIndex}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-sm text-neutral-500"
+                      >
+                        {readyMessages[readyMessageIndex]}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+                  <Button className="mt-8" onClick={enterStack}>
+                    Enter STACK <ArrowRight size={15} />
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {step !== 5 && step !== 0 && (
+            <div className="mt-10 flex items-center justify-between">
+              <Button variant="ghost" onClick={goBack}>Back</Button>
+              {step === 4 ? <span /> : <Button onClick={goNext}>Continue</Button>}
             </div>
           )}
-
-          {step === 4 && (
-            <div>
-              <h1 className="text-center text-2xl font-semibold text-ink">STACK is free during early access.</h1>
-              <p className="mx-auto mt-2 max-w-md text-center text-sm text-neutral-500">No card, no trial clock. If paid plans arrive later, we&apos;ll tell you before anything is ever charged.</p>
-              <div className="mx-auto mt-6 max-w-md rounded-2xl border border-neutral-200 p-5">
-                <p className="text-sm font-semibold text-ink">Included for you</p>
-                <ul className="mt-3 space-y-2">
-                  {EARLY_ACCESS_INCLUDES.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-neutral-600">
-                      <Check size={14} className="mt-0.5 shrink-0 text-blue" /> {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-6 flex justify-center">
-                <Button onClick={chooseFree}>
-                  Continue <ArrowRight size={15} />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="flex flex-col items-center text-center">
-              <LogoIcon size={48} />
-              <h1 className="mt-6 text-2xl font-semibold text-ink">Your STACK is ready.</h1>
-              <div className="mt-4 h-5">
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={readyMessageIndex}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm text-neutral-500"
-                  >
-                    {readyMessages[readyMessageIndex]}
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-              <Button className="mt-8" onClick={enterStack}>
-                Enter STACK <ArrowRight size={15} />
-              </Button>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-
-      {step !== 5 && step !== 0 && (
-        <div className="mt-10 flex items-center justify-between">
-          <Button variant="ghost" onClick={goBack}>Back</Button>
-          {step === 4 ? <span /> : <Button onClick={goNext}>Continue</Button>}
-        </div>
-      )}
-    </div>
+        </PaperSheet>
+      </div>
+    </DeskSurface>
   );
 }
 

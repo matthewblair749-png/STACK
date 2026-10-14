@@ -12,8 +12,8 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
     <section id="pricing-section" className={cn("mx-auto max-w-7xl px-6", compact ? "py-4" : "py-28 sm:py-36")}>
       {!compact && (
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-blue">Pricing</p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight text-ink sm:text-6xl">
+          <p className="inline-flex rounded-full bg-blue-soft px-3.5 py-1.5 text-[13px] font-medium text-blue">Pricing</p>
+          <h2 className="mt-5 text-balance text-4xl font-semibold tracking-[-0.035em] text-ink sm:text-[3.5rem] sm:leading-[1.05]">
             Free while we&apos;re in early access.
           </h2>
           <p className="mt-6 text-lg text-neutral-500 sm:text-xl">
@@ -31,8 +31,8 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.4, delay: i * 0.06 }}
             className={cn(
-              "flex flex-col rounded-3xl border p-7",
-              plan.highlighted ? "border-ink bg-ink text-paper" : "border-neutral-100 bg-white",
+              "flex flex-col rounded-[14px] p-7 shadow-[0_30px_50px_-34px_rgba(0,0,0,0.4),0_2px_6px_-2px_rgba(0,0,0,0.08)]",
+              plan.highlighted ? "bg-ink text-paper" : "bg-white",
             )}
           >
             <p className={cn("text-base font-semibold", plan.highlighted ? "text-paper" : "text-ink")}>{plan.name}</p>
@@ -52,11 +52,11 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
             </ul>
 
             {plan.comingSoon ? (
-              <Button size="lg" className="mt-7 w-full" variant="outline" disabled>
+              <Button size="lg" className="mt-7 w-full rounded-full" variant="outline" disabled>
                 {plan.cta}
               </Button>
             ) : (
-              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full" })}>
+              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full rounded-full" })}>
                 {plan.cta}
               </Link>
             )}
