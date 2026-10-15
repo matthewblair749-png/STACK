@@ -66,11 +66,17 @@ export interface HomeViewProps {
 
 const card = "rounded-3xl border border-neutral-100 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_40px_-28px_rgba(0,0,0,0.18)]";
 
-function CardTitle({ icon, title, right }: { icon: ReactNode; title: string; right?: ReactNode }) {
+/** Colour by meaning: red = needs you, blue = meetings and information, green = done and go, yellow = waiting. */
+type Tone = "red" | "blue" | "green" | "yellow";
+const toneIcon: Record<Tone, string> = { red: "bg-red-soft text-red", blue: "bg-blue-soft text-blue", green: "bg-green-soft text-green", yellow: "bg-yellow-soft text-yellow-700" };
+const toneText: Record<Tone, string> = { red: "text-red", blue: "text-blue", green: "text-green", yellow: "text-yellow-700" };
+const toneDot: Record<Tone, string> = { red: "bg-red", blue: "bg-blue", green: "bg-green", yellow: "bg-yellow" };
+
+function CardTitle({ icon, title, right, tone }: { icon: ReactNode; title: string; right?: ReactNode; tone: Tone }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-50 text-neutral-600">{icon}</span>
+        <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg", toneIcon[tone])}>{icon}</span>
         {title}
       </h2>
       {right}
@@ -260,11 +266,11 @@ export function HomeView(p: HomeViewProps) {
   const c = brief?.counts;
   const summary = c
     ? [
-        { n: c.priorities, label: c.priorities === 1 ? "needs you" : "need you", to: "needs-you", tone: "text-ink" },
-        { n: c.meetingsToPrepare, label: c.meetingsToPrepare === 1 ? "meeting" : "meetings", to: "today", tone: "text-ink" },
-        { n: c.projectsAtRisk, label: "at risk", to: "waiting", tone: "text-red" },
-        { n: c.peopleWaiting, label: "waiting on you", to: "waiting", tone: "text-yellow-700" },
-        { n: c.dueThisWeek, label: "due this week", to: "today", tone: "text-ink" },
+        { n: c.priorities, label: c.priorities === 1 ? "needs you" : "need you", to: "needs-you", tone: "red" as Tone },
+        { n: c.meetingsToPrepare, label: c.meetingsToPrepare === 1 ? "meeting" : "meetings", to: "today", tone: "blue" as Tone },
+        { n: c.projectsAtRisk, label: "at risk", to: "waiting", tone: "red" as Tone },
+        { n: c.peopleWaiting, label: "waiting on you", to: "waiting", tone: "yellow" as Tone },
+        { n: c.dueThisWeek, label: "due this week", to: "today", tone: "blue" as Tone },
       ].filter((s) => s.n > 0)
     : [];
 
@@ -288,9 +294,10 @@ export function HomeView(p: HomeViewProps) {
                 <span key={s.label} className="inline-flex items-center gap-1">
                   {i > 0 && <span aria-hidden className="px-1 text-neutral-300">·</span>}
                   <button onClick={() => p.onJump(s.to)} className="rounded-md px-1 hover:bg-neutral-50 hover:text-ink">
-                    {/* The first figure is the one that matters most today, so it gets the highlighter. */}
-                    <span className={cn(i === 0 && "highlight text-ink")}>
-                      <span className={cn("font-semibold tabular-nums", s.tone)}>{s.n}</span> {s.label}
+                    {/* The first figure is the one that matters most today, so it gets the highlighter, in its colour. */}
+                    <span className={cn("inline-flex items-center gap-1.5", i === 0 && `highlight hl-${s.tone} text-ink`)}>
+                      <span aria-hidden className={cn("h-2 w-2 rounded-full", toneDot[s.tone])} />
+                      <span><span className={cn("font-semibold tabular-nums", toneText[s.tone])}>{s.n}</span> {s.label}</span>
                     </span>
                   </button>
                 </span>
@@ -337,10 +344,10 @@ export function HomeView(p: HomeViewProps) {
           <div className="min-w-0 space-y-6">
             {/* Start here: the one thing to do next */}
             <motion.section {...motionProps(1)} aria-label="Start here" className="relative overflow-hidden rounded-3xl bg-[#121110] p-6 text-[#ffffff] shadow-[0_24px_60px_-28px_rgba(18,17,16,0.7)] ring-1 ring-[rgba(255,255,255,0.06)] sm:p-8">
-              <div aria-hidden className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(255,225,77,0.22),transparent)]" />
+              <div aria-hidden className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(229,72,59,0.3),transparent)]" />
               <div className="relative">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ffe14d]"><Zap size={13} /> Start here</p>
+                  <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff8a7d]"><Zap size={13} /> Start here</p>
                   {state && state.priorities.length > 1 && (
                     <button onClick={() => p.onJump("needs-you")} className="text-xs font-medium text-[rgba(255,255,255,0.6)] hover:text-[#ffffff]">
                       1 of {state.priorities.length} priorities
@@ -354,7 +361,7 @@ export function HomeView(p: HomeViewProps) {
                     <p className="mt-3 max-w-2xl text-2xl font-semibold leading-snug tracking-tight sm:text-[28px]">{hero.title}</p>
                     {hero.why && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[rgba(255,255,255,0.7)]">{hero.why}</p>}
                     {hero.action && (
-                      <button onClick={() => p.onRun(hero.action!)} className="btn-stack btn-sm mt-5">
+                      <button onClick={() => p.onRun(hero.action!)} className="mt-5 inline-flex items-center gap-2 rounded-full bg-green px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_-12px_rgba(21,128,61,0.8)] transition-transform hover:-translate-y-0.5">
                         {hero.action.label} <ArrowRight size={15} />
                       </button>
                     )}
@@ -370,8 +377,8 @@ export function HomeView(p: HomeViewProps) {
 
             {/* Waiting for approval: always right here when there is any */}
             {p.pending.length > 0 && (
-              <section id="approvals" aria-label="Waiting for your approval" className="rounded-3xl border border-blue/25 bg-blue-soft/40 p-4 sm:p-5">
-                <p className="text-xs font-semibold uppercase tracking-wider text-blue">Waiting for your approval</p>
+              <section id="approvals" aria-label="Waiting for your approval" className="rounded-3xl border border-green/25 bg-green-soft/40 p-4 sm:p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-green">Waiting for your approval</p>
                 {p.pending.map((a) => <ActionCard key={a.id} action={a} onResolved={(s) => p.onActionResolved(a.id, s)} />)}
               </section>
             )}
@@ -382,7 +389,7 @@ export function HomeView(p: HomeViewProps) {
 
             {/* Priorities, ranked, each with its reason */}
             <motion.section {...motionProps(3)} id="needs-you" aria-labelledby="needs-title" className={cn(card, "scroll-mt-6 p-5 sm:p-6")}>
-              <CardTitle icon={<Flag size={15} />} title="Needs you" right={state && state.priorities.length > 0 ? <span className="text-xs text-neutral-400">Ranked by what matters most</span> : undefined} />
+              <CardTitle tone="red" icon={<Flag size={15} />} title="Needs you" right={state && state.priorities.length > 0 ? <span className="text-xs text-neutral-400">Ranked by what matters most</span> : undefined} />
               <span id="needs-title" className="sr-only">Needs you</span>
               {loading || !state ? (
                 <div className="mt-5 space-y-4"><Skeleton className="h-20" /><Skeleton className="h-20" /></div>
@@ -392,14 +399,14 @@ export function HomeView(p: HomeViewProps) {
                 <ol className="mt-3 divide-y divide-neutral-100">
                   {state.priorities.map((x, i) => (
                     <li key={x.id} className="group flex gap-4 py-4 first:pt-2 last:pb-1">
-                      <span className={cn("mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold", i === 0 ? "bg-[#ffe14d] text-[#121110]" : "bg-neutral-100 text-neutral-600")}>{i + 1}</span>
+                      <span className={cn("mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold", i === 0 ? "bg-red text-white" : "bg-neutral-100 text-neutral-600")}>{i + 1}</span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
                           {x.appId && <IntegrationLogo app={x.appId} name={x.appId} size="sm" />}
                           <span className="font-semibold uppercase tracking-wider">{kindLabel(x.kind, x.appId)}</span>
                           {x.due && <span>· {whenLabel(x.due)}</span>}
                         </div>
-                        <p className="mt-1 text-[15px] font-semibold leading-snug text-ink">{i === 0 ? <span className="highlight">{x.title}</span> : x.title}</p>
+                        <p className="mt-1 text-[15px] font-semibold leading-snug text-ink">{i === 0 ? <span className="highlight hl-red">{x.title}</span> : x.title}</p>
                         {x.why.length > 0 && <p className="mt-1 text-sm text-neutral-500">{x.why.slice(0, 3).join(" · ")}</p>}
                         <p className="mt-1.5 text-sm text-ink"><span className="font-medium text-blue">Next: </span>{x.nextStep}</p>
                         <div className="mt-3 flex flex-wrap gap-2">{priorityActions(x).map((a, idx) => <ActionButton key={a.label} action={a} primary={idx === 0} onRun={p.onRun} />)}</div>
@@ -412,7 +419,7 @@ export function HomeView(p: HomeViewProps) {
 
             {/* What people are saying */}
             <motion.section {...motionProps(4)} id="understand" aria-labelledby="convo-title" className={cn(card, "scroll-mt-6 p-5 sm:p-6")}>
-              <CardTitle icon={<MessageCircle size={15} />} title={convoCount > 0 ? `Needs a look (${convoCount})` : "Needs a look"} right={<Link href="/inbox" className="text-xs font-medium text-neutral-500 hover:text-ink">Open Inbox</Link>} />
+              <CardTitle tone="blue" icon={<MessageCircle size={15} />} title={convoCount > 0 ? `Needs a look (${convoCount})` : "Needs a look"} right={<Link href="/inbox" className="text-xs font-medium text-neutral-500 hover:text-ink">Open Inbox</Link>} />
               <span id="convo-title" className="sr-only">Needs a look</span>
               {loading || !state ? (
                 <div className="mt-5 space-y-3"><Skeleton className="h-14" /><Skeleton className="h-14" /></div>
@@ -464,12 +471,12 @@ export function HomeView(p: HomeViewProps) {
           {/* ---------------- the day ---------------- */}
           <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <motion.section {...motionProps(2)} id="today" aria-label="Today" className={cn(card, "scroll-mt-6 p-5")}>
-              <CardTitle icon={<CalendarClock size={15} />} title="Today" right={<Link href="/calendar" className="text-xs font-medium text-neutral-500 hover:text-ink">Calendar</Link>} />
+              <CardTitle tone="blue" icon={<CalendarClock size={15} />} title="Today" right={<Link href="/calendar" className="text-xs font-medium text-neutral-500 hover:text-ink">Calendar</Link>} />
               {loading || !state ? <div className="mt-4 space-y-3"><Skeleton className="h-40" /></div> : <DayTimeline items={state.moveForward.upNext} />}
             </motion.section>
 
             <motion.section {...motionProps(3)} id="waiting" aria-label="Waiting and at risk" className={cn(card, "scroll-mt-6 p-5")}>
-              <CardTitle icon={<Clock size={15} />} title="Waiting and at risk" />
+              <CardTitle tone="yellow" icon={<Clock size={15} />} title="Waiting and at risk" />
               {loading || !state ? (
                 <div className="mt-4"><Skeleton className="h-20" /></div>
               ) : (
@@ -503,7 +510,7 @@ export function HomeView(p: HomeViewProps) {
 
             {state && state.act.length > 0 && (
               <motion.section {...motionProps(4)} id="act" aria-label="Quick actions" className={cn(card, "scroll-mt-6 p-5")}>
-                <CardTitle icon={<Zap size={15} />} title="Quick actions" />
+                <CardTitle tone="green" icon={<Zap size={15} />} title="Quick actions" />
                 <div className="mt-3 grid gap-2">
                   {state.act.map((a) => (
                     <button key={a.label} onClick={() => p.onRun(a)} className="group flex w-full items-center justify-between gap-3 rounded-xl border border-neutral-200 px-3.5 py-2.5 text-left transition-colors hover:border-ink">
@@ -518,7 +525,7 @@ export function HomeView(p: HomeViewProps) {
 
             {nextSteps.length > 0 && (
               <section className={cn(card, "p-5")} aria-label="Suggested follow-ups">
-                <CardTitle icon={<Sparkles size={15} />} title="After what you finished" />
+                <CardTitle tone="green" icon={<Sparkles size={15} />} title="After what you finished" />
                 <ul className="mt-3 space-y-3">
                   {nextSteps.map((n) => (
                     <li key={n.id} className="flex items-start gap-2">

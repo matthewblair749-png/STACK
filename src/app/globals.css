@@ -264,6 +264,19 @@ textarea:focus-visible {
 }
 
 /*
+ * In the app, colour means one thing everywhere: red = needs you, blue = meetings and information, green = done and
+ * go, yellow = waiting. The highlighter takes the colour of what it marks. In dark mode it glows instead of covering.
+ */
+.hl-red { --highlighter: #ffc9c1; }
+.hl-blue { --highlighter: #cdd7ff; }
+.hl-green { --highlighter: #bfeccd; }
+.hl-yellow { --highlighter: #ffe14d; }
+:root[data-theme="dark"]:not([data-surface="marketing"]) .hl-red { --highlighter: rgba(255, 111, 97, 0.32); }
+:root[data-theme="dark"]:not([data-surface="marketing"]) .hl-blue { --highlighter: rgba(143, 162, 255, 0.32); }
+:root[data-theme="dark"]:not([data-surface="marketing"]) .hl-green { --highlighter: rgba(60, 204, 116, 0.3); }
+:root[data-theme="dark"]:not([data-surface="marketing"]) .hl-yellow { --highlighter: rgba(255, 214, 48, 0.32); }
+
+/*
  * Clay: the public site's material. Everything is soft and puffy - a light catching the top edge, a gentle shade
  * pressed into the bottom, and a soft shadow on the desk below - like shapes modelled from matte clay.
  */
