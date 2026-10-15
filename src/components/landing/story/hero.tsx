@@ -161,7 +161,7 @@ function Brief({ m, approved, onApprove }: { m: Morning; approved: boolean; onAp
             {m.priorities.map((p, i) => (
               <li key={p.title} className={cn("rounded-2xl px-3 py-3", i === 0 && "bg-neutral-25 ring-1 ring-neutral-100", enter)} style={{ animationDelay: `${120 + i * 90}ms` }}>
                 <div className="flex items-start gap-3">
-                  <span className={cn("mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold", i === 0 ? "bg-[#b9c8ff] text-[#121110]" : "bg-neutral-100 text-neutral-600")}>
+                  <span className={cn("mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold", i === 0 ? "bg-[#ffe14d] text-[#121110]" : "bg-neutral-100 text-neutral-600")}>
                     {i + 1}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -190,12 +190,12 @@ function Brief({ m, approved, onApprove }: { m: Morning; approved: boolean; onAp
                         </>
                       ) : (
                         <>
-                          <span className="mr-auto text-[11px] font-medium text-[#2f4fe0]">Waiting for your OK</span>
+                          <span className="mr-auto text-[11px] font-medium text-[#a16207]">Waiting for your OK</span>
                           <span className="rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-700">Edit</span>
                           <button
                             type="button"
                             onClick={onApprove}
-                            className="inline-flex items-center gap-1 rounded-full bg-[linear-gradient(180deg,#a9bbff,#6f8cff)] px-2.5 py-1 text-[11px] font-semibold text-[#121110] shadow-[0_6px_14px_-8px_rgba(47,79,224,0.6)] transition-transform hover:-translate-y-0.5"
+                            className="inline-flex items-center gap-1 rounded-full bg-[linear-gradient(180deg,#ffeb73,#ffd630)] px-2.5 py-1 text-[11px] font-semibold text-[#121110] shadow-[0_6px_14px_-8px_rgba(161,98,7,0.6)] transition-transform hover:-translate-y-0.5"
                           >
                             <CornerDownLeft size={11} /> Approve
                           </button>
@@ -234,7 +234,7 @@ export function StoryHero() {
 
   return (
     <section className="relative overflow-hidden px-6 pb-28 pt-12 sm:pt-16 lg:pb-32 lg:pt-20">
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_78%_40%,rgba(111,140,255,0.2),transparent_70%),radial-gradient(ellipse_70%_55%_at_20%_0%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_78%_40%,rgba(255,225,77,0.2),transparent_70%),radial-gradient(ellipse_70%_55%_at_20%_0%,#fbfaf7_0%,rgba(251,250,247,0)_70%)]" />
 
       <div className="relative mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
         {/* the promise */}
@@ -300,7 +300,7 @@ export function StoryHero() {
                   }}
                   className={cn("relative overflow-hidden rounded-full px-3 py-1.5 text-[13px] font-semibold transition-colors", n === i ? "text-[#121110]" : "text-neutral-500 hover:text-ink")}
                 >
-                  {n === i && <motion.span layoutId="hero-role" transition={{ duration: 0.35, ease }} className="absolute inset-0 rounded-full bg-[linear-gradient(180deg,#a9bbff,#6f8cff)]" />}
+                  {n === i && <motion.span layoutId="hero-role" transition={{ duration: 0.35, ease }} className="absolute inset-0 rounded-full bg-[linear-gradient(180deg,#ffeb73,#ffd630)]" />}
                   <span className="relative">{x.role}</span>
                   {/* while it's cycling, a thin line shows when the next morning comes */}
                   {n === i && cycling && <span key={`t-${i}`} aria-hidden className="absolute bottom-0 left-0 h-[2px] bg-[rgba(18,17,16,0.35)] [animation:progress_6.5s_linear_forwards]" />}

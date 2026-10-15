@@ -32,7 +32,7 @@ export function MorningChapter() {
           <h2 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl lg:text-[3.4rem]">
             You haven&apos;t started yet.
             <br />
-            <span className="text-[#2f4fe0]">You&apos;re already behind.</span>
+            <span className="text-[#f5c400] [text-shadow:0_1px_0_rgba(161,98,7,0.35)]">You&apos;re already behind.</span>
           </h2>
           <div className="mt-7 max-w-lg space-y-4 text-lg leading-relaxed text-neutral-500">
             <p>Twenty-three emails. Fourteen Slack threads. A meeting that moved. A board that changed overnight.</p>
