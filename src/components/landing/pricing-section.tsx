@@ -45,7 +45,7 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
             <ul className="mt-6 flex-1 space-y-3">
               {plan.features.map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm">
-                  <Check size={15} className={cn("mt-0.5 shrink-0", plan.highlighted ? "text-[#7ee8a4]" : "text-blue")} />
+                  <Check size={15} className={cn("mt-0.5 shrink-0", plan.highlighted ? "text-yellow" : "text-blue")} />
                   <span className={plan.highlighted ? "text-neutral-200" : "text-neutral-700"}>{f}</span>
                 </li>
               ))}
