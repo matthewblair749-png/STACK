@@ -4,7 +4,6 @@ import { Logo } from "@/components/logo";
 /** Only links that go somewhere real. (Pages like Blog, Careers or Docs get added here when they exist.) */
 const columns = [
   { title: "Product", links: [{ label: "How it works", href: "/#how" }, { label: "Integrations", href: "/#integrations" }, { label: "Pricing", href: "/pricing" }] },
-  { title: "Account", links: [{ label: "Get started", href: "/signup" }, { label: "Sign in", href: "/login" }] },
   { title: "Legal", links: [{ label: "Privacy", href: "/privacy" }, { label: "Terms", href: "/terms" }] },
 ];
 

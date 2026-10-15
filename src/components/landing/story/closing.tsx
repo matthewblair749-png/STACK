@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, Eye, Hand, Lock, Link2, Trash2, LogOut } from "lucide-react";
+import { CalendarDays, Eye, Hand, Lock, Link2, Trash2, LogOut } from "lucide-react";
+import { LAUNCH_MONTH } from "@/lib/launch";
 import { ChapterMark, Reveal } from "./primitives";
 import { NumbersRow } from "./extras";
 
@@ -61,13 +61,10 @@ export function ClosingChapter() {
           This time, you <span className="highlight">start ahead.</span>
         </h2>
         <p className="mx-auto mt-6 max-w-md text-[17px] leading-relaxed text-neutral-500">
-          Connect your first app in about a minute. STACK is free while it&apos;s in early access, no card needed.
+          STACK opens in {LAUNCH_MONTH}. Connecting your first app will take about a minute, and it&apos;s free to start.
         </p>
         <div className="mt-9 flex justify-center">
-          <Link href="/signup" className="btn-stack group">
-            Get started free
-            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          <span className="btn-stack pointer-events-none" aria-label="STACK launches in December 2026"><CalendarDays size={16} /> Coming {LAUNCH_MONTH}</span>
         </div>
       </Reveal>
     </section>

@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { pricingPlans } from "@/components/pricing-plans";
 import { cn } from "@/lib/utils";
+import { LAUNCH_MONTH, LAUNCH_SHORT } from "@/lib/launch";
 
 export function PricingSection({ compact = false }: { compact?: boolean }) {
   return (
@@ -14,7 +14,7 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-[13px] uppercase tracking-wide text-neutral-500">Pricing</p>
           <h2 className="mt-5 text-balance text-4xl font-semibold tracking-[-0.035em] text-ink sm:text-[3.5rem] sm:leading-[1.05]">
-            <span className="highlight">Free</span> while we&apos;re in early access.
+            <span className="highlight">Free</span> to start when STACK opens in {LAUNCH_MONTH}.
           </h2>
           <p className="mt-6 text-lg text-neutral-500 sm:text-xl">
             No card, no trial clock. If paid plans arrive later, you&apos;ll hear about it before anything is ever charged.
@@ -56,9 +56,9 @@ export function PricingSection({ compact = false }: { compact?: boolean }) {
                 {plan.cta}
               </Button>
             ) : (
-              <Link href="/signup" className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "mt-7 w-full rounded-full" })}>
-                {plan.cta}
-              </Link>
+              <span className={buttonClasses({ size: "lg", variant: plan.highlighted ? "secondary" : "outline", className: "pointer-events-none mt-7 w-full rounded-full" })}>
+                Coming {LAUNCH_SHORT}
+              </span>
             )}
           </motion.div>
         ))}

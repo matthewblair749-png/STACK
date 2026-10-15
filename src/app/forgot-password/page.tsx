@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { ComingSoon } from "@/components/coming-soon";
+import { COMING_SOON } from "@/lib/launch";
 import { AuthCard } from "@/components/auth-card";
 import { ForgotPasswordForm } from "@/components/forgot-password-form";
 import { configuredAuthProviders } from "@/server/auth";
 
 export default function ForgotPasswordPage() {
+  if (COMING_SOON) return <ComingSoon />;
   const emailConfigured = configuredAuthProviders.some((p) => p.id === "resend");
 
   return (

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ComingSoon } from "@/components/coming-soon";
+import { COMING_SOON } from "@/lib/launch";
 import { AuthCard } from "@/components/auth-card";
 import { AuthButtons } from "@/components/auth-buttons";
 import { configuredAuthProviders } from "@/server/auth";
@@ -10,6 +12,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
+  if (COMING_SOON) return <ComingSoon />;
   const { callbackUrl: raw, error } = await searchParams;
   const errorMessage = signInErrorMessage(error);
   const callbackUrl = safeCallbackUrl(raw);

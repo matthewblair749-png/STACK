@@ -4,6 +4,7 @@ import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./db";
 import { sanitizeProcessEnv } from "./env";
+import { COMING_SOON } from "@/lib/launch";
 
 // Before anything below reads a client ID or secret (see env.ts for why).
 sanitizeProcessEnv();
@@ -66,6 +67,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: "/login",
   },
   callbacks: {
+    // Until launch, every sign-in (Google or email link) is refused before an account is created or an email is sent.
+    signIn() {
+      return !COMING_SOON;
+    },
     async session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;

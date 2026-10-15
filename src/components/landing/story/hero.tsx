@@ -10,7 +10,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, Check, CornerDownLeft, Sparkles, Undo2 } from "lucide-react";
+import { ArrowDown, CalendarDays, Check, CornerDownLeft, Sparkles, Undo2 } from "lucide-react";
+import { LAUNCH_MONTH } from "@/lib/launch";
 import { IntegrationLogo } from "@/components/brand-icons";
 import { LogoMark } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -241,7 +242,7 @@ export function StoryHero() {
         <div className="text-center lg:text-left">
           <motion.p {...rise(0)} className="clay-pill inline-flex items-center gap-2 bg-white px-4 py-1.5 text-[13px] font-medium text-neutral-700">
             <span className="h-2 w-2 rounded-full bg-green shadow-[0_0_0_3px_rgba(21,128,61,0.15)]" />
-            Early access is open · free, no card
+            Launching {LAUNCH_MONTH} · free to start
           </motion.p>
           <motion.h1 {...rise(0.06)} className="mt-7 text-balance text-[2.75rem] font-semibold leading-[1.02] tracking-[-0.04em] text-ink sm:text-[3.75rem] lg:text-wrap lg:text-[3.1rem] xl:text-[3.75rem]">
             <span className="sr-only">Know what needs you before you open your email, chats, calendar, tasks, files or docs.</span>
@@ -257,10 +258,7 @@ export function StoryHero() {
             already drafted and waiting for your OK.
           </motion.p>
           <motion.div {...rise(0.22)} className="mt-9 flex flex-wrap items-center justify-center gap-6 lg:justify-start">
-            <Link href="/signup" className="btn-stack group">
-              Get started free
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            <span className="btn-stack pointer-events-none" aria-label="STACK launches in December 2026"><CalendarDays size={16} /> Coming {LAUNCH_MONTH}</span>
             <Link href="#how" className="group inline-flex items-center gap-1.5 text-[15px] font-medium text-ink underline decoration-neutral-300 underline-offset-4 hover:decoration-ink">
               See how it works
               <ArrowDown size={15} className="transition-transform group-hover:translate-y-0.5" />

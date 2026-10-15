@@ -177,7 +177,7 @@ export function NumbersRow({ appCount }: { appCount: number }) {
     [String(appCount), "apps connect today"],
     ["0", "actions taken without your OK"],
     ["AES-256", "encryption on every connection"],
-    ["$0", "while STACK is in early access"],
+    ["$0", "to start, from December 2026"],
   ];
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -194,10 +194,11 @@ export function NumbersRow({ appCount }: { appCount: number }) {
 /* ------------------------------------------------------------------ FAQ */
 
 const FAQ = [
-  ["Is STACK free?", "Yes, while it's in early access. There's no card and no trial clock. If paid plans come later, you'll hear about it before anything is ever charged."],
+  ["When can I use STACK?", "STACK opens in December 2026. Sign-in is switched off until then."],
+  ["Will it be free?", "Yes, it's free to start. There's no card and no trial clock. If paid plans come later, you'll hear about it before anything is ever charged."],
   ["What can STACK see in my apps?", "Only the apps you connect, and read-only wherever an app lets you choose. Every connection's token is encrypted with AES-256-GCM and never sent back to your browser."],
   ["Will STACK send emails or change things on its own?", "No. When STACK drafts a reply, a task or an invite, it waits for you to approve, edit or cancel it. Nothing is sent, created or changed on its own."],
-  ["Which apps does it work with?", "Email, calendar and files from Google, plus chat, task, CRM, support, code and research tools - many of them scroll past at the top of this page, and you'll see every one when you sign up. Each connects in about a minute."],
+  ["Which apps does it work with?", "Email, calendar and files from Google, plus chat, task, CRM, support, code and research tools - many of them scroll past at the top of this page, and you'll see every one when STACK opens. Each connects in about a minute."],
   ["Can I take my data back out?", "Disconnect an app and STACK revokes its access where the app allows it and deletes what it imported. You can delete your whole account from Settings at any time."],
   ["Does it work on my phone?", "Yes. STACK runs in your browser on any screen - check your brief on your phone, act on it at your desk. Nothing to install."],
 ];
