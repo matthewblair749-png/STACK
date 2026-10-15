@@ -262,6 +262,8 @@ export function HomeView(p: HomeViewProps) {
     : state?.moveForward.nextBestAction ? { title: state.moveForward.nextBestAction.title, why: state.moveForward.nextBestAction.why, action: state.moveForward.nextBestAction.action }
     : top ? { title: top.title, why: top.why[0], action: priorityActions(top)[0] }
     : null;
+  // Nothing needs you: the focal card turns green so "all clear" reads at a glance.
+  const clear = !loading && !hero;
 
   const c = brief?.counts;
   const summary = c
@@ -304,7 +306,11 @@ export function HomeView(p: HomeViewProps) {
               ))}
             </nav>
           ) : (
-            <p className="mt-1.5 text-base text-neutral-500">{loading ? "Reading your apps..." : "You're all caught up."}</p>
+            loading ? (
+              <p className="mt-1.5 text-base text-neutral-500">Reading your apps...</p>
+            ) : (
+              <p className="mt-1.5 inline-flex items-center gap-1.5 text-base font-medium text-green"><CheckCircle2 size={17} /> You&apos;re all caught up.</p>
+            )
           )}
         </div>
         {p.connected.length > 0 && <SyncPill connected={p.connected} syncing={p.syncing} lastSyncAt={state?.lastSyncAt} issues={p.syncIssues} hasError={p.hasConnectionError} onSync={p.onSync} />}
@@ -343,11 +349,22 @@ export function HomeView(p: HomeViewProps) {
           {/* ---------------- the work ---------------- */}
           <div className="min-w-0 space-y-6">
             {/* Start here: the one thing to do next */}
-            <motion.section {...motionProps(1)} aria-label="Start here" className="relative overflow-hidden rounded-3xl bg-[#121110] p-6 text-[#ffffff] shadow-[0_24px_60px_-28px_rgba(18,17,16,0.7)] ring-1 ring-[rgba(255,255,255,0.06)] sm:p-8">
-              <div aria-hidden className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[radial-gradient(closest-side,rgba(229,72,59,0.3),transparent)]" />
+            <motion.section
+              {...motionProps(1)}
+              aria-label={clear ? "All clear" : "Start here"}
+              className={cn(
+                "relative overflow-hidden rounded-3xl p-6 text-[#ffffff] ring-1 ring-[rgba(255,255,255,0.06)] transition-colors duration-500 sm:p-8",
+                clear ? "bg-[linear-gradient(135deg,#0f3d26,#14532d)] shadow-[0_24px_60px_-28px_rgba(20,83,45,0.75)]" : "bg-[#121110] shadow-[0_24px_60px_-28px_rgba(18,17,16,0.7)]",
+              )}
+            >
+              <div aria-hidden className={cn("pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full", clear ? "bg-[radial-gradient(closest-side,rgba(74,222,128,0.35),transparent)]" : "bg-[radial-gradient(closest-side,rgba(229,72,59,0.3),transparent)]")} />
               <div className="relative">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff8a7d]"><Zap size={13} /> Start here</p>
+                  {clear ? (
+                    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#86efac]"><CheckCircle2 size={13} /> All clear</p>
+                  ) : (
+                    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#ff8a7d]"><Zap size={13} /> Start here</p>
+                  )}
                   {state && state.priorities.length > 1 && (
                     <button onClick={() => p.onJump("needs-you")} className="text-xs font-medium text-[rgba(255,255,255,0.6)] hover:text-[#ffffff]">
                       1 of {state.priorities.length} priorities
@@ -368,8 +385,8 @@ export function HomeView(p: HomeViewProps) {
                   </>
                 ) : (
                   <>
-                    <p className="mt-3 flex items-center gap-2.5 text-2xl font-semibold tracking-tight sm:text-[28px]"><CheckCircle2 className="text-green" size={26} /> You&apos;re all clear.</p>
-                    <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[rgba(255,255,255,0.7)]">Nothing is competing for your attention right now. When something matters, it shows up here first with the reason.</p>
+                    <p className="mt-3 flex items-center gap-2.5 text-2xl font-semibold tracking-tight sm:text-[28px]"><CheckCircle2 className="text-[#86efac]" size={26} /> You&apos;re all clear.</p>
+                    <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[rgba(255,255,255,0.78)]">Nothing is competing for your attention right now. When something matters, it shows up here first with the reason.</p>
                   </>
                 )}
               </div>
@@ -389,7 +406,7 @@ export function HomeView(p: HomeViewProps) {
 
             {/* Priorities, ranked, each with its reason */}
             <motion.section {...motionProps(3)} id="needs-you" aria-labelledby="needs-title" className={cn(card, "scroll-mt-6 p-5 sm:p-6")}>
-              <CardTitle tone="red" icon={<Flag size={15} />} title="Needs you" right={state && state.priorities.length > 0 ? <span className="text-xs text-neutral-400">Ranked by what matters most</span> : undefined} />
+              <CardTitle tone={state && !loading && state.priorities.length === 0 ? "green" : "red"} icon={<Flag size={15} />} title="Needs you" right={state && state.priorities.length > 0 ? <span className="text-xs text-neutral-400">Ranked by what matters most</span> : undefined} />
               <span id="needs-title" className="sr-only">Needs you</span>
               {loading || !state ? (
                 <div className="mt-5 space-y-4"><Skeleton className="h-20" /><Skeleton className="h-20" /></div>

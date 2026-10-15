@@ -77,8 +77,11 @@ const projects: ProjectCard[] = [
   { id: "p1", name: "Website launch", description: "", status: "AtRisk", health: "at_risk", progress: 62, deadline: minutes(60 * 24 * 4), summary: "Copy is the last blocker. Three GitHub issues remain and the design review is today.", people: [{ id: "1", name: "Priya" }, { id: "2", name: "Marcus" }], counts: { tasks: 12, open: 4, messages: 27, files: 9, meetings: 2 }, blockers: 1, blockerReason: "Waiting on final copy", nextAction: "Send the copy to Priya" },
 ];
 
-export function HomePreview({ mode }: { mode: "full" | "empty" }) {
+export function HomePreview({ mode }: { mode: "full" | "empty" | "clear" }) {
   const noop = () => {};
+  // "clear": apps connected, nothing needs you.
+  const clearState: WorkState = { ...state, priorities: [], act: [], moveForward: { ...state.moveForward, nextBestAction: null, atRisk: [], waitingOnMe: [], nextSteps: [] } };
+  const zero = { priorities: 0, meetingsToPrepare: 0, projectsAtRisk: 0, peopleWaiting: 0, dueThisWeek: 0 };
   const apps2 = mode === "empty" ? [] : apps;
   const ref = useRef(null);
   void ref;
@@ -91,8 +94,8 @@ export function HomePreview({ mode }: { mode: "full" | "empty" }) {
             <ThemePicker />
           </div>
           <HomeView
-            state={mode === "empty" ? null : state}
-            brief={mode === "empty" ? { greeting: "Good morning, Matt.", counts: { priorities: 0, meetingsToPrepare: 0, projectsAtRisk: 0, peopleWaiting: 0, dueThisWeek: 0 }, plan: null, hasAnything: false } : brief}
+            state={mode === "empty" ? null : mode === "clear" ? clearState : state}
+            brief={mode === "full" ? brief : { greeting: "Good morning, Matt.", counts: zero, plan: null, hasAnything: false }}
             loading={false}
             apps={apps2}
             connected={apps2}
