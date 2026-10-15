@@ -112,7 +112,7 @@ export function AskDemo() {
               onClick={() => setActive(i)}
               className={cn(
                 "clay-pill px-4 py-2.5 text-sm font-medium transition-colors",
-                i === active ? "!bg-[linear-gradient(180deg,#ffeb73,#ffd630)] text-ink" : "bg-white text-neutral-700 hover:text-ink",
+                i === active ? "!bg-[linear-gradient(180deg,#7ee8a4,#34c26e)] text-ink" : "bg-white text-neutral-700 hover:text-ink",
               )}
             >
               {x.q}
@@ -126,7 +126,7 @@ export function AskDemo() {
           <div key={active} className="[animation:panel-in_0.4s_cubic-bezier(0.22,1,0.36,1)]">
               <p className="ml-auto w-fit max-w-[85%] rounded-[18px] rounded-br-[6px] bg-neutral-50 px-4 py-2.5 text-[15px] text-ink">{a.q}</p>
               <div className="mt-5 flex gap-3">
-                <span className="clay-pill flex h-8 w-8 shrink-0 items-center justify-center !bg-[linear-gradient(180deg,#ffeb73,#ffd630)]">
+                <span className="clay-pill flex h-8 w-8 shrink-0 items-center justify-center !bg-[linear-gradient(180deg,#7ee8a4,#34c26e)]">
                   <Sparkles size={14} className="text-ink" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -148,10 +148,10 @@ export function AskDemo() {
                       </p>
                       <p className="mt-2 text-[15px] leading-relaxed text-ink">{a.draft.body}</p>
                       <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <span className="mr-auto text-xs font-medium text-[#a16207]">Waiting for your approval</span>
+                        <span className="mr-auto text-xs font-medium text-[#15803d]">Waiting for your approval</span>
                         <span className="clay-pill bg-white px-3 py-1.5 text-xs font-medium text-neutral-700">Cancel</span>
                         <span className="clay-pill bg-white px-3 py-1.5 text-xs font-medium text-neutral-700">Edit</span>
-                        <span className="clay-pill inline-flex items-center gap-1.5 !bg-[linear-gradient(180deg,#ffeb73,#ffd630)] px-3 py-1.5 text-xs font-semibold text-ink">
+                        <span className="clay-pill inline-flex items-center gap-1.5 !bg-[linear-gradient(180deg,#7ee8a4,#34c26e)] px-3 py-1.5 text-xs font-semibold text-ink">
                           <CornerDownLeft size={12} /> Approve
                         </span>
                       </div>

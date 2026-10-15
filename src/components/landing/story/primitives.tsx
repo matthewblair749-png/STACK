@@ -24,7 +24,7 @@ export function ChapterMark({ time, stage, tone = "light" }: { time: string; sta
   const dark = tone === "dark";
   return (
     <div className={cn("flex items-center gap-3 font-mono text-[13px] tracking-wide", dark ? "text-[#a8a4b4]" : "text-neutral-500")}>
-      <span className={cn("h-2 w-2 rounded-full", dark ? "bg-[#ff7a5c]" : "bg-[#e8a400]")} />
+      <span className={cn("h-2 w-2 rounded-full", dark ? "bg-[#ff7a5c]" : "bg-[#1f9d55]")} />
       <span className={dark ? "text-[#f4f2f8]" : "text-ink"}>{time}</span>
       {stage && (
         <>
