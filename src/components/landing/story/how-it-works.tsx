@@ -134,12 +134,12 @@ function ActScreen() {
             today.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4">
-            <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-[#a16207]">
+            <span className="mr-auto inline-flex items-center gap-1.5 text-xs font-medium text-[#2f4fe0]">
               <Hourglass size={13} /> Waiting for your approval
             </span>
             <span className="clay-pill bg-white px-3 py-1.5 text-xs font-medium text-neutral-700">Cancel</span>
             <span className="clay-pill bg-white px-3 py-1.5 text-xs font-medium text-neutral-700">Edit</span>
-            <span className="clay-pill inline-flex items-center gap-1.5 !bg-[linear-gradient(180deg,#ffeb73,#ffd630)] px-3 py-1.5 text-xs font-semibold text-ink">
+            <span className="clay-pill inline-flex items-center gap-1.5 !bg-[linear-gradient(180deg,#a9bbff,#6f8cff)] px-3 py-1.5 text-xs font-semibold text-ink">
               <CornerDownLeft size={12} /> Approve
             </span>
           </div>
@@ -151,7 +151,7 @@ function ActScreen() {
 
 const columns = [
   { icon: Clock, label: "Up next", tone: "text-blue", items: [["Tomorrow 9:30", "Pricing review with Dev"], ["Friday", "Launch checklist due"]] },
-  { icon: Hourglass, label: "Waiting on others", tone: "text-[#a16207]", items: [["Dev · 2 days", "API spec for checkout"], ["Sarah · today", "Proposal sign-off"]] },
+  { icon: Hourglass, label: "Waiting on others", tone: "text-[#2f4fe0]", items: [["Dev · 2 days", "API spec for checkout"], ["Sarah · today", "Proposal sign-off"]] },
   { icon: AlertTriangle, label: "At risk", tone: "text-red", items: [["Mobile redesign", "No updates in 6 days"]] },
 ];
 
@@ -269,7 +269,7 @@ export function HowItWorks() {
                   )}
                 >
                   <span className="flex items-center gap-2.5 font-mono text-[12px] text-neutral-500">
-                    <span className={cn("h-2 w-2 rounded-full transition-colors", i === active ? "bg-[#e8a400]" : "bg-neutral-300")} />
+                    <span className={cn("h-2 w-2 rounded-full transition-colors", i === active ? "bg-[#2f4fe0]" : "bg-neutral-300")} />
                     <span className="text-ink">{s.time}</span>
                     <span aria-hidden className="h-px w-5 bg-neutral-300" />
                     <span className="uppercase">{s.stage}</span>

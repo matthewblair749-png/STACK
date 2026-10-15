@@ -215,7 +215,7 @@ textarea:focus-visible {
 }
 
 /*
- * The public site's look: a warm desk, white paper, black ink and a yellow highlighter - STACK highlights what
+ * The public site's look: a warm desk, white paper, black ink and a blue highlighter - STACK highlights what
  * matters. Redefining the colour tokens on a subtree flips every bg-white / text-ink / border-neutral-* inside
  * it. Only pages that opt in (class="calm") use it.
  */
@@ -241,7 +241,7 @@ textarea:focus-visible {
   --color-neutral-500: #5c5852;
   --color-neutral-700: #403d38;
   --color-neutral-900: #1d1b18;
-  --highlighter: #ffe14d;
+  --highlighter: #b9c8ff;
   background: var(--background);
   color: var(--foreground);
 }
@@ -318,7 +318,7 @@ textarea:focus-visible {
     inset 0 -8px 14px rgba(0, 0, 0, 0.45);
 }
 
-/* STACK's button: a squishy yellow clay pill that presses in when you click it. */
+/* STACK's button: a squishy blue clay pill that presses in when you click it. */
 .btn-stack {
   display: inline-flex;
   align-items: center;
@@ -327,30 +327,30 @@ textarea:focus-visible {
   height: 3rem;
   padding: 0 1.6rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffeb73, #ffd630);
+  background: linear-gradient(180deg, #a9bbff, #6f8cff);
   color: #121110;
   font-size: 0.9375rem;
   font-weight: 600;
   box-shadow:
-    0 16px 24px -12px rgba(170, 120, 0, 0.55),
-    0 4px 6px -2px rgba(120, 90, 0, 0.22),
+    0 16px 24px -12px rgba(40, 70, 200, 0.55),
+    0 4px 6px -2px rgba(25, 40, 120, 0.22),
     inset 0 3px 5px rgba(255, 255, 255, 0.75),
-    inset 0 -5px 9px rgba(190, 140, 0, 0.38);
+    inset 0 -5px 9px rgba(40, 70, 200, 0.38);
   transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease;
 }
 .btn-stack:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 20px 28px -12px rgba(170, 120, 0, 0.6),
-    0 5px 8px -2px rgba(120, 90, 0, 0.22),
+    0 20px 28px -12px rgba(40, 70, 200, 0.6),
+    0 5px 8px -2px rgba(25, 40, 120, 0.22),
     inset 0 3px 5px rgba(255, 255, 255, 0.8),
-    inset 0 -5px 9px rgba(190, 140, 0, 0.38);
+    inset 0 -5px 9px rgba(40, 70, 200, 0.38);
 }
 .btn-stack:active {
   transform: translateY(1px) scale(0.98);
   box-shadow:
-    0 6px 10px -8px rgba(170, 120, 0, 0.5),
-    inset 0 4px 8px rgba(190, 140, 0, 0.35),
+    0 6px 10px -8px rgba(40, 70, 200, 0.5),
+    inset 0 4px 8px rgba(40, 70, 200, 0.35),
     inset 0 -2px 4px rgba(255, 255, 255, 0.5);
 }
 .btn-stack:focus-visible {
